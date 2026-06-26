@@ -77,9 +77,9 @@ function analyserGPX(xmlString) {
     
     // Stats & Waypoints
     document.getElementById('m-vert').innerText = Math.round(m.v) + "m";
-document.getElementById('m-orange').innerText = Math.round(m.o) + "m";
+document.getElementById('m-orange').innerText = Math.round(m.o);
 document.getElementById('m-rouge').innerText = Math.round(m.r) + "m";
-document.getElementById('m-noir').innerText = Math.round(m.n) + "m";
+document.getElementById('m-noir').innerText = Math.round(m.n);
 
 document.getElementById('m-bleu1').innerText = Math.round(m.b1) + "m";
 document.getElementById('m-bleu2').innerText = Math.round(m.b2) + "m";
