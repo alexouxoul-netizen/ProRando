@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Pro Rando App</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="manifest" href="manifest.json">
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+      }
+    </script>
+</head>
+<body>
+    <div class="controls">
+        <label for="gpx-file" class="upload-btn">📂 Charger GPX</label>
+        <input type="file" id="gpx-file" style="display:none" accept=".gpx">
+        <select id="layer-select" onchange="changeLayer()">
+            <option value="osm">Standard</option>
+            <option value="topo">Topographique</option>
+        </select>
+    </div>
+
+    <div id="stats">
+        <b>Distance :</b> <span id="dist-total">-</span> km<br>
+        <b>D+ :</b> <span id="d-plus">-</span> m | <b>D- :</b> <span id="d-moins">-</span> m
+    </div>
+
+    <div id="repartition">
+        <b>D+ :</b> <span id="m-vert">0</span>m | <span id="m-orange">0</span>m | <span id="m-rouge">0</span>m | <span id="m-noir">0</span>m<br>
+        <b>D- :</b> <span id="m-bleu1">0</span>m | <span id="m-bleu2">0</span>m | <span id="m-bleu3">0</span>m | <span id="m-violet">0</span>m
+    </div>
+
+    <div id="map"></div>
+    <div id="chart-container"><canvas id="elevationChart"></canvas></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

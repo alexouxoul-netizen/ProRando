@@ -1,0 +1,29 @@
+body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; display: flex; flex-direction: column; overflow: hidden; }
+#map { height: 60vh; width: 100%; }
+#chart-container { height: 40vh; width: 100%; background: #f8f9fa; padding: 10px; }
+.controls { position: absolute; top: 20px; left: 60px; z-index: 1000; }
+#stats { position: absolute; top: 20px; right: 20px; z-index: 1000; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+#repartition { position: absolute; top: 140px; right: 20px; z-index: 1000; background: white; padding: 10px; border-radius: 8px; font-size: 11px; }
+.upload-btn { background: #007BFF; color: white; padding: 10px; border-radius: 5px; cursor: pointer; }
+.legend { padding: 10px; background: white; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+/* Couleurs pour les statistiques D+ */
+#m-vert { color: #55A630; font-weight: bold; }
+#m-orange { color: #FF9F43; font-weight: bold; }
+#m-rouge { color: #EE5253; font-weight: bold; }
+#m-noir { color: #000000; font-weight: bold; }
+
+/* Couleurs pour les statistiques D- */
+#m-bleu1 { color: #ffafcc; font-weight: bold; } /* Rose */
+#m-bleu2 { color: #00cec9; font-weight: bold; } /* Turquoise */
+#m-bleu3 { color: #0984e3; font-weight: bold; } /* Bleu Nuit */
+#m-violet { color: #0605552d; font-weight: bold; } /* Violet */
+.legend {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+.legend i { width: 15px; height: 15px; display: inline-block; margin-right: 5px; opacity: 0.8; }
