@@ -76,20 +76,17 @@ function analyserGPX(xmlString) {
     map.fitBounds(L.polyline(points).getBounds());
     
     // Stats & Waypoints
-    document.getElementById('m-vert').innerText = Math.round(m.v) + "m";
-document.getElementById('m-orange').innerText = Math.round(m.o);
-document.getElementById('m-rouge').innerText = Math.round(m.r) + "m";
-document.getElementById('m-noir').innerText = Math.round(m.n);
-
-document.getElementById('m-bleu1').innerText = Math.round(m.b1) + "m";
-document.getElementById('m-bleu2').innerText = Math.round(m.b2) + "m";
-document.getElementById('m-bleu3').innerText = Math.round(m.b3) + "m";
-document.getElementById('m-violet').innerText = Math.round(m.vi) + "m";
+ document.getElementById('m-bleu1').innerText = Math.round(m.b1);
+document.getElementById('m-bleu2').innerText = Math.round(m.b2);
+document.getElementById('m-bleu3').innerText = Math.round(m.b3);
+document.getElementById('m-violet').innerText = Math.round(m.vi);
     document.getElementById('dist-total').innerText = (dist/1000).toFixed(1);
     document.getElementById('d-plus').innerText = Math.round(dPlus);
     document.getElementById('d-moins').innerText = Math.round(dMoins);
     document.getElementById('m-vert').innerText = Math.round(m.v);
+    document.getElementById('m-orange').innerText = Math.round(m.o);
     document.getElementById('m-rouge').innerText = Math.round(m.r);
+    document.getElementById('m-noir').innerText = Math.round(m.n);
     // ... (rajoute les autres m- si besoin)
 
     var wpts = xmlDoc.getElementsByTagName("wpt");
