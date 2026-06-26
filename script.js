@@ -76,10 +76,10 @@ function analyserGPX(xmlString) {
     map.fitBounds(L.polyline(points).getBounds());
     
     // Stats & Waypoints
- document.getElementById('m-bleu1').innerText = Math.round(m.b1);
-document.getElementById('m-bleu2').innerText = Math.round(m.b2);
-document.getElementById('m-bleu3').innerText = Math.round(m.b3);
-document.getElementById('m-violet').innerText = Math.round(m.vi);
+    document.getElementById('m-bleu1').innerText = Math.round(m.b1);
+    document.getElementById('m-bleu2').innerText = Math.round(m.b2);
+    document.getElementById('m-bleu3').innerText = Math.round(m.b3);
+    document.getElementById('m-violet').innerText = Math.round(m.vi);
     document.getElementById('dist-total').innerText = (dist/1000).toFixed(1);
     document.getElementById('d-plus').innerText = Math.round(dPlus);
     document.getElementById('d-moins').innerText = Math.round(dMoins);
@@ -113,7 +113,7 @@ document.getElementById('m-violet').innerText = Math.round(m.vi);
         }
     });
 }
-const cacheName = 'pro-rando-v2';
+const cacheName = 'pro-rando-v3';
 const assets = ['index.html', 'style.css', 'script.js', 'icon.png'];
 
 self.addEventListener('install', (e) => {
