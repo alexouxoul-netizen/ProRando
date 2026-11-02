@@ -144,12 +144,29 @@ function calculateDifficulty(distanceMeters, ascentMeters, descentMeters, uphill
     else if (effortKm < 20) { level = 4; name = 'Difficile'; reason = 'Effort important'; }
     else { level = 5; name = 'Très difficile'; reason = 'Effort physique très important'; }
 
-    const steepUphillMeters = uphill.hard + uphill.extreme;
+    // La pente doit pouvoir relever la note même sur une randonnée courte.
+    // On utilise les longueurs classées sur le parcours, pas seulement le D+ total.
+    const steepUphillMeters = uphill.hard + uphill.extreme; // pentes >= 15 %
+    const verySteepUphillMeters = uphill.extreme; // pentes >= 25 %
     const classifiedUphillMeters = uphill.easy + uphill.moderate + uphill.hard + uphill.extreme;
-    if (classifiedUphillMeters > 0 && steepUphillMeters / classifiedUphillMeters >= 0.25) {
-        reason += ' · nombreuses montées raides';
+    const steepShare = classifiedUphillMeters > 0 ? steepUphillMeters / classifiedUphillMeters : 0;
+    const verySteepShare = classifiedUphillMeters > 0 ? verySteepUphillMeters / classifiedUphillMeters : 0;
+
+    // Un parcours avec au moins 35 % de montée à 15 % ou plus, sur au moins
+    // 300 m classés, est au minimum coté 3/5 même si sa distance-effort est faible.
+    if (steepUphillMeters >= 300 && steepShare >= 0.35) {
+        level = Math.max(level, 3);
+        name = level === 3 ? 'Soutenue' : name;
+        reason = 'Montées raides sur une part importante du parcours';
     } else if (steepUphillMeters >= 100) {
         reason += ' · passages raides';
+    }
+
+    // Une forte proportion de pente extrême peut encore augmenter la note.
+    if (verySteepUphillMeters >= 200 && verySteepShare >= 0.20) {
+        level = Math.max(level, 4);
+        name = level === 4 ? 'Difficile' : name;
+        reason = 'Nombreuses montées très raides';
     }
 
     const estimatedHours = distanceKm / 4 + ascentMeters / 600 + descentMeters / 1200;
