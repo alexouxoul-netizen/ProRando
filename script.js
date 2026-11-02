@@ -139,15 +139,16 @@ function calculateDifficulty(distanceMeters, ascentMeters, descentMeters, uphill
     const steep = uphill.hard + uphill.extreme;
     const steepPlus = uphill.extreme;
     const longest = climbs.longest;
-    // Barème V6 : l'effort de fond est séparé de la pénibilité des montées.
-    // Les coefficients sont des repères expérimentaux à affiner sur les retours terrain.
-    const base = distanceKm * 0.105 + ascentMeters * 0.0017;
-    const steepLoad = Math.min(1.5, steep / 950) + Math.min(0.65, steepPlus / 500);
-    const sustainedLoad = Math.min(0.8, longest / 2400);
+    // V6.1 : calibration expérimentale sur trois parcours réels.
+    // On réduit le poids de la distance et renforce les pentes >15 % et >25 %.
+    // Le GPX ne permet pas de déduire la présence de pierriers ou l'exposition.
+    const base = distanceKm * 0.07 + ascentMeters * 0.0014;
+    const steepLoad = Math.min(2.1, steep / 700) + Math.min(1.1, steepPlus / 250);
+    const sustainedLoad = Math.min(0.7, longest / 4000);
     const score = base + steepLoad + sustainedLoad;
-    let level = score < 1.1 ? 1 : score < 2.4 ? 2 : score < 3.5 ? 3 : score < 4.6 ? 4 : 5;
-    // Une forte concentration de pente raide doit rester visible sur une petite randonnée.
-    if (steep >= 250 && steep / Math.max(1, distanceMeters) > 0.09) level = Math.max(level, 3);
+    let level = score < 1.1 ? 1 : score < 2.7 ? 2 : score < 3.5 ? 3 : score < 4.35 ? 4 : 5;
+    // Une montée concentrée reste pénalisante, même sur une courte trace.
+    if (steep >= 500 && steep / Math.max(1, distanceMeters) > 0.13) level = Math.max(level, 3);
     const names = ['Très accessible', 'Modérée', 'Soutenue', 'Difficile', 'Très difficile'];
     const reasons = [];
     if (steep >= 250) reasons.push('montées raides : ' + Math.round(steep) + ' m');
