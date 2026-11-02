@@ -124,6 +124,8 @@ function resetStats() {
     setText('effort-distance', '— km-effort');
     setText('walking-time', '—');
     setText('difficulty-reason', 'Charge physique estimée');
+    setText('climb-warning', '—');
+    setText('longest-climb', '—');
     const panel = document.getElementById('difficulty');
     if (panel) delete panel.dataset.level;
 }
@@ -131,59 +133,60 @@ function resetStats() {
 // Indicateur physique simple et transparent : distance-effort = distance (km) + D+ (m) / 100.
 // Le temps indicatif suit une allure moyenne de 4 km/h + 600 m de montée par heure.
 // Ces repères ne prétendent pas mesurer la technicité, l'exposition ou l'état du terrain.
-function calculateDifficulty(distanceMeters, ascentMeters, descentMeters, uphill) {
+function calculateDifficulty(distanceMeters, ascentMeters, descentMeters, uphill, climbs) {
     const distanceKm = distanceMeters / 1000;
     const effortKm = distanceKm + ascentMeters / 100;
-    let level;
-    let name;
-    let reason;
-
-    if (effortKm < 5) { level = 1; name = 'Très accessible'; reason = 'Charge physique faible'; }
-    else if (effortKm < 10) { level = 2; name = 'Modérée'; reason = 'Effort régulier'; }
-    else if (effortKm < 15) { level = 3; name = 'Soutenue'; reason = 'Endurance et bonnes jambes nécessaires'; }
-    else if (effortKm < 20) { level = 4; name = 'Difficile'; reason = 'Effort important'; }
-    else { level = 5; name = 'Très difficile'; reason = 'Effort physique très important'; }
-
-    // La pente doit pouvoir relever la note même sur une randonnée courte.
-    // On utilise les longueurs classées sur le parcours, pas seulement le D+ total.
-    const steepUphillMeters = uphill.hard + uphill.extreme; // pentes >= 15 %
-    const verySteepUphillMeters = uphill.extreme; // pentes >= 25 %
-    const classifiedUphillMeters = uphill.easy + uphill.moderate + uphill.hard + uphill.extreme;
-    const steepShare = classifiedUphillMeters > 0 ? steepUphillMeters / classifiedUphillMeters : 0;
-    const verySteepShare = classifiedUphillMeters > 0 ? verySteepUphillMeters / classifiedUphillMeters : 0;
-
-    // Un parcours avec au moins 35 % de montée à 15 % ou plus, sur au moins
-    // 300 m classés, est au minimum coté 3/5 même si sa distance-effort est faible.
-    if (steepUphillMeters >= 300 && steepShare >= 0.35) {
-        level = Math.max(level, 3);
-        name = level === 3 ? 'Soutenue' : name;
-        reason = 'Montées raides sur une part importante du parcours';
-    } else if (steepUphillMeters >= 100) {
-        reason += ' · passages raides';
-    }
-
-    // Une forte proportion de pente extrême peut encore augmenter la note.
-    if (verySteepUphillMeters >= 200 && verySteepShare >= 0.20) {
-        level = Math.max(level, 4);
-        name = level === 4 ? 'Difficile' : name;
-        reason = 'Nombreuses montées très raides';
-    }
-
+    const steep = uphill.hard + uphill.extreme;
+    const steepPlus = uphill.extreme;
+    const longest = climbs.longest;
+    // Barème V6 : l'effort de fond est séparé de la pénibilité des montées.
+    // Les coefficients sont des repères expérimentaux à affiner sur les retours terrain.
+    const base = distanceKm * 0.105 + ascentMeters * 0.0017;
+    const steepLoad = Math.min(1.5, steep / 950) + Math.min(0.65, steepPlus / 500);
+    const sustainedLoad = Math.min(0.8, longest / 2400);
+    const score = base + steepLoad + sustainedLoad;
+    let level = score < 1.1 ? 1 : score < 2.4 ? 2 : score < 3.5 ? 3 : score < 4.6 ? 4 : 5;
+    // Une forte concentration de pente raide doit rester visible sur une petite randonnée.
+    if (steep >= 250 && steep / Math.max(1, distanceMeters) > 0.09) level = Math.max(level, 3);
+    const names = ['Très accessible', 'Modérée', 'Soutenue', 'Difficile', 'Très difficile'];
+    const reasons = [];
+    if (steep >= 250) reasons.push('montées raides : ' + Math.round(steep) + ' m');
+    if (longest >= 700) reasons.push('montée continue : ' + Math.round(longest) + ' m');
+    if (distanceKm >= 14) reasons.push('long parcours');
+    if (!reasons.length) reasons.push('pentes plutôt progressives');
     const estimatedHours = distanceKm / 4 + ascentMeters / 600 + descentMeters / 1200;
     const totalMinutes = Math.max(1, Math.round(estimatedHours * 60));
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    const timeLabel = hours > 0
-        ? hours + ' h' + (minutes ? ' ' + String(minutes).padStart(2, '0') : '')
-        : totalMinutes + ' min';
-
+    const timeLabel = hours > 0 ? hours + ' h' + (minutes ? ' ' + String(minutes).padStart(2, '0') : '') : totalMinutes + ' min';
     setText('difficulty-level', level + '/5');
-    setText('difficulty-name', name);
+    setText('difficulty-name', names[level - 1]);
     setText('effort-distance', effortKm.toFixed(1) + ' km-effort');
     setText('walking-time', timeLabel);
-    setText('difficulty-reason', reason);
+    setText('difficulty-reason', reasons.join(' · '));
+    setText('climb-warning', steep >= 250 ? '⚠ Montées raides : ' + Math.round(steep) + ' m cumulés' : '✓ Peu de montées très raides détectées');
+    setText('longest-climb', Math.round(longest) + ' m');
     const panel = document.getElementById('difficulty');
-    if (panel) panel.dataset.level = String(level);
+    if (panel) panel.dataset.level = level;
+}
+
+// Regroupe les montées continues avec tolérance pour les courts replats.
+// Utilise les pentes lissées existantes pour conserver la cohérence de la carte.
+function analyzeClimbs(points, cumulativeDistances) {
+    let longest = 0, run = 0, gap = 0;
+    for (let i = 1; i < points.length; i++) {
+        const length = cumulativeDistances[i] - cumulativeDistances[i - 1];
+        if (length <= 0) continue;
+        const slope = getLocalSlope(points, cumulativeDistances, i);
+        if (slope !== null && slope >= 3) {
+            run += length + gap;
+            gap = 0;
+        } else {
+            gap += length;
+            if (gap > 80) { longest = Math.max(longest, run); run = 0; gap = 0; }
+        }
+    }
+    return { longest: Math.max(longest, run) };
 }
 
 function afficherErreur(message) {
@@ -334,7 +337,7 @@ function analyserGPX(xmlString) {
     setText('m-violet', Math.round(downhill.extreme) + ' m');
 
     // Affiche un indice d'effort et une durée indicative, sans prétendre évaluer la technicité.
-    calculateDifficulty(distance, dPlus, dMoins, uphill);
+    calculateDifficulty(distance, dPlus, dMoins, uphill, analyzeClimbs(points, cumulativeDistances));
 
     // Affichage des waypoints, sans supposer qu’ils possèdent un nom.
     for (const waypoint of getElementsByLocalName(xmlDoc, 'wpt')) {
