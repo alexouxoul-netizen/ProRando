@@ -2,42 +2,52 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Pro Rando App</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0984e3">
+    <title>Pro Rando</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="style.css">
-
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(error => console.warn('Service Worker non enregistré :', error));
+        });
       }
     </script>
 </head>
 <body>
-    <div class="controls">
+    <header class="controls">
         <label for="gpx-file" class="upload-btn">📂 Charger GPX</label>
-        <input type="file" id="gpx-file" style="display:none" accept=".gpx">
-        <select id="layer-select" onchange="changeLayer()">
+        <input type="file" id="gpx-file" accept=".gpx,application/gpx+xml">
+        <select id="layer-select" aria-label="Fond de carte">
             <option value="osm">Standard</option>
             <option value="topo">Topographique</option>
         </select>
-    </div>
+        <button type="button" id="locate-button" class="locate-btn">◎ Ma position</button>
+    </header>
 
-    <div id="stats">
+    <section id="stats" aria-live="polite">
         <b>Distance :</b> <span id="dist-total">-</span> km<br>
-        <b>D+ :</b> <span id="d-plus">-</span> m | <b>D- :</b> <span id="d-moins">-</span> m
-    </div>
+        <b>D+ :</b> <span id="d-plus">-</span> &nbsp;|&nbsp; <b>D- :</b> <span id="d-moins">-</span>
+    </section>
 
-    <div id="repartition">
-        <b>D+ :</b> <span id="m-vert">0</span>m | <span id="m-orange">0</span> | <span id="m-rouge">0</span>m | <span id="m-noir">0</span> <br>
-        <b>D- :</b> <span id="m-bleu1">0</span> | <span id="m-bleu2">0</span> | <span id="m-bleu3">0</span> | <span id="m-violet">0</span>
-    </div>
+    <section id="repartition" aria-label="Répartition des pentes">
+        <b>D+ :</b> <span id="m-vert">0 m</span> &nbsp;|&nbsp; <span id="m-orange">0 m</span> &nbsp;|&nbsp; <span id="m-rouge">0 m</span> &nbsp;|&nbsp; <span id="m-noir">0 m</span><br>
+        <b>D- :</b> <span id="m-bleu1">0 m</span> &nbsp;|&nbsp; <span id="m-bleu2">0 m</span> &nbsp;|&nbsp; <span id="m-bleu3">0 m</span> &nbsp;|&nbsp; <span id="m-violet">0 m</span>
+    </section>
 
-    <div id="map"></div>
-    <div id="chart-container"><canvas id="elevationChart"></canvas></div>
+    <main>
+        <div id="map" aria-label="Carte du parcours"></div>
+        <div id="chart-container"><canvas id="elevationChart" aria-label="Profil altimétrique"></canvas></div>
+    </main>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
+    <script>
+      document.getElementById('layer-select').addEventListener('change', changeLayer);
+    </script>
 </body>
 </html>

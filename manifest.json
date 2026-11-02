@@ -1,8 +1,10 @@
 {
   "name": "Pro Rando",
   "short_name": "Pro Rando",
-  "start_url": "index.html",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#ffffff",
   "theme_color": "#0984e3",
   "icons": [
