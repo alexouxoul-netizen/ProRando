@@ -28,6 +28,11 @@
         <button type="button" id="locate-button" class="locate-btn">◎ Ma position</button>
     </header>
 
+    <section class="distance-correction" aria-label="Correction de distance GPS">
+      <label for="distance-override">Distance réelle connue (km, facultatif) :</label>
+      <input id="distance-override" type="number" min="0" max="100" step="0.1" placeholder="Ex. 15" inputmode="decimal">
+      <small id="distance-info">Laisser vide pour utiliser la distance du GPX.</small>
+    </section>
     <section id="stats" aria-live="polite">
         <b>Distance :</b> <span id="dist-total">-</span> km<br>
         <b>D+ :</b> <span id="d-plus">-</span> &nbsp;|&nbsp; <b>D- :</b> <span id="d-moins">-</span>
@@ -38,6 +43,8 @@
         <b>D- :</b> <span id="m-bleu1">0 m</span> &nbsp;|&nbsp; <span id="m-bleu2">0 m</span> &nbsp;|&nbsp; <span id="m-bleu3">0 m</span> &nbsp;|&nbsp; <span id="m-violet">0 m</span>
     </section>
 
+    <p id="gpx-quality" class="analysis-notice" aria-live="polite">—</p>
+    <p id="descent-warning" class="analysis-notice" aria-live="polite">—</p>
     <section id="difficulty" aria-live="polite" aria-label="Difficulté estimée du parcours">
         <div class="difficulty-heading">Difficulté estimée <span id="difficulty-level">—</span></div>
         <div class="difficulty-main"><strong id="difficulty-name">En attente d'un GPX</strong><span id="effort-distance">— km-effort</span></div>
@@ -53,7 +60,7 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=62"></script>
     <script>
       document.getElementById('layer-select').addEventListener('change', changeLayer);
     </script>

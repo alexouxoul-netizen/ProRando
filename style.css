@@ -60,3 +60,9 @@ main { display: flex; flex: 1; min-height: 0; flex-direction: column; }
   #repartition { top: 135px; }
   #difficulty { top: 205px; }
 }
+
+.distance-correction { padding: 7px 12px; background: #f4f8fb; font: 13px Arial, sans-serif; display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
+.distance-correction input { width: 85px; padding:5px; border:1px solid #b5c5d2; border-radius:5px; }
+.distance-correction small { color:#586977; }
+
+.analysis-notice { margin: 8px 0; padding: 9px 11px; border-radius: 8px; background: #edf4f8; color: #263d4b; font-size: .88rem; line-height: 1.4; }

@@ -10,6 +10,7 @@ const hoverMarker = L.circleMarker([0, 0], {
 });
 let chart = null;
 let lastTrackPoints = [];
+let lastGpxXml = null;
 
 // La pente est estimée sur une fenêtre locale plutôt qu'entre deux points GPS bruts.
 // Cela stabilise les couleurs sans modifier les altitudes ni les D+/D- cumulés.
@@ -93,11 +94,11 @@ function elevationAtDistance(points, cumulativeDistances, targetDistance) {
 
 // Pente moyenne locale centrée sur le milieu du segment (fenêtre de 30 m).
 // Aux extrémités du parcours, la fenêtre est automatiquement raccourcie.
-function getLocalSlope(points, cumulativeDistances, segmentIndex) {
+function getLocalSlope(points, cumulativeDistances, segmentIndex, windowMeters = SLOPE_WINDOW_METERS) {
     const segmentStart = cumulativeDistances[segmentIndex - 1];
     const segmentEnd = cumulativeDistances[segmentIndex];
     const midpoint = (segmentStart + segmentEnd) / 2;
-    const halfWindow = SLOPE_WINDOW_METERS / 2;
+    const halfWindow = windowMeters / 2;
     const start = Math.max(0, midpoint - halfWindow);
     const end = Math.min(cumulativeDistances[cumulativeDistances.length - 1], midpoint + halfWindow);
     const horizontalDistance = end - start;
@@ -126,6 +127,8 @@ function resetStats() {
     setText('difficulty-reason', 'Charge physique estimée');
     setText('climb-warning', '—');
     setText('longest-climb', '—');
+    setText('gpx-quality', '—');
+    setText('descent-warning', '—');
     const panel = document.getElementById('difficulty');
     if (panel) delete panel.dataset.level;
 }
@@ -134,7 +137,8 @@ function resetStats() {
 // Le temps indicatif suit une allure moyenne de 4 km/h + 600 m de montée par heure.
 // Ces repères ne prétendent pas mesurer la technicité, l'exposition ou l'état du terrain.
 function calculateDifficulty(distanceMeters, ascentMeters, descentMeters, uphill, climbs) {
-    const distanceKm = distanceMeters / 1000;
+    const corrected = Number(document.getElementById("distance-override")?.value);
+    const distanceKm = corrected > 0 && corrected <= 100 ? corrected : distanceMeters / 1000;
     const effortKm = distanceKm + ascentMeters / 100;
     const steep = uphill.hard + uphill.extreme;
     const steepPlus = uphill.extreme;
@@ -145,7 +149,11 @@ function calculateDifficulty(distanceMeters, ascentMeters, descentMeters, uphill
     const base = distanceKm * 0.07 + ascentMeters * 0.0014;
     const steepLoad = Math.min(2.1, steep / 700) + Math.min(1.1, steepPlus / 250);
     const sustainedLoad = Math.min(0.7, longest / 4000);
-    const score = base + steepLoad + sustainedLoad;
+    // Fatigue cumulative : n’intervient que sur les longues randonnées avec D+ et montées raides significatifs.
+    // Ne modifie pas les références courtes ou modérées.
+    const fatigueLoad = distanceKm >= 14 && ascentMeters >= 450 && steep >= 900
+        ? 1.65 + Math.min(0.5, (distanceKm - 14) * 0.1) : 0;
+    const score = base + steepLoad + sustainedLoad + fatigueLoad;
     let level = score < 1.1 ? 1 : score < 2.7 ? 2 : score < 3.5 ? 3 : score < 4.35 ? 4 : 5;
     // Une montée concentrée reste pénalisante, même sur une courte trace.
     if (steep >= 500 && steep / Math.max(1, distanceMeters) > 0.13) level = Math.max(level, 3);
@@ -154,6 +162,7 @@ function calculateDifficulty(distanceMeters, ascentMeters, descentMeters, uphill
     if (steep >= 250) reasons.push('montées raides : ' + Math.round(steep) + ' m');
     if (longest >= 700) reasons.push('montée continue : ' + Math.round(longest) + ' m');
     if (distanceKm >= 14) reasons.push('long parcours');
+    if (fatigueLoad > 0) reasons.push('fatigue cumulative : distance + dénivelé + fortes pentes');
     if (!reasons.length) reasons.push('pentes plutôt progressives');
     const estimatedHours = distanceKm / 4 + ascentMeters / 600 + descentMeters / 1200;
     const totalMinutes = Math.max(1, Math.round(estimatedHours * 60));
@@ -206,7 +215,8 @@ fileInput.addEventListener('change', function (event) {
     const reader = new FileReader();
     reader.onload = function (loadEvent) {
         try {
-            analyserGPX(loadEvent.target.result);
+            lastGpxXml = loadEvent.target.result;
+            analyserGPX(lastGpxXml);
         } catch (error) {
             console.error('Erreur pendant l’analyse GPX :', error);
             afficherErreur('Une erreur est survenue pendant la lecture du GPX. Vérifie que le fichier est valide.');
@@ -271,6 +281,25 @@ function analyserGPX(xmlString) {
         cumulativeDistances.push(cumulativeDistances[i - 1] + map.distance(points[i - 1].latLng, points[i].latLng));
     }
 
+    // Qualité de la géométrie : la médiane évite de confondre quelques pauses GPS
+    // avec une trace entière simplifiée. Ne prétend pas mesurer la précision altimétrique.
+    const spacings = [];
+    for (let i = 1; i < cumulativeDistances.length; i++) {
+        const delta = cumulativeDistances[i] - cumulativeDistances[i - 1];
+        if (delta > 0.2) spacings.push(delta);
+    }
+    spacings.sort((a, b) => a - b);
+    const medianSpacing = spacings.length ? spacings[Math.floor(spacings.length / 2)] : Infinity;
+    const coarseTrack = medianSpacing > 15 || points.length < 50;
+    // La fenêtre courte sert uniquement à la couleur et au repérage des descentes.
+    // La note de difficulté reste fondée sur la fenêtre historique de 30 m.
+    const visualWindow = coarseTrack ? 30 : 20;
+    setText('gpx-quality', coarseTrack
+        ? '⚠ Trace peu détaillée (espacement médian ' + Math.round(medianSpacing) + ' m) : les pentes courtes peuvent être sous-estimées.'
+        : '✓ Trace suffisamment détaillée pour rechercher des pentes sur 20 m (précision de l’altitude non garantie).');
+    let steepDescentMeters = 0;
+    let extremeDescentMeters = 0;
+    let strongestDescent = 0;
     for (let i = 0; i < points.length; i++) {
         const point = points[i];
         distance = cumulativeDistances[i];
@@ -287,6 +316,10 @@ function analyserGPX(xmlString) {
                 else if (elevationDifference < 0) dMoins += Math.abs(elevationDifference);
 
                 const slope = getLocalSlope(points, cumulativeDistances, i);
+                const displaySlope = getLocalSlope(points, cumulativeDistances, i, visualWindow);
+                if (displaySlope !== null && displaySlope < strongestDescent) strongestDescent = displaySlope;
+                if (displaySlope !== null && displaySlope <= -15) steepDescentMeters += segmentDistance;
+                if (displaySlope !== null && displaySlope <= -25) extremeDescentMeters += segmentDistance;
                 if (slope !== null) {
                     const absoluteSlope = Math.abs(slope);
                     if (slope >= 0) {
@@ -301,8 +334,8 @@ function analyserGPX(xmlString) {
                         else downhill.extreme += segmentDistance;
                     }
                     L.polyline([previous.latLng, point.latLng], {
-                        color: getPenteColor(slope), weight: 5, opacity: 0.9
-                    }).addTo(currentLayerGroup).bindPopup('Pente moyenne locale (30 m) : ' + slope.toFixed(1) + '%');
+                        color: getPenteColor(displaySlope === null ? slope : displaySlope), weight: 5, opacity: 0.9
+                    }).addTo(currentLayerGroup).bindPopup('Pente locale (' + visualWindow + ' m) : ' + (displaySlope === null ? slope : displaySlope).toFixed(1) + '%');
                 } else {
                     L.polyline([previous.latLng, point.latLng], {
                         color: '#777777', weight: 4, opacity: 0.75
@@ -322,10 +355,15 @@ function analyserGPX(xmlString) {
         dMoinsList.push(Math.round(dMoins));
     }
 
+    setText('descent-warning', steepDescentMeters >= 20
+        ? '↘ Descentes raides détectées : ' + Math.round(steepDescentMeters) + ' m à plus de 15 %, dont ' + Math.round(extremeDescentMeters) + ' m à plus de 25 % (pente locale minimale ' + strongestDescent.toFixed(1) + ' %).'
+        : '↘ Aucune descente durable à plus de 15 % détectée dans les altitudes du fichier.');
     lastTrackPoints = points;
     map.fitBounds(L.latLngBounds(validLatLngs), { padding: [20, 20] });
 
-    setText('dist-total', (distance / 1000).toFixed(1));
+    const manualKm = Number(document.getElementById('distance-override')?.value);
+    setText('dist-total', (manualKm > 0 && manualKm <= 100 ? manualKm : distance / 1000).toFixed(1));
+    setText('distance-info', manualKm > 0 && manualKm <= 100 ? 'Distance corrigée manuellement (trace GPS conservée)' : 'Distance GPS brute : vérifier en cas de dérive');
     setText('d-plus', Math.round(dPlus) + ' m');
     setText('d-moins', Math.round(dMoins) + ' m');
     setText('m-vert', Math.round(uphill.easy) + ' m');
@@ -421,3 +459,6 @@ map.on('locationfound', event => {
     window.gpsAccuracy = L.circle(event.latlng, { radius: event.accuracy, color: '#0984e3', fillOpacity: 0.08 }).addTo(map);
 });
 map.on('locationerror', event => afficherErreur('Impossible d’obtenir votre position : ' + event.message));
+
+// Recalcule les statistiques après correction manuelle, sans demander de recharger le fichier.
+document.getElementById('distance-override')?.addEventListener('change', () => { if (lastGpxXml) analyserGPX(lastGpxXml); });
