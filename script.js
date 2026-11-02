@@ -119,6 +119,54 @@ function resetStats() {
     ['dist-total', 'd-plus', 'd-moins'].forEach(id => setText(id, '-'));
     ['m-bleu1', 'm-bleu2', 'm-bleu3', 'm-violet', 'm-vert', 'm-orange', 'm-rouge', 'm-noir']
         .forEach(id => setText(id, '0 m'));
+    setText('difficulty-level', '—');
+    setText('difficulty-name', "En attente d'un GPX");
+    setText('effort-distance', '— km-effort');
+    setText('walking-time', '—');
+    setText('difficulty-reason', 'Charge physique estimée');
+    const panel = document.getElementById('difficulty');
+    if (panel) delete panel.dataset.level;
+}
+
+// Indicateur physique simple et transparent : distance-effort = distance (km) + D+ (m) / 100.
+// Le temps indicatif suit une allure moyenne de 4 km/h + 600 m de montée par heure.
+// Ces repères ne prétendent pas mesurer la technicité, l'exposition ou l'état du terrain.
+function calculateDifficulty(distanceMeters, ascentMeters, descentMeters, uphill) {
+    const distanceKm = distanceMeters / 1000;
+    const effortKm = distanceKm + ascentMeters / 100;
+    let level;
+    let name;
+    let reason;
+
+    if (effortKm < 5) { level = 1; name = 'Très accessible'; reason = 'Charge physique faible'; }
+    else if (effortKm < 10) { level = 2; name = 'Modérée'; reason = 'Effort régulier'; }
+    else if (effortKm < 15) { level = 3; name = 'Soutenue'; reason = 'Endurance et bonnes jambes nécessaires'; }
+    else if (effortKm < 20) { level = 4; name = 'Difficile'; reason = 'Effort important'; }
+    else { level = 5; name = 'Très difficile'; reason = 'Effort physique très important'; }
+
+    const steepUphillMeters = uphill.hard + uphill.extreme;
+    const classifiedUphillMeters = uphill.easy + uphill.moderate + uphill.hard + uphill.extreme;
+    if (classifiedUphillMeters > 0 && steepUphillMeters / classifiedUphillMeters >= 0.25) {
+        reason += ' · nombreuses montées raides';
+    } else if (steepUphillMeters >= 100) {
+        reason += ' · passages raides';
+    }
+
+    const estimatedHours = distanceKm / 4 + ascentMeters / 600 + descentMeters / 1200;
+    const totalMinutes = Math.max(1, Math.round(estimatedHours * 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    const timeLabel = hours > 0
+        ? hours + ' h' + (minutes ? ' ' + String(minutes).padStart(2, '0') : '')
+        : totalMinutes + ' min';
+
+    setText('difficulty-level', level + '/5');
+    setText('difficulty-name', name);
+    setText('effort-distance', effortKm.toFixed(1) + ' km-effort');
+    setText('walking-time', timeLabel);
+    setText('difficulty-reason', reason);
+    const panel = document.getElementById('difficulty');
+    if (panel) panel.dataset.level = String(level);
 }
 
 function afficherErreur(message) {
@@ -267,6 +315,9 @@ function analyserGPX(xmlString) {
     setText('m-bleu2', Math.round(downhill.moderate) + ' m');
     setText('m-bleu3', Math.round(downhill.hard) + ' m');
     setText('m-violet', Math.round(downhill.extreme) + ' m');
+
+    // Affiche un indice d'effort et une durée indicative, sans prétendre évaluer la technicité.
+    calculateDifficulty(distance, dPlus, dMoins, uphill);
 
     // Affichage des waypoints, sans supposer qu’ils possèdent un nom.
     for (const waypoint of getElementsByLocalName(xmlDoc, 'wpt')) {
