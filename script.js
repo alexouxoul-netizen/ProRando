@@ -129,6 +129,8 @@ function resetStats() {
     setText('longest-climb', '—');
     setText('gpx-quality', '—');
     setText('descent-warning', '—');
+    setText('descent-alert', '');
+    document.getElementById('descent-alert')?.classList.add('is-hidden');
     const panel = document.getElementById('difficulty');
     if (panel) delete panel.dataset.level;
 }
@@ -300,6 +302,8 @@ function analyserGPX(xmlString) {
     let steepDescentMeters = 0;
     let extremeDescentMeters = 0;
     let strongestDescent = 0;
+    const steepDescentSections = [];
+    let currentSteepSection = null;
     for (let i = 0; i < points.length; i++) {
         const point = points[i];
         distance = cumulativeDistances[i];
@@ -318,6 +322,18 @@ function analyserGPX(xmlString) {
                 const slope = getLocalSlope(points, cumulativeDistances, i);
                 const displaySlope = getLocalSlope(points, cumulativeDistances, i, visualWindow);
                 if (displaySlope !== null && displaySlope < strongestDescent) strongestDescent = displaySlope;
+                // Regroupe les tronçons descendants raides contigus, sans changer les couleurs.
+                // Les micro-pauses de pente inférieures à 20 m ne coupent pas un passage.
+                if (displaySlope !== null && displaySlope <= -15) {
+                    if (!currentSteepSection || cumulativeDistances[i - 1] - currentSteepSection.lastSteepEnd > 20) {
+                        if (currentSteepSection) steepDescentSections.push(currentSteepSection);
+                        currentSteepSection = { start: cumulativeDistances[i - 1], lastSteepEnd: cumulativeDistances[i], minSlope: displaySlope, steepMeters: segmentDistance };
+                    } else {
+                        currentSteepSection.lastSteepEnd = cumulativeDistances[i];
+                        currentSteepSection.minSlope = Math.min(currentSteepSection.minSlope, displaySlope);
+                        currentSteepSection.steepMeters += segmentDistance;
+                    }
+                }
                 if (displaySlope !== null && displaySlope <= -15) steepDescentMeters += segmentDistance;
                 if (displaySlope !== null && displaySlope <= -25) extremeDescentMeters += segmentDistance;
                 if (slope !== null) {
@@ -355,6 +371,24 @@ function analyserGPX(xmlString) {
         dMoinsList.push(Math.round(dMoins));
     }
 
+    if (currentSteepSection) steepDescentSections.push(currentSteepSection);
+    const significantDescents = steepDescentSections.filter(section => section.steepMeters >= 30);
+    significantDescents.sort((a, b) => b.steepMeters - a.steepMeters);
+    const descentAlert = document.getElementById('descent-alert');
+    if (descentAlert) {
+        if (significantDescents.length) {
+            const section = significantDescents[0];
+            const startKm = (section.start / 1000).toFixed(1).replace('.', ',');
+            const endKm = (section.lastSteepEnd / 1000).toFixed(1).replace('.', ',');
+            descentAlert.textContent = '⚠ Passage difficile : descente raide vers le km ' + startKm + ' à ' + endKm +
+                ' (' + Math.round(section.steepMeters) + ' m de pente > 15 %, jusqu’à ' +
+                Math.abs(section.minSlope).toFixed(0) + ' % estimés). Prudence : pente calculée depuis le GPX, terrain non évalué.';
+            descentAlert.classList.remove('is-hidden');
+        } else {
+            descentAlert.textContent = '';
+            descentAlert.classList.add('is-hidden');
+        }
+    }
     setText('descent-warning', steepDescentMeters >= 20
         ? '↘ Descentes raides détectées : ' + Math.round(steepDescentMeters) + ' m à plus de 15 %, dont ' + Math.round(extremeDescentMeters) + ' m à plus de 25 % (pente locale minimale ' + strongestDescent.toFixed(1) + ' %).'
         : '↘ Aucune descente durable à plus de 15 % détectée dans les altitudes du fichier.');
