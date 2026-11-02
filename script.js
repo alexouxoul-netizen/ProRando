@@ -11,6 +11,10 @@ const hoverMarker = L.circleMarker([0, 0], {
 let chart = null;
 let lastTrackPoints = [];
 
+// La pente est estimée sur une fenêtre locale plutôt qu'entre deux points GPS bruts.
+// Cela stabilise les couleurs sans modifier les altitudes ni les D+/D- cumulés.
+const SLOPE_WINDOW_METERS = 30;
+
 function changeLayer() {
     const value = document.getElementById('layer-select').value;
     const url = value === 'topo'
@@ -58,6 +62,52 @@ function getPenteColor(pente) {
 
 function getElementsByLocalName(xmlDoc, name) {
     return Array.from(xmlDoc.getElementsByTagNameNS('*', name));
+}
+
+// Interpole l'altitude à une distance donnée le long du parcours.
+// Renvoie null si l'intervalle concerné ne possède pas deux altitudes valides.
+function elevationAtDistance(points, cumulativeDistances, targetDistance) {
+    if (targetDistance < 0 || targetDistance > cumulativeDistances[cumulativeDistances.length - 1]) return null;
+
+    let low = 0;
+    let high = cumulativeDistances.length - 1;
+    while (low < high) {
+        const middle = Math.floor((low + high) / 2);
+        if (cumulativeDistances[middle] < targetDistance) low = middle + 1;
+        else high = middle;
+    }
+
+    let right = low;
+    if (right === 0) return points[0].elevation;
+    if (cumulativeDistances[right] === targetDistance) return points[right].elevation;
+
+    const left = right - 1;
+    const distanceSpan = cumulativeDistances[right] - cumulativeDistances[left];
+    const leftElevation = points[left].elevation;
+    const rightElevation = points[right].elevation;
+    if (distanceSpan <= 0 || leftElevation === null || rightElevation === null) return null;
+
+    const ratio = (targetDistance - cumulativeDistances[left]) / distanceSpan;
+    return leftElevation + (rightElevation - leftElevation) * ratio;
+}
+
+// Pente moyenne locale centrée sur le milieu du segment (fenêtre de 30 m).
+// Aux extrémités du parcours, la fenêtre est automatiquement raccourcie.
+function getLocalSlope(points, cumulativeDistances, segmentIndex) {
+    const segmentStart = cumulativeDistances[segmentIndex - 1];
+    const segmentEnd = cumulativeDistances[segmentIndex];
+    const midpoint = (segmentStart + segmentEnd) / 2;
+    const halfWindow = SLOPE_WINDOW_METERS / 2;
+    const start = Math.max(0, midpoint - halfWindow);
+    const end = Math.min(cumulativeDistances[cumulativeDistances.length - 1], midpoint + halfWindow);
+    const horizontalDistance = end - start;
+
+    if (horizontalDistance <= 0) return null;
+    const startElevation = elevationAtDistance(points, cumulativeDistances, start);
+    const endElevation = elevationAtDistance(points, cumulativeDistances, end);
+    if (startElevation === null || endElevation === null) return null;
+
+    return ((endElevation - startElevation) / horizontalDistance) * 100;
 }
 
 function setText(id, value) {
@@ -147,38 +197,50 @@ function analyserGPX(xmlString) {
     const dPlusList = [];
     const dMoinsList = [];
     const validLatLngs = points.map(point => point.latLng);
+    const cumulativeDistances = [0];
+    for (let i = 1; i < points.length; i++) {
+        cumulativeDistances.push(cumulativeDistances[i - 1] + map.distance(points[i - 1].latLng, points[i].latLng));
+    }
 
     for (let i = 0; i < points.length; i++) {
         const point = points[i];
+        distance = cumulativeDistances[i];
         if (i > 0) {
             const previous = points[i - 1];
-            const segmentDistance = map.distance(previous.latLng, point.latLng);
-            distance += segmentDistance;
+            const segmentDistance = cumulativeDistances[i] - cumulativeDistances[i - 1];
+            distance = cumulativeDistances[i];
 
-            // Une pente n’est calculée que si les deux altitudes sont disponibles
-            // et si le segment possède une longueur non nulle.
+            // Les D+ / D- restent calculés sur les altitudes GPX d'origine.
+            // Seule la classification/coloration utilise une pente locale sur 30 m.
             if (segmentDistance > 0 && previous.elevation !== null && point.elevation !== null) {
                 const elevationDifference = point.elevation - previous.elevation;
-                const slope = (elevationDifference / segmentDistance) * 100;
-                const absoluteSlope = Math.abs(slope);
-                if (elevationDifference > 0) {
-                    dPlus += elevationDifference;
-                    if (absoluteSlope < 10) uphill.easy += segmentDistance;
-                    else if (absoluteSlope < 15) uphill.moderate += segmentDistance;
-                    else if (absoluteSlope < 25) uphill.hard += segmentDistance;
-                    else uphill.extreme += segmentDistance;
-                } else if (elevationDifference < 0) {
-                    dMoins += Math.abs(elevationDifference);
-                    if (absoluteSlope < 10) downhill.easy += segmentDistance;
-                    else if (absoluteSlope < 15) downhill.moderate += segmentDistance;
-                    else if (absoluteSlope < 25) downhill.hard += segmentDistance;
-                    else downhill.extreme += segmentDistance;
+                if (elevationDifference > 0) dPlus += elevationDifference;
+                else if (elevationDifference < 0) dMoins += Math.abs(elevationDifference);
+
+                const slope = getLocalSlope(points, cumulativeDistances, i);
+                if (slope !== null) {
+                    const absoluteSlope = Math.abs(slope);
+                    if (slope >= 0) {
+                        if (absoluteSlope < 10) uphill.easy += segmentDistance;
+                        else if (absoluteSlope < 15) uphill.moderate += segmentDistance;
+                        else if (absoluteSlope < 25) uphill.hard += segmentDistance;
+                        else uphill.extreme += segmentDistance;
+                    } else {
+                        if (absoluteSlope < 10) downhill.easy += segmentDistance;
+                        else if (absoluteSlope < 15) downhill.moderate += segmentDistance;
+                        else if (absoluteSlope < 25) downhill.hard += segmentDistance;
+                        else downhill.extreme += segmentDistance;
+                    }
+                    L.polyline([previous.latLng, point.latLng], {
+                        color: getPenteColor(slope), weight: 5, opacity: 0.9
+                    }).addTo(currentLayerGroup).bindPopup('Pente moyenne locale (30 m) : ' + slope.toFixed(1) + '%');
+                } else {
+                    L.polyline([previous.latLng, point.latLng], {
+                        color: '#777777', weight: 4, opacity: 0.75
+                    }).addTo(currentLayerGroup).bindPopup('Pente indisponible (altitude manquante à proximité)');
                 }
-                L.polyline([previous.latLng, point.latLng], {
-                    color: getPenteColor(slope), weight: 5, opacity: 0.9
-                }).addTo(currentLayerGroup).bindPopup('Pente : ' + slope.toFixed(1) + '%');
             } else {
-                // Le tracé reste visible même si l’altitude manque.
+                // Le tracé reste visible même si l’altitude manque ou si le segment est nul.
                 L.polyline([previous.latLng, point.latLng], {
                     color: '#777777', weight: 4, opacity: 0.75
                 }).addTo(currentLayerGroup);
