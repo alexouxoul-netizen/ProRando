@@ -61,7 +61,7 @@ function snapshot(p){
  if(Number.isInteger(baseScore)&&baseScore>=0&&baseScore<=100&&status?.dataset.baseScore!=='')result.baseScore=baseScore;
  return result;
 }
-window.RandoVistaJournal={getEntries:()=>entries.slice(),getActiveRouteKey:()=>routeKey(route())};
+window.RandoVistaJournal={getEntries:()=>entries.slice(),getActiveRouteKey:()=>routeKey(route()),fingerprint:xml=>routeKey({xml})};
 function refresh(){
  const p=active(),r=route(),name=currentRouteName(),sim=!!p?.temporary;
  const ctx=$('journal-context');
@@ -85,6 +85,48 @@ function refresh(){
   if(e.prediction)item.append(node('small','journal-prediction','Prévision lors de l’évaluation : '+(e.prediction.verdict||'Indisponible')+' · Profil niveau '+(e.prediction.profileLevel+1)+'/5'));
   if(e.terrain?.length)item.append(node('small','journal-entry-terrain','Terrain : '+e.terrain.map(t=>({rocks:'pierriers',technical:'passages techniques',exposed:'passages exposés',mud:'terrain glissant'}[t])).join(', ')));
   if(e.notes)item.append(node('p','',e.notes));
+  // Association rétroactive volontaire ; ne jamais déduire une correspondance du seul nom.
+  const linkBox=node('div','journal-link-tools');
+  const linkStatus=node('small','journal-link-status',e.routeKey?'✓ GPX associé à ce retour':'GPX non associé — référence conservée');
+  const linkBtn=node('button','journal-link-button',e.routeKey?'Modifier le GPX associé':'Associer un GPX enregistré');
+  linkBtn.type='button';
+  linkBtn.setAttribute('aria-expanded','false');
+  const chooser=node('div','journal-link-chooser');chooser.hidden=true;
+  linkBox.append(linkStatus,linkBtn,chooser);
+  linkBtn.addEventListener('click',async()=>{
+   if(!chooser.hidden){chooser.hidden=true;chooser.replaceChildren();linkBtn.setAttribute('aria-expanded','false');return;}
+   chooser.replaceChildren(node('p','','Chargement de la bibliothèque…'));
+   chooser.hidden=false;linkBtn.setAttribute('aria-expanded','true');
+   try{
+    const saved=await window.RandoVistaLibrary?.getSavedRoutes?.();
+    if(!Array.isArray(saved))throw new Error('Bibliothèque indisponible');
+    if(!saved.length){chooser.replaceChildren(node('p','','Aucun GPX dans « Mes randos ». Importe d’abord la trace dans la bibliothèque, puis reviens ici.'));return;}
+    const note=node('p','','Sélectionne le bon tracé après vérification. Le nom seul ne prouve pas que le GPX correspond à cette sortie.');
+    const select=node('select','journal-link-select');select.setAttribute('aria-label','Choisir le GPX à associer à '+e.route);
+    const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Choisir une randonnée enregistrée…';select.append(placeholder);
+    saved.slice().sort((a,b)=>a.name.localeCompare(b.name,'fr')).forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=r.name;select.append(o);});
+    const confirmBtn=node('button','','Confirmer l’association');confirmBtn.type='button';confirmBtn.disabled=true;
+    select.addEventListener('change',()=>confirmBtn.disabled=!select.value);
+    const message=node('p','journal-link-feedback');message.setAttribute('role','status');
+    confirmBtn.addEventListener('click',()=>{
+     const selected=saved.find(x=>x.id===select.value);if(!selected)return;
+     const newKey=routeKey({xml:selected.xml});
+     if(!newKey){message.textContent='Ce GPX ne peut pas être identifié.';return;}
+     const previous=entries.find(x=>x.id===e.id);if(!previous){message.textContent='Évaluation introuvable, actualise le carnet.';return;}
+     if(previous.routeKey===newKey){message.textContent='Cette évaluation est déjà associée à ce GPX.';return;}
+     const action=previous.routeKey?'Remplacer le GPX déjà associé':'Associer ce GPX';
+     if(!confirm(action+' à « '+previous.route+' » (profil : '+previous.profileName+') ?\nTracé choisi : '+selected.name+'\n\nSeul le lien est changé, jamais la note ni les mesures.'))return;
+     try{
+      const updated=entries.map(x=>x.id===e.id?{...x,routeKey:newKey}:x);
+      if(!updated.every(valid))throw new Error('Donnée de carnet invalide');
+      persist(updated);$('journal-message').textContent='✓ GPX associé à « '+previous.route+' ». La référence terrain sera reconnue en rechargeant exactement cette trace.';
+      refresh();
+     }catch(err){message.textContent='Association impossible : '+err.message;}
+    });
+    chooser.replaceChildren(note,select,confirmBtn,message);
+   }catch(err){chooser.replaceChildren(node('p','','Impossible de consulter la bibliothèque : '+err.message));}
+  });
+  item.append(linkBox);
   const del=node('button','','Supprimer ce retour');del.type='button';
   del.addEventListener('click',()=>{
    if(!confirm('Supprimer définitivement ce retour d’expérience ?'))return;

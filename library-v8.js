@@ -19,6 +19,14 @@ $('library-list').addEventListener('click',async e=>{const b=e.target.closest('b
 $('library-export').addEventListener('click',()=>download('pro-rando-sauvegarde.json',JSON.stringify({app:'Pro Rando',version:8,exported:new Date().toISOString(),routes:records},null,2)));
 $('library-import').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.app!=='Pro Rando'||!Array.isArray(data.routes))throw new Error('Format de sauvegarde invalide');if(!confirm(`Importer ${data.routes.length} parcours dans la bibliothèque ?`))return;let count=0;for(const r of data.routes){if(typeof r.name!=='string'||typeof r.xml!=='string'||!r.xml.includes('<')||r.xml.length>15000000)continue;await tx('readwrite',s=>s.put({id:typeof r.id==='string'?r.id:('r'+Date.now()+count),name:r.name.slice(0,200),xml:r.xml,updated:Number(r.updated)||Date.now(),favorite:!!r.favorite}));count++;}await reload();alert(`${count} parcours importé(s).`);}catch(err){report(err);}finally{e.target.value='';}});
 document.addEventListener('rv:route-state',async e=>{if(e.detail?.status!=='ready'||e.detail?.source!=='import')return;const route=window.RandoVistaRoutes.active;if(!route)return;try{await save(route.name,route.xml);}catch(err){console.warn('GPX non sauvegardé',err);}});
-window.RandoVistaLibrary={show,reload};
+// Lecture seule : expose les GPX effectivement enregistrés, sans modifier leur contenu.
+// L'association avec le carnet est TOUJOURS un choix explicite de l'utilisateur.
+async function getSavedRoutes(){
+ if(!db)throw new Error('Bibliothèque locale indisponible sur cet appareil');
+ const result=await tx('readonly',store=>store.getAll());
+ return result.filter(r=>typeof r?.id==='string'&&typeof r.name==='string'&&typeof r.xml==='string')
+  .map(r=>({id:r.id,name:r.name,xml:r.xml}));
+}
+window.RandoVistaLibrary={show,reload,getSavedRoutes};
 init();
 })();
