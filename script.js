@@ -455,6 +455,13 @@ function analyserGPX(xmlString) {
     // Affiche un indice d'effort et une durée indicative, sans prétendre évaluer la technicité.
     calculateDifficulty(distance, dPlus, dMoins, uphill, analyzeClimbs(points, cumulativeDistances));
 
+    // Radar V7.3 : échantillonnage par distance, sans toucher aux calculs historiques.
+    window.dispatchEvent(new CustomEvent('pr-radar-data', { detail: {
+        points: points.map(p => ({lat:p.lat,lon:p.lon,elevation:p.elevation})),
+        distances: cumulativeDistances.slice(), visualWindow,
+        coarseTrack
+    }}));
+
     // Affichage des waypoints, sans supposer qu’ils possèdent un nom.
     for (const waypoint of getElementsByLocalName(xmlDoc, 'wpt')) {
         const lat = Number(waypoint.getAttribute('lat'));
@@ -551,7 +558,7 @@ function analyserGPX(xmlString) {
             const bounds = canvas.getBoundingClientRect();
             const area = instance.chartArea;
             if (!area || !bounds.width) return;
-            const x = (event.clientX - bounds.left) * (canvas.width / bounds.width);
+            const x = (event.clientX - bounds.left) * (instance.width / bounds.width);
             const ratio = Math.max(0, Math.min(1, (x - area.left) / Math.max(1, area.right - area.left)));
             const index = Math.max(0, Math.min(points.length - 1, Math.round(ratio * (points.length - 1))));
             syncReliefCursor(index, source);

@@ -10,7 +10,7 @@
  document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
  function openSheet(){showTab('map');$('profile-sheet').hidden=false;moveChart($('chart-slot-sheet'));resizeVisuals();}
  $('map-profile-button').addEventListener('click',openSheet);
- $('compare-on-map').addEventListener('click',()=>{openSheet();const idx=window.proRandoRelief?.getIndex();if(Number.isInteger(idx)&&idx>=0){window.proRandoRelief.select(idx);requestAnimationFrame(()=>{map.invalidateSize();window.proRandoRelief.focusOnMap();});}});
+ $('compare-on-map').addEventListener('click',()=>{showTab('map');$('profile-sheet').hidden=true;moveChart($('chart-slot-profile')); const idx=window.proRandoRelief?.getIndex();if(Number.isInteger(idx)&&idx>=0){window.proRandoRelief.select(idx);requestAnimationFrame(()=>{map.invalidateSize();window.proRandoRelief.focusOnMap();});}});
  const legendToggle=$('legend-toggle'), legendPanel=$('slope-legend');
  function toggleLegend(force){const open=typeof force==='boolean'?force:legendPanel.hidden;legendPanel.hidden=!open;legendToggle.setAttribute('aria-expanded',String(open));}
  legendToggle.addEventListener('click',()=>toggleLegend());
@@ -31,5 +31,6 @@
  $('descent-alert').addEventListener('click',e=>{if(e.target.closest('.descent-jump')){showTab('map');setTimeout(resizeVisuals,60);}},true);
  // Le profil doit rester présent dans un conteneur visible lors de l'import.
  moveChart($('chart-slot-profile'));showTab('map');
+ window.proRandoUI={showMapPoint:(index)=>{showTab('map');$('profile-sheet').hidden=true;moveChart($('chart-slot-profile'));if(Number.isInteger(index))window.proRandoRelief?.select(index);requestAnimationFrame(()=>{map.invalidateSize();window.proRandoRelief?.focusOnMap();});}};
  window.addEventListener('resize',resizeVisuals);
 })();
