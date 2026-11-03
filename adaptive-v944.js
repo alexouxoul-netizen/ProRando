@@ -1,4 +1,4 @@
-/* RandoVista V9.4.7 TEST — calibration physique et références terrain distinctes.
+/* RandoVista V9.4.8 TEST — calibration physique et références terrain distinctes.
  * Local only, opt-in per profile, no GPX metric/experience-level mutation.
  * One distinct GPX = one physical observation; technical hikes retained as terrain references.
  */
@@ -16,7 +16,7 @@
   missingRoute:'Ancien retour : identité du GPX absente',
   differentLevel:'Niveau du profil différent, score de référence insuffisant',
   unknownPrediction:'Prévision GPX indisponible',
-  technical:'Référence terrain conservée (non utilisée pour ajuster les pentes GPX)',
+  technical:'Référence terrain conservée (hors calibrage du relief)',
   ambiguous:'Difficulté ressentie absente ou invalide',
   duplicate:'Même tracé déjà représenté par un retour utilisable'
  };
@@ -84,6 +84,21 @@
   }
   for(const e of rows){
    if(e.routeKey)known.add(e.routeKey);
+   // IMPORTANT : les retours techniques forment un registre de références
+   // indépendant du calcul physique. Ils n'exigent ni prévision historique,
+   // ni identifiant de GPX, et ne sont pas effacés par le reset du calibrage.
+   // Une ancienne référence sans routeKey reste consultable, mais on ne la
+   // rapproche JAMAIS automatiquement d'un GPX sur la seule base de son nom.
+   if(Array.isArray(e.terrain)&&e.terrain.length){
+    const referenceId=e.routeKey||('legacy:'+e.id);
+    if(!terrainSeen.has(referenceId)){
+     terrainSeen.add(referenceId);
+     result.terrainReferences.push({route:String(e.route||'Randonnée').slice(0,100),
+      routeKey:e.routeKey||null,linked:!!e.routeKey,feeling:e.feeling,effort:e.effort,
+      terrain:e.terrain.slice(),date:e.date});
+    }
+    skip(e,'technical');continue;
+   }
    if(cutoff>0&&(e.created||0)<=cutoff){skip(e,'beforeReset');continue;}
    if(!e.routeKey){skip(e,'missingRoute');continue;}
    if(!e.prediction){skip(e,'missingPrediction');continue;}
@@ -91,21 +106,8 @@
    if(tier===null){
     skip(e,e.prediction?.profileLevel!==hiker.level?'differentLevel':'unknownPrediction');continue;
    }
-   if(e.terrain?.length){
-    // Une expérience technique est un fait précieux, mais ses pierriers ne
-    // doivent pas être attribués automatiquement au dénivelé du GPX.
-    if(!terrainSeen.has(e.routeKey)){
-     terrainSeen.add(e.routeKey);
-     result.terrainReferences.push({route:String(e.route||'Randonnée').slice(0,100),
-      routeKey:e.routeKey,feeling:e.feeling,effort:e.effort,
-      terrain:e.terrain.slice(),date:e.date});
-    }
-    skip(e,'technical');continue;
-   }
    const obs=observedTier(e);
    if(obs===null){skip(e,'ambiguous');continue;}
-   // Un GPX peut être effectué plusieurs fois : tous les retours restent dans
-   // le carnet, mais un même tracé ne pèse qu'une fois dans l'ajustement.
    result.usableEvaluations++;
    if(used.has(e.routeKey)){skip(e,'duplicate');continue;}
    used.add(e.routeKey);
@@ -116,7 +118,7 @@
    else result.agree++;
   }
   result.distinctTracks=known.size;
-  result.excluded=rows.length-result.eligible;
+  result.excluded=rows.length-result.eligible; // Inclut les références terrain, qui ne sont pas des rejets du carnet.
   result.disagreements=result.positive+result.negative;
   // >=3 GPX différents, >=3 écarts de même sens et >=75 % des observations.
   if(result.eligible>=MIN){
@@ -126,7 +128,7 @@
   return result;
  }
  function getReferenceForRoute(hiker, key){
-  if(!hiker||!key||hiker.temporary)return null;
+  if(!hiker||!key||hiker.temporary)return null; // Les anciennes références sans GPX restent visibles, sans fausse correspondance.
   const ownEntries=entries().filter(e=>e?.profileId===hiker.id&&e.routeKey===key&&Array.isArray(e.terrain)&&e.terrain.length);
   ownEntries.sort((a,b)=>(b?.created||0)-(a?.created||0));
   const e=ownEntries[0];
@@ -161,7 +163,7 @@
   const stats=$('adaptive-stats');
   if(stats)stats.textContent=data.journalTotal+' retour(s) dans le carnet de ce profil · '+
    data.distinctTracks+' GPX identifié(s) · '+data.eligible+' trace(s) utilisées pour le calibrage du relief · '+
-   data.terrainReferences.length+' référence(s) de terrain conservée(s).';
+   data.terrainReferences.length+' référence(s) de terrain conservée(s), dont '+data.terrainReferences.filter(r=>!r.linked).length+' ancienne(s) sans lien GPX.';
   const terrainBox=$('adaptive-terrain-references');
   if(terrainBox){
    terrainBox.replaceChildren();
@@ -169,13 +171,13 @@
    headline.textContent='Références terrain ('+data.terrainReferences.length+')';
    terrainBox.append(headline);
    const explain=document.createElement('p');
-   explain.textContent='Les randonnées avec pierriers, passages techniques, exposition ou boue restent des références de difficulté vécue. Elles servent à reconnaître un GPX déjà parcouru, sans fausser le calcul physique des autres traces.';
+   explain.textContent='Les sorties techniques restent conservées, même si elles sont anciennes. Si le carnet ne contient pas l’empreinte GPX, la référence apparaît ici mais ne peut pas être associée automatiquement à une trace sur la simple ressemblance du nom.';
    terrainBox.append(explain);
    const legend={rocks:'pierriers',technical:'passages techniques',exposed:'exposition',mud:'boue / terrain glissant'};
    const feelings={avoid:'À éviter pour ce profil',possible:'Exigeante mais faisable',repeat:'À refaire avec plaisir'};
    for(const r of data.terrainReferences.slice(0,20)){
     const line=document.createElement('p');
-    line.textContent='🥾 '+r.route+' — '+r.effort+'/5 · '+(feelings[r.feeling]||'Bilan enregistré')+' · '+r.terrain.map(t=>legend[t]||t).join(', ');
+    line.textContent='🥾 '+r.route+' — '+r.effort+'/5 · '+(feelings[r.feeling]||'Bilan enregistré')+' · '+r.terrain.map(t=>legend[t]||t).join(', ')+(r.linked?' · GPX identifié':' · Ancien retour (GPX non lié)');
     terrainBox.append(line);
    }
    if(data.terrainReferences.length>20){const line=document.createElement('p');line.textContent='… et '+(data.terrainReferences.length-20)+' autre(s).';terrainBox.append(line);}
