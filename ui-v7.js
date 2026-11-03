@@ -28,7 +28,7 @@
  legendToggle.addEventListener('click',()=>toggleLegend());
  $('legend-close').addEventListener('click',()=>toggleLegend(false));
  map.on('click',()=>toggleLegend(false));
- $('profile-on-map').addEventListener('click',()=>{openSheet();requestAnimationFrame(()=>{map.invalidateSize();window.proRandoRelief?.focusOnMap();});});
+ $('profile-on-map')?.addEventListener('click',()=>{openSheet();requestAnimationFrame(()=>{map.invalidateSize();window.proRandoRelief?.focusOnMap();});});
  $('sheet-close').addEventListener('click',()=>{$('profile-sheet').hidden=true;moveChart($('chart-slot-compare'));resizeVisuals();});
  $('sheet-expand').addEventListener('click',()=>{showTab('prepare');$('profile-sheet').hidden=true;});
  $('map-fullscreen').addEventListener('click',()=>{document.querySelector('.app-shell').classList.toggle('map-full');resizeVisuals();});

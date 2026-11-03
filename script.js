@@ -230,6 +230,7 @@ fileInput.addEventListener('change', function (event) {
     reader.onerror = function () {
         afficherErreur('Impossible de lire ce fichier GPX.');
     };
+    reader.onloadend = () => { fileInput.value = ''; };
     reader.readAsText(file);
 });
 
@@ -638,7 +639,20 @@ map.on('locationfound', event => {
 map.on('locationerror', event => afficherErreur('Impossible d’obtenir votre position : ' + event.message));
 
 // Recalcule les statistiques après correction manuelle, sans demander de recharger le fichier.
-document.getElementById('distance-override')?.addEventListener('change', () => { if (window.RandoVistaRoutes?.active?.xml) analyserGPX(window.RandoVistaRoutes.active.xml); });
+document.getElementById('distance-override')?.addEventListener('change', () => {
+  const route = window.RandoVistaRoutes?.active;
+  if (!route) return;
+  try {
+    analyserGPX(route.xml);
+    // Les statistiques, le verdict et le résumé doivent parler du même parcours.
+    document.dispatchEvent(new CustomEvent('rv:route-state', {
+      detail: {status: 'updated', name: route.name, source: route.source}
+    }));
+  } catch (error) {
+    console.error('Correction de distance impossible', error);
+    afficherErreur(error?.message || 'Impossible de recalculer ce parcours.');
+  }
+});
 
 // Point d'entrée unique : un parcours n'est déclaré prêt qu'après analyse réussie.
 window.RandoVistaRoutes = (() => {
@@ -648,6 +662,10 @@ window.RandoVistaRoutes = (() => {
   }
   function load(xml, name, source = 'import') {
     publish('loading', {name});
+    const distanceInput = document.getElementById('distance-override');
+    const previousOverride = distanceInput?.value;
+    // Une correction manuelle appartient au parcours précédent, jamais au suivant.
+    if (distanceInput) distanceInput.value = '';
     try {
       analyserGPX(xml);
       lastGpxXml = xml; // Compatibilité avec les fonctions existantes.
@@ -658,7 +676,8 @@ window.RandoVistaRoutes = (() => {
       return true;
     } catch (error) {
       console.error('Échec du chargement GPX', error);
-      publish(active ? 'ready' : 'empty', active ? {name: active.name} : {});
+      if (distanceInput) distanceInput.value = previousOverride || '';
+      publish('error', {name, previous: active?.name || null});
       afficherErreur(error?.message || 'Impossible d’analyser ce GPX.');
       return false;
     }
