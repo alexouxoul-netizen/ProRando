@@ -140,3 +140,18 @@
 .rv-experience-difference{padding:9px 10px;border-radius:10px;background:var(--soft)}
 .rv-experience-footer{display:block;color:var(--muted);line-height:1.5;margin-top:9px;font-size:10px}
 @media(max-width:340px){.rv-experience-grid{grid-template-columns:1fr}}
+
+/* RandoVista V9.7 — finitions tactiles et accessibilité, sans changer le moteur. */
+.rv-back-top{position:absolute;right:16px;bottom:16px;z-index:900;min-width:88px;min-height:44px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--accent);box-shadow:0 5px 22px rgba(16,46,28,.18);font:inherit;font-size:13px;font-weight:800;padding:10px 14px;cursor:pointer}
+.rv-back-top[hidden]{display:none!important}
+.rv-back-top:active{transform:scale(.97)}
+.rv-back-top span{margin-left:3px}
+.bottom-nav button{transition:background-color .14s ease,color .14s ease}
+.bottom-nav button.active{position:relative}
+.bottom-nav button.active::after{content:"";position:absolute;bottom:3px;width:21px;height:3px;border-radius:8px;background:currentColor;opacity:.55}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible,label.v91-import:focus-visible{outline:3px solid #b38b48;outline-offset:3px}
+.v91-cta,.summary-card,.content-card,.journal-entry,.library-route{overflow-wrap:anywhere}
+#view-prepare,#view-evaluate,#view-randos{-webkit-overflow-scrolling:touch;scroll-padding-top:12px}
+.hike-journal form input[type=range],.profile-fields input[type=range]{min-height:44px}
+@media(max-width:380px){.rv-back-top{right:10px;bottom:10px}.rv-build-marker{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.bottom-nav button,.rv-back-top{transition:none!important;scroll-behavior:auto!important}}
