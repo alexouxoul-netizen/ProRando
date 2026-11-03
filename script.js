@@ -542,8 +542,54 @@ function analyserGPX(xmlString) {
             }
         });
     }
+    // V7.2 : capture tactile continue, même en débordant de la zone du graphique.
+    // La capture se termine au relâchement ; la sélection reste mémorisée.
+    function enableContinuousPointer(canvas, instance, source) {
+        if (!canvas || !instance) return;
+        let activePointer = null;
+        function selectFromPointer(event) {
+            const bounds = canvas.getBoundingClientRect();
+            const area = instance.chartArea;
+            if (!area || !bounds.width) return;
+            const x = (event.clientX - bounds.left) * (canvas.width / bounds.width);
+            const ratio = Math.max(0, Math.min(1, (x - area.left) / Math.max(1, area.right - area.left)));
+            const index = Math.max(0, Math.min(points.length - 1, Math.round(ratio * (points.length - 1))));
+            syncReliefCursor(index, source);
+        }
+        canvas.addEventListener('pointerdown', event => {
+            if (event.pointerType === 'mouse' && event.button !== 0) return;
+            activePointer = event.pointerId;
+            try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
+            selectFromPointer(event);
+        });
+        canvas.addEventListener('pointermove', event => {
+            if (activePointer === event.pointerId) selectFromPointer(event);
+        });
+        function endPointer(event) {
+            if (activePointer !== event.pointerId) return;
+            if (event.type === 'pointerup') selectFromPointer(event);
+            activePointer = null;
+            try { if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId); } catch (_) {}
+        }
+        canvas.addEventListener('pointerup', endPointer);
+        canvas.addEventListener('pointercancel', endPointer);
+        canvas.addEventListener('lostpointercapture', event => { if (activePointer === event.pointerId) activePointer = null; });
+    }
+    enableContinuousPointer(canvas, chart, 'altitude');
+    if (gainChart) enableContinuousPointer(gainCanvas, gainChart, 'gain');
     // Exposer uniquement la sélection courante pour la navigation de l'interface.
-    window.proRandoRelief = { select: i => syncReliefCursor(i, 'external'), getIndex: () => sharedChartIndex };
+    window.proRandoRelief = {
+        select: i => syncReliefCursor(i, 'external'),
+        getIndex: () => sharedChartIndex,
+        focusOnMap: () => {
+            if (sharedChartIndex < 0 || !points[sharedChartIndex]) return false;
+            const target = points[sharedChartIndex].latLng;
+            const zoom = Math.max(map.getZoom(), 15);
+            map.flyTo(target, zoom, { animate: true, duration: 0.8 });
+            hoverMarker.setLatLng(target).addTo(map);
+            return true;
+        }
+    };
     function syncReliefCursor(index, source) {
         if (!Number.isInteger(index) || index < 0 || index >= points.length) return;
         sharedChartIndex = index;

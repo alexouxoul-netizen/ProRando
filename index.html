@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Pro Rando</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="style.css?v=71">
+    <link rel="stylesheet" href="style.css?v=72">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     <script>
@@ -38,7 +38,7 @@
       <section class="view active" id="view-map" aria-label="Carte">
         <div class="map-wrap"><div id="map" aria-label="Carte interactive du parcours"></div>
           <div class="map-tools"><select id="layer-select" aria-label="Fond de carte"><option value="osm">Plan</option><option value="topo">Topo</option></select><button id="legend-toggle" type="button" aria-label="Afficher la légende des pentes" aria-expanded="false" title="Légende des pentes">◉</button><button id="locate-button" type="button" aria-label="Ma position">◎</button><button id="map-fullscreen" type="button" aria-label="Plein écran carte">⛶</button></div>
-          <div id="slope-legend" class="slope-legend" hidden><div class="legend-top"><strong>Couleurs des pentes</strong><button type="button" id="legend-close" aria-label="Fermer la légende">✕</button></div><p>Montées</p><div class="legend-swatches"><span><i style="background:#55A630"></i> &lt; 10 %</span><span><i style="background:#FF9F43"></i> 10–15 %</span><span><i style="background:#EE5253"></i> 15–25 %</span><span><i style="background:#000000"></i> ≥ 25 %</span></div><p>Descentes</p><div class="legend-swatches"><span><i style="background:#ffafcc"></i> &lt; 10 %</span><span><i style="background:#00cec9"></i> 10–15 %</span><span><i style="background:#0984e3"></i> 15–25 %</span><span><i style="background:#6c5ce7"></i> ≥ 25 %</span></div></div><button id="map-profile-button" type="button" class="profile-fab">⌁ Explorer le profil</button>
+          <div id="slope-legend" class="slope-legend" hidden><div class="legend-top"><strong>Pentes</strong><button type="button" id="legend-close" aria-label="Fermer la légende">✕</button></div><div class="legend-columns"><div><b>↗ Montées</b><span><i style="background:#55A630"></i> &lt; 10 %</span><span><i style="background:#FF9F43"></i> 10–15 %</span><span><i style="background:#EE5253"></i> 15–25 %</span><span><i style="background:#000000"></i> ≥ 25 %</span></div><div><b>↘ Descentes</b><span><i style="background:#ffafcc"></i> &lt; 10 %</span><span><i style="background:#00cec9"></i> 10–15 %</span><span><i style="background:#0984e3"></i> 15–25 %</span><span><i style="background:#6c5ce7"></i> ≥ 25 %</span></div></div></div><button id="map-profile-button" type="button" class="profile-fab">⌁ Explorer le profil</button>
         </div>
         <div id="profile-sheet" class="profile-sheet" hidden><div class="sheet-header"><strong>Profil altimétrique</strong><div><button type="button" id="sheet-expand" aria-label="Agrandir le profil">⛶</button><button type="button" id="sheet-close" aria-label="Fermer le profil">✕</button></div></div><div id="chart-slot-sheet" class="chart-slot"></div></div>
       </section>
@@ -51,8 +51,8 @@
   <div id="chart-container"><canvas id="elevationChart" aria-label="Profil altimétrique"></canvas></div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js?v=71"></script>
-    <script src="ui-v7.js?v=71"></script>
+    <script src="script.js?v=72"></script>
+    <script src="ui-v7.js?v=72"></script>
     <script>
       document.getElementById('layer-select').addEventListener('change', changeLayer);
     </script>
