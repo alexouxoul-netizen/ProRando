@@ -1,4 +1,4 @@
-/* RandoVista V9.4.9 TEST — calibration physique et références terrain distinctes.
+/* RandoVista V9.8 TEST — calibration prudente, références terrain et contexte de parcours.
  * Local only, opt-in per profile, no GPX metric/experience-level mutation.
  * One distinct GPX = one physical observation; technical hikes retained as terrain references.
  */
@@ -69,7 +69,7 @@
  function analyze(hiker,list,config=settings){
   const none={offset:0,eligible:0,disagreements:0,agree:0,positive:0,negative:0,
    excluded:0,min:MIN,enabled:false,temporary:!!hiker?.temporary,
-   journalTotal:0,usableEvaluations:0,distinctTracks:0,terrainReferences:[],ignored:{},audit:[]};
+   journalTotal:0,usableEvaluations:0,distinctTracks:0,terrainReferences:[],physicalExamples:[],ignored:{},audit:[]};
   if(!hiker||typeof hiker.id!=='string'||!Number.isInteger(hiker.level))return none;
   const result={...none,enabled:own(config.enabled,hiker.id)&&config.enabled[hiker.id]===true};
   const cutoff=own(config.resetAt,hiker.id)?config.resetAt[hiker.id]:0;
@@ -113,6 +113,12 @@
    used.add(e.routeKey);
    result.eligible++;
    const vote=Math.sign(obs-TIERS[tier]);
+   // Garder le sens du retour avec ses mesures : des sorties comparables
+   // mais contradictoires ne doivent pas valider une tendance générale.
+   const distance=Number(e.prediction.distanceKm), ascent=Number(e.prediction.ascentM);
+   if(Number.isFinite(distance)&&distance>0&&distance<500&&Number.isFinite(ascent)&&ascent>=0&&ascent<15000){
+    result.physicalExamples.push({routeKey:e.routeKey,distanceKm:distance,ascentM:ascent,vote});
+   }
    if(vote>0)result.positive++;
    else if(vote<0)result.negative++;
    else result.agree++;
@@ -134,9 +140,40 @@
   const e=ownEntries[0];
   return e?{route:e.route,feeling:e.feeling,effort:e.effort,terrain:e.terrain.slice(),date:e.date,count:ownEntries.length}:null;
  }
- function getAdjustment(hiker){
+ // Un ajustement global n'est pas forcément transférable à un parcours
+ // d'un tout autre ordre de grandeur. Conditions volontairement larges,
+ // utilisées seulement si l'historique possède >=3 GPX mesurés.
+ function isComparable(sample, current){
+  const d=sample.distanceKm/current.distanceKm;
+  // +100 m rend le test stable sur les parcours presque plats.
+  const a=(sample.ascentM+100)/(current.ascentM+100);
+  return d>=0.5&&d<=2&&a>=0.4&&a<=2.5;
+ }
+ function getAdjustment(hiker,context){
   const result=analyze(hiker,entries());
-  return {...result,offset:result.enabled&&!result.temporary?result.offset:0};
+  const allowed=result.enabled&&!result.temporary;
+  const raw=allowed?result.offset:0;
+  const current={distanceKm:Number(context?.distanceKm),ascentM:Number(context?.ascentM)};
+  const hasContext=Number.isFinite(current.distanceKm)&&current.distanceKm>0&&Number.isFinite(current.ascentM)&&current.ascentM>=0;
+  let comparableCount=null,reason='';
+  if(result.temporary)reason='Simulation temporaire : calibration en pause.';
+  else if(!result.enabled)reason='Calibration désactivée pour ce profil.';
+  else if(!raw)reason=result.eligible<MIN?'Pas encore assez de sorties exploitables.':'Pas de tendance suffisamment constante.';
+  else if(hasContext&&result.physicalExamples.length>=MIN){
+   const similar=result.physicalExamples.filter(e=>isComparable(e,current));
+   comparableCount=similar.length;
+   if(comparableCount<MIN)reason='Parcours trop différent des sorties de référence : correction suspendue.';
+   else {
+    const same=similar.filter(e=>e.vote===Math.sign(raw)).length;
+    const opposite=similar.filter(e=>e.vote===-Math.sign(raw)).length;
+    if(same>=MIN&&same/similar.length>=0.75&&same-opposite>=MIN){
+     reason='Correction prudente confirmée par '+same+' retour(s) cohérent(s) sur des parcours comparables.';
+    }else reason='Retours comparables insuffisamment cohérents : correction suspendue.';
+   }
+  }else if(raw)reason='Correction prudente issue du carnet ; comparaison fine indisponible pour cet historique.';
+  const contextAllows=comparableCount===null|| (comparableCount>=MIN&&reason.startsWith('Correction prudente confirmée'));
+  const offset=raw&&contextAllows?raw:0;
+  return {...result,offset,candidateOffset:raw,comparableCount,reason};
  }
  function publishState(){
   const h=active(), data=analyze(h,entries());
@@ -229,7 +266,18 @@
   persistSettings({version:944,enabled:{...s.enabled},resetAt:{...s.resetAt}});
   publishState();
  }
- window.RandoVistaAdaptive={getAdjustment,getReferenceForRoute,analyze,exportSettings,importSettings,validSettings,observedTier};
+ window.addEventListener('rv:calibration-preview',event=>{
+  const el=$('adaptive-context');if(!el)return;
+  const info=event.detail;
+  if(!info){el.textContent='Charge un GPX pour vérifier la comparabilité avec les randonnées précédentes.';return;}
+  const applied=info.offset;
+  const candidate=info.candidateOffset;
+  el.textContent=(applied?'✓ Ajustement appliqué : '+(applied>0?'+1':'−1')+' point. ':
+    candidate?'⚠ Ajustement non appliqué sur cette trace. ':'')+
+    (info.reason||'Aucun ajustement nécessaire.')+
+    (info.comparableCount!==null?' '+info.comparableCount+' GPX de référence comparables.':'');
+ });
+ window.RandoVistaAdaptive={getAdjustment,getReferenceForRoute,analyze,exportSettings,importSettings,validSettings,observedTier,isComparable};
  for(const ev of ['rv:profile-changed','rv:journal-changed','rv:calibration-changed'])window.addEventListener(ev,publishState);
  publishState();
 })();

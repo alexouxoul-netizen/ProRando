@@ -155,3 +155,6 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 .hike-journal form input[type=range],.profile-fields input[type=range]{min-height:44px}
 @media(max-width:380px){.rv-back-top{right:10px;bottom:10px}.rv-build-marker{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.bottom-nav button,.rv-back-top{transition:none!important;scroll-behavior:auto!important}}
+
+/* V9.8 : explication de la calibration appliquée au GPX courant */
+.adaptive-context{padding:11px 13px;border-radius:11px;background:rgba(46,115,72,.09);border:1px solid rgba(46,115,72,.2);font-size:.88rem;line-height:1.45;overflow-wrap:anywhere;}

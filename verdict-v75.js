@@ -89,7 +89,11 @@
     const offsets = [3, 0, -2, -4, -6];
     const baselineScore = Math.max(0, score + offsets[Math.max(0,Math.min(4,chosenLevel))]);
     const baseLevel=baselineScore>=7?'high':baselineScore>=3?'moderate':'low';
-    const adaptive=window.RandoVistaAdaptive?.getAdjustment?.(active);
+    const adaptive=window.RandoVistaAdaptive?.getAdjustment?.(active,{
+      distanceKm:total/1000,ascentM:totalRise
+    });
+    // Ne déclenche pas un recalcul du verdict : seulement son explication.
+    window.dispatchEvent(new CustomEvent('rv:calibration-preview',{detail:adaptive||null}));
     const correction=Number.isInteger(adaptive?.offset)?Math.max(-1,Math.min(1,adaptive.offset)):0;
     const adjustedScore=Math.max(0,baselineScore+correction);
     const level=adjustedScore>=7?'high':adjustedScore>=3?'moderate':'low';
