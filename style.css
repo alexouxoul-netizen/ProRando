@@ -124,3 +124,19 @@
 .journal-link-feedback{color:var(--accent)!important}
 
 .journal-link-help{font-size:12px;color:var(--muted);line-height:1.5;margin:8px 0 12px}
+
+/* V9.6 — lisibilité du verdict et expériences réelles, sans doublon avec les facteurs GPX */
+.rv-experience{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:15px;padding:14px;margin:13px 0;box-shadow:0 3px 13px rgba(20,54,34,.045)}
+.rv-experience[hidden],.rv-experience-terrain[hidden],.rv-experience-notes[hidden]{display:none!important}
+.rv-experience-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:11px}
+.rv-experience-kicker{font-size:11px;letter-spacing:.7px;font-weight:850;color:var(--accent)}
+.rv-experience-count{font-size:11px;color:var(--muted)}
+.rv-experience-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rv-experience-grid>div{background:var(--bg);padding:11px;border-radius:11px;min-width:0}
+.rv-experience-grid small{display:block;font-size:9px;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;font-weight:700}
+.rv-experience-grid strong{font-size:14px;line-height:1.4;display:block;overflow-wrap:anywhere}
+.rv-experience-terrain,.rv-experience-notes,.rv-experience-difference{font-size:12px;line-height:1.6;margin:10px 0 0}
+.rv-experience-terrain{font-weight:650}.rv-experience-notes{color:var(--muted)}
+.rv-experience-difference{padding:9px 10px;border-radius:10px;background:var(--soft)}
+.rv-experience-footer{display:block;color:var(--muted);line-height:1.5;margin-top:9px;font-size:10px}
+@media(max-width:340px){.rv-experience-grid{grid-template-columns:1fr}}

@@ -11,10 +11,40 @@
   };
   const addFactor = (text) => {const div=document.createElement('div');div.className='verdict-factor';div.textContent=text;$('verdict-factors').append(div);};
   let lastTrack=null;
+  const feelingNames={avoid:'À éviter pour ce profil',possible:'Exigeante, mais faisable',repeat:'À refaire avec plaisir'};
+  const terrainNames={rocks:'pierriers',technical:'passages techniques',exposed:'passages exposés',mud:'boue / terrain glissant'};
+  const predictedNames={low:'Plutôt adaptée',moderate:'Exigeante',high:'À éviter'};
+  function renderPastExperience(active, baseLevel, actualLevel){
+    const host=$('rv-experience');if(!host)return;
+    host.hidden=true;
+    if(!active||active.temporary)return;
+    const key=window.RandoVistaJournal?.getActiveRouteKey?.();
+    if(!key)return;
+    const all=window.RandoVistaJournal?.getEntries?.();
+    if(!Array.isArray(all))return;
+    const matches=all.filter(e=>e&&e.profileId===active.id&&e.routeKey===key&&Number.isInteger(e.effort)&&e.effort>=1&&e.effort<=5)
+      .sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.created||0)-(a.created||0));
+    if(!matches.length)return;
+    const last=matches[0];
+    $('rv-experience-count').textContent=matches.length+' retour'+(matches.length>1?'s':'');
+    $('rv-experience-effort').textContent=last.effort+'/5';
+    $('rv-experience-feeling').textContent=feelingNames[last.feeling]||'Bilan enregistré';
+    const terrains=Array.isArray(last.terrain)?last.terrain.map(t=>terrainNames[t]).filter(Boolean):[];
+    $('rv-experience-terrain').hidden=!terrains.length;
+    $('rv-experience-terrain').textContent=terrains.length?'⚠ Terrain signalé : '+terrains.join(', ')+'.':'';
+    const notes=String(last.notes||'').trim().slice(0,240);
+    $('rv-experience-notes').hidden=!notes;
+    $('rv-experience-notes').textContent=notes?'« '+notes+(String(last.notes||'').trim().length>240?'…':'')+' »':'';
+    $('rv-experience-difference').textContent='Prévision physique GPX : '+(predictedNames[baseLevel]||'Indisponible')+' · Expérience réelle : '+last.effort+'/5. Les passages techniques ne sont pas déduits du GPX.';
+    let date='';
+    if(/^\d{4}-\d{2}-\d{2}$/.test(last.date||'')) date=last.date.slice(8,10)+'/'+last.date.slice(5,7)+'/'+last.date.slice(0,4);
+    $('rv-experience-footer').textContent=(date?'Dernière évaluation le '+date+'. ':'')+'Même fichier GPX, même profil. Ce retour est distinct du calcul physique et n’est jamais extrapolé automatiquement à d’autres sentiers.';
+    host.hidden=false;
+  }
   function renderVerdict(track) {
     const {points:pts,distances:ds,coarseTrack}=track;
     const total=ds.at(-1), status=$('verdict-status'), details=$('verdict-explanation'), locate=$('verdict-locate');
-    $('verdict-factors').replaceChildren();locate.hidden=true;locate.onclick=null;
+    $('verdict-factors').replaceChildren();locate.hidden=true;locate.onclick=null;if($('rv-experience'))$('rv-experience').hidden=true;
     if(!Number.isFinite(total)||total<100||pts.length<2){status.dataset.level='unknown';status.dataset.baseLevel='unknown';delete status.dataset.baseScore;status.textContent='Analyse indisponible';details.textContent='Trace trop courte.';return;}
     const bins=[];let totalRise=0, steepUp=0, verySteepUp=0, steepDown=0, maxUp=0, knownSpan=0;
     for(let a=0;a<total;a+=50){
@@ -81,8 +111,9 @@
         status.textContent='🔴 À éviter : référence terrain enregistrée';
         details.textContent='Tu as déjà évalué ce tracé comme « à éviter » pour ce profil. Ce retour réel prime sur le seul calcul physique du GPX ; les difficultés techniques ne sont pas détectables dans les altitudes.';
       }
-      addFactor('🥾 Déjà parcourue ('+terrainRef.date+') : ressenti '+terrainRef.effort+'/5 · '+(terrainRef.feeling==='avoid'?'à éviter':terrainRef.feeling==='repeat'?'à refaire avec plaisir':'exigeante mais faisable')+' · terrain : '+desc+'.');
+      // L'expérience vécue apparaît dans son encart dédié ci-dessous, sans doublon.
     }
+    renderPastExperience(active,baseLevel,level);
     if(correction)addFactor('🎯 Calibration personnelle : '+(correction>0?'+1':'−1')+' point sur le score, après '+adaptive.eligible+' randonnées distinctes. Le GPX et le niveau du profil sont inchangés.');
     addFactor('👤 Niveau analysé : '+(active?.name||'Référence')+' — '+(['Très débutant','Débutant','Bon marcheur','Aguerri','Expert'][chosenLevel])+(active?.temporary?' (simulation temporaire)':'')+'.');
     addFactor('↗ Montée cumulée estimée : +'+Math.round(totalRise)+' m · '+Math.round(steepUp)+' m à 15 % ou plus, dont '+Math.round(verySteepUp)+' m à 25 % ou plus.');
