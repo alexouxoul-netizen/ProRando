@@ -1,6 +1,6 @@
-/* RandoVista V9.4.6 TEST — calibration personnelle et audit des sorties.
+/* RandoVista V9.4.7 TEST — calibration physique et références terrain distinctes.
  * Local only, opt-in per profile, no GPX metric/experience-level mutation.
- * One distinct GPX = one observation; technical/unknown routes excluded.
+ * One distinct GPX = one physical observation; technical hikes retained as terrain references.
  */
 (() => {'use strict';
  const $=id=>document.getElementById(id);
@@ -16,7 +16,7 @@
   missingRoute:'Ancien retour : identité du GPX absente',
   differentLevel:'Niveau du profil différent, score de référence insuffisant',
   unknownPrediction:'Prévision GPX indisponible',
-  technical:'Terrain signalé (pierriers, exposition, boue ou passages techniques)',
+  technical:'Référence terrain conservée (non utilisée pour ajuster les pentes GPX)',
   ambiguous:'Difficulté ressentie absente ou invalide',
   duplicate:'Même tracé déjà représenté par un retour utilisable'
  };
@@ -70,13 +70,13 @@
  function analyze(hiker,list,config=settings){
   const none={offset:0,eligible:0,disagreements:0,agree:0,positive:0,negative:0,
    excluded:0,min:MIN,enabled:false,temporary:!!hiker?.temporary,
-   journalTotal:0,usableEvaluations:0,distinctTracks:0,ignored:{},audit:[]};
+   journalTotal:0,usableEvaluations:0,distinctTracks:0,terrainReferences:[],ignored:{},audit:[]};
   if(!hiker||typeof hiker.id!=='string'||!Number.isInteger(hiker.level))return none;
   const result={...none,enabled:own(config.enabled,hiker.id)&&config.enabled[hiker.id]===true};
   const cutoff=own(config.resetAt,hiker.id)?config.resetAt[hiker.id]:0;
   const ownEntries=list.filter(e=>e?.profileId===hiker.id);
   result.journalTotal=ownEntries.length;
-  const used=new Set(), known=new Set();
+  const used=new Set(), known=new Set(), terrainSeen=new Set();
   const rows=ownEntries.slice().sort((a,b)=>(b?.created||0)-(a?.created||0));
   function skip(e,reason){
    result.ignored[reason]=(result.ignored[reason]||0)+1;
@@ -91,7 +91,17 @@
    if(tier===null){
     skip(e,e.prediction?.profileLevel!==hiker.level?'differentLevel':'unknownPrediction');continue;
    }
-   if(e.terrain?.length){skip(e,'technical');continue;}
+   if(e.terrain?.length){
+    // Une expérience technique est un fait précieux, mais ses pierriers ne
+    // doivent pas être attribués automatiquement au dénivelé du GPX.
+    if(!terrainSeen.has(e.routeKey)){
+     terrainSeen.add(e.routeKey);
+     result.terrainReferences.push({route:String(e.route||'Randonnée').slice(0,100),
+      routeKey:e.routeKey,feeling:e.feeling,effort:e.effort,
+      terrain:e.terrain.slice(),date:e.date});
+    }
+    skip(e,'technical');continue;
+   }
    const obs=observedTier(e);
    if(obs===null){skip(e,'ambiguous');continue;}
    // Un GPX peut être effectué plusieurs fois : tous les retours restent dans
@@ -115,6 +125,13 @@
   }
   return result;
  }
+ function getReferenceForRoute(hiker, key){
+  if(!hiker||!key||hiker.temporary)return null;
+  const ownEntries=entries().filter(e=>e?.profileId===hiker.id&&e.routeKey===key&&Array.isArray(e.terrain)&&e.terrain.length);
+  ownEntries.sort((a,b)=>(b?.created||0)-(a?.created||0));
+  const e=ownEntries[0];
+  return e?{route:e.route,feeling:e.feeling,effort:e.effort,terrain:e.terrain.slice(),date:e.date,count:ownEntries.length}:null;
+ }
  function getAdjustment(hiker){
   const result=analyze(hiker,entries());
   return {...result,offset:result.enabled&&!result.temporary?result.offset:0};
@@ -131,7 +148,7 @@
   if(h?.temporary){compact.textContent='Pause';detail.textContent='Simulation temporaire : calibration suspendue. Aucun réglage n’est modifié.';}
   else if(data.eligible<MIN){
    compact.textContent=data.eligible+'/'+MIN+' sorties';
-   detail.textContent=data.eligible+' trace'+(data.eligible>1?'s':'')+' GPX exploitable'+(data.eligible>1?'s':'')+' sur '+MIN+' nécessaires. Les terrains techniques déclarés, les prévisions indisponibles et les difficultés ressenties invalides sont exclus.';
+   detail.textContent=data.eligible+' trace'+(data.eligible>1?'s':'')+' GPX exploitable'+(data.eligible>1?'s':'')+' sur '+MIN+' nécessaires pour ajuster les pentes. Les sorties techniques restent utilisées comme références terrain, visibles ci-dessous.';
   } else if(data.offset){
    compact.textContent=data.enabled?'Actif '+(data.offset>0?'+1':'−1'):'Prêt (désactivé)';
    detail.textContent=data.eligible+' traces distinctes retenues · '+data.positive+' sortie(s) plus exigeante(s) que prévu · '+data.negative+' moins exigeante(s) · '+data.agree+' cohérente(s). Proposition : '+(data.offset>0?'+1':'−1')+' point maximum au score du verdict.';
@@ -143,7 +160,26 @@
   // leur seule présence ne suffit pas à recalibrer une prévision GPX.
   const stats=$('adaptive-stats');
   if(stats)stats.textContent=data.journalTotal+' retour(s) dans le carnet de ce profil · '+
-   data.distinctTracks+' GPX identifié(s) · '+data.eligible+' trace(s) exploitable(s) pour le calibrage.';
+   data.distinctTracks+' GPX identifié(s) · '+data.eligible+' trace(s) utilisées pour le calibrage du relief · '+
+   data.terrainReferences.length+' référence(s) de terrain conservée(s).';
+  const terrainBox=$('adaptive-terrain-references');
+  if(terrainBox){
+   terrainBox.replaceChildren();
+   const headline=document.createElement('strong');
+   headline.textContent='Références terrain ('+data.terrainReferences.length+')';
+   terrainBox.append(headline);
+   const explain=document.createElement('p');
+   explain.textContent='Les randonnées avec pierriers, passages techniques, exposition ou boue restent des références de difficulté vécue. Elles servent à reconnaître un GPX déjà parcouru, sans fausser le calcul physique des autres traces.';
+   terrainBox.append(explain);
+   const legend={rocks:'pierriers',technical:'passages techniques',exposed:'exposition',mud:'boue / terrain glissant'};
+   const feelings={avoid:'À éviter pour ce profil',possible:'Exigeante mais faisable',repeat:'À refaire avec plaisir'};
+   for(const r of data.terrainReferences.slice(0,20)){
+    const line=document.createElement('p');
+    line.textContent='🥾 '+r.route+' — '+r.effort+'/5 · '+(feelings[r.feeling]||'Bilan enregistré')+' · '+r.terrain.map(t=>legend[t]||t).join(', ');
+    terrainBox.append(line);
+   }
+   if(data.terrainReferences.length>20){const line=document.createElement('p');line.textContent='… et '+(data.terrainReferences.length-20)+' autre(s).';terrainBox.append(line);}
+  }
   const audit=$('adaptive-audit-list');
   if(audit){
    audit.replaceChildren();
@@ -191,7 +227,7 @@
   persistSettings({version:944,enabled:{...s.enabled},resetAt:{...s.resetAt}});
   publishState();
  }
- window.RandoVistaAdaptive={getAdjustment,analyze,exportSettings,importSettings,validSettings,observedTier};
+ window.RandoVistaAdaptive={getAdjustment,getReferenceForRoute,analyze,exportSettings,importSettings,validSettings,observedTier};
  for(const ev of ['rv:profile-changed','rv:journal-changed','rv:calibration-changed'])window.addEventListener(ev,publishState);
  publishState();
 })();

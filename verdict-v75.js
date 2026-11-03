@@ -69,6 +69,20 @@
     status.dataset.level=level;
     status.textContent=level==='high'?'🔴 À éviter pour ce niveau':level==='moderate'?'🟠 Exigeante, mais potentiellement faisable':'🟢 A priori adaptée à ce niveau';
     details.textContent=level==='high'?'Plusieurs indicateurs d’effort dépassent les repères prudents définis pour les randonnées habituellement appréciées.':level==='moderate'?'Des passages demanderont un effort notable : vérifier les montées et prévoir des pauses.':'Le GPX ne montre pas de combinaison majeure de difficultés physiques selon les repères choisis.';
+    // Référence issue du carnet pour CE GPX exact et CE profil, distincte du
+    // calcul des pentes. Ne jamais extrapoler les pierriers à un autre tracé.
+    const activeKey=window.RandoVistaJournal?.getActiveRouteKey?.();
+    const terrainRef=window.RandoVistaAdaptive?.getReferenceForRoute?.(active,activeKey);
+    if(terrainRef){
+      const terrainNames={rocks:'pierriers',technical:'passages techniques',exposed:'passages exposés',mud:'terrain glissant'};
+      const desc=terrainRef.terrain.map(t=>terrainNames[t]||t).join(', ');
+      if(terrainRef.feeling==='avoid'){
+        status.dataset.level='high';
+        status.textContent='🔴 À éviter : référence terrain enregistrée';
+        details.textContent='Tu as déjà évalué ce tracé comme « à éviter » pour ce profil. Ce retour réel prime sur le seul calcul physique du GPX ; les difficultés techniques ne sont pas détectables dans les altitudes.';
+      }
+      addFactor('🥾 Déjà parcourue ('+terrainRef.date+') : ressenti '+terrainRef.effort+'/5 · '+(terrainRef.feeling==='avoid'?'à éviter':terrainRef.feeling==='repeat'?'à refaire avec plaisir':'exigeante mais faisable')+' · terrain : '+desc+'.');
+    }
     if(correction)addFactor('🎯 Calibration personnelle : '+(correction>0?'+1':'−1')+' point sur le score, après '+adaptive.eligible+' randonnées distinctes. Le GPX et le niveau du profil sont inchangés.');
     addFactor('👤 Niveau analysé : '+(active?.name||'Référence')+' — '+(['Très débutant','Débutant','Bon marcheur','Aguerri','Expert'][chosenLevel])+(active?.temporary?' (simulation temporaire)':'')+'.');
     addFactor('↗ Montée cumulée estimée : +'+Math.round(totalRise)+' m · '+Math.round(steepUp)+' m à 15 % ou plus, dont '+Math.round(verySteepUp)+' m à 25 % ou plus.');

@@ -107,3 +107,7 @@
 .adaptive-settings .adaptive-audit details{margin:8px 0;}
 .adaptive-settings .adaptive-audit ul{padding:0 0 0 20px;margin:6px 0 10px;font-size:12px;line-height:1.55;}
 .adaptive-settings .adaptive-audit li{margin:5px 0;overflow-wrap:anywhere;}
+
+/* V9.4.7 : références terrain conservées et distinctes du calibrage physique. */
+.adaptive-terrain-references{margin:12px 0;padding:12px;border:1px solid #c9d9c8;border-radius:12px;background:#f4f8f1;color:#254634;font-size:.88rem;line-height:1.45}.adaptive-terrain-references strong{display:block;margin-bottom:6px}.adaptive-terrain-references p{margin:6px 0;overflow-wrap:anywhere}
+@media(prefers-color-scheme:dark){.adaptive-terrain-references{background:#20392f;border-color:#42604f;color:#e1eddf}}

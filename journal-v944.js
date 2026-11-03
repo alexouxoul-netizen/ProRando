@@ -61,7 +61,7 @@ function snapshot(p){
  if(Number.isInteger(baseScore)&&baseScore>=0&&baseScore<=100&&status?.dataset.baseScore!=='')result.baseScore=baseScore;
  return result;
 }
-window.RandoVistaJournal={getEntries:()=>entries.slice()};
+window.RandoVistaJournal={getEntries:()=>entries.slice(),getActiveRouteKey:()=>routeKey(route())};
 function refresh(){
  const p=active(),r=route(),name=currentRouteName(),sim=!!p?.temporary;
  const ctx=$('journal-context');
