@@ -65,3 +65,11 @@
 
 /* RandoVista V9.3 : accueil simplifié, mobile first */
 .rv93-intro{padding:7px 7px 15px!important}.rv93-intro h2{font-size:clamp(23px,5.8vw,31px);line-height:1.18;max-width:100%;overflow-wrap:normal;margin:6px 0!important}.v91-cta{align-items:center}.v91-cta strong{margin:0 0 8px;font-size:clamp(18px,4.6vw,23px)}.rv93-actions{display:flex;flex-direction:column;gap:9px;flex:0 0 115px;align-items:stretch}.rv93-actions .v91-import{max-width:none;width:100%;min-height:47px}.rv93-library{background:transparent;color:#f7f4e9;border:1px solid #aec5b2;border-radius:12px;font-size:12px;font-weight:750;padding:11px 7px;min-height:43px}.summary-grade[hidden]{display:none!important}.summary-text strong{white-space:normal;overflow:visible;text-overflow:clip}.rv93-intro~.v91-cta{margin-bottom:13px}@media(max-width:360px){.rv93-actions{flex-basis:100px}.v91-cta{gap:9px;padding:14px}.rv93-intro h2{font-size:22px}}
+
+/* V9.4 chantier : le panneau d'import devient un bandeau discret après analyse. */
+.v91-cta.rv-route-ready{padding:11px 14px;border-radius:15px;gap:10px;margin-bottom:10px}
+.v91-cta.rv-route-ready strong{font-family:inherit;font-size:12px;margin:0 0 3px;opacity:.83}
+.v91-cta.rv-route-ready p{font-size:14px;font-weight:750;overflow-wrap:anywhere}
+.v91-cta.rv-route-ready .rv93-actions{flex-basis:93px;gap:5px}
+.v91-cta.rv-route-ready .v91-import{min-height:36px;padding:7px;font-size:11px}
+.v91-cta.rv-route-ready .rv93-library{min-height:34px;padding:6px;font-size:11px}

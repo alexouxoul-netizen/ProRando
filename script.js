@@ -221,8 +221,7 @@ fileInput.addEventListener('change', function (event) {
     const reader = new FileReader();
     reader.onload = function (loadEvent) {
         try {
-            lastGpxXml = loadEvent.target.result;
-            analyserGPX(lastGpxXml);
+            window.RandoVistaRoutes.load(loadEvent.target.result, file.name, "import");
         } catch (error) {
             console.error('Erreur pendant l’analyse GPX :', error);
             afficherErreur('Une erreur est survenue pendant la lecture du GPX. Vérifie que le fichier est valide.');
@@ -238,16 +237,14 @@ function analyserGPX(xmlString) {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
     if (xmlDoc.getElementsByTagName('parsererror').length) {
-        afficherErreur('Le fichier GPX semble invalide ou endommagé.');
-        return;
+        throw new Error('Le fichier GPX semble invalide ou endommagé.');
     }
 
     // Certains GPX contiennent une trace (trkpt), d’autres une route (rtept).
     let rawPoints = getElementsByLocalName(xmlDoc, 'trkpt');
     if (!rawPoints.length) rawPoints = getElementsByLocalName(xmlDoc, 'rtept');
     if (!rawPoints.length) {
-        afficherErreur('Aucun point de parcours trouvé dans ce fichier GPX.');
-        return;
+        throw new Error('Aucun point de parcours trouvé dans ce fichier GPX.');
     }
 
     const points = [];
@@ -266,8 +263,7 @@ function analyserGPX(xmlString) {
     }
 
     if (points.length < 2) {
-        afficherErreur('Le fichier doit contenir au moins deux points GPS valides.');
-        return;
+        throw new Error('Le fichier doit contenir au moins deux points GPS valides.');
     }
 
     currentLayerGroup.clearLayers();
@@ -642,4 +638,30 @@ map.on('locationfound', event => {
 map.on('locationerror', event => afficherErreur('Impossible d’obtenir votre position : ' + event.message));
 
 // Recalcule les statistiques après correction manuelle, sans demander de recharger le fichier.
-document.getElementById('distance-override')?.addEventListener('change', () => { if (lastGpxXml) analyserGPX(lastGpxXml); });
+document.getElementById('distance-override')?.addEventListener('change', () => { if (window.RandoVistaRoutes?.active?.xml) analyserGPX(window.RandoVistaRoutes.active.xml); });
+
+// Point d'entrée unique : un parcours n'est déclaré prêt qu'après analyse réussie.
+window.RandoVistaRoutes = (() => {
+  let active = null;
+  function publish(status, detail = {}) {
+    document.dispatchEvent(new CustomEvent('rv:route-state', {detail: {status, ...detail}}));
+  }
+  function load(xml, name, source = 'import') {
+    publish('loading', {name});
+    try {
+      analyserGPX(xml);
+      lastGpxXml = xml; // Compatibilité avec les fonctions existantes.
+      active = {xml, name: String(name || 'Randonnée').replace(/\.gpx$/i, ''), source};
+      document.getElementById('route-name').textContent = active.name + '.gpx';
+      document.dispatchEvent(new CustomEvent('pr:route-loaded', {detail: {name: active.name}}));
+      publish('ready', {name: active.name, source});
+      return true;
+    } catch (error) {
+      console.error('Échec du chargement GPX', error);
+      publish(active ? 'ready' : 'empty', active ? {name: active.name} : {});
+      afficherErreur(error?.message || 'Impossible d’analyser ce GPX.');
+      return false;
+    }
+  }
+  return {load, get active(){return active;}};
+})();
