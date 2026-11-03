@@ -33,6 +33,7 @@
  $('sheet-expand').addEventListener('click',()=>{showTab('prepare');$('profile-sheet').hidden=true;});
  $('map-fullscreen').addEventListener('click',()=>{document.querySelector('.app-shell').classList.toggle('map-full');resizeVisuals();});
 
+ $('rv93-library')?.addEventListener('click',()=>showTab('randos'));
  $('summary-toggle').addEventListener('click',()=>{const el=$('summary-expanded');el.hidden=!el.hidden;$('summary-toggle').setAttribute('aria-expanded',String(!el.hidden));});
  $('change-route').addEventListener('click',()=>{$('route-menu').open=false;$('gpx-file').click();});
  $('gpx-file').addEventListener('change',e=>{const f=e.target.files?.[0];if(f){$('route-name').textContent=f.name;$('summary-title').textContent=f.name.replace(/\.gpx$/i,'');$('route-menu').open=false;showTab('prepare');setTimeout(refreshSummary,200);setTimeout(refreshSummary,700);}});
@@ -41,14 +42,15 @@
    const route=txt('route-name');
    const loaded=route!=='Aucun parcours chargé' && route!=='—';
    const distance=txt('dist-total'), ascent=txt('d-plus');
-   $('summary-title').textContent=loaded?route.replace(/\.gpx$/i,''):'Prêt pour l’aventure ?';
+   $('summary-title').textContent=loaded?route.replace(/\.gpx$/i,''):'Aucun parcours sélectionné';
    $('summary-distance').textContent=distance==='-'||distance==='—'?'—':distance+' km';
    $('summary-ascent').textContent=ascent;
    $('summary-time').textContent=txt('walking-time');
    $('summary-effort').textContent=txt('effort-distance');
    const grade=txt('difficulty-level');
-   $('summary-grade').textContent=grade==='—'?'—/5':(grade.includes('/5')?grade:grade+'/5');
-   $('summary-subtitle').textContent=loaded?(distance==='-'||distance==='—'?'Analyse en cours…':distance+' km · D+ '+ascent):'Importe un fichier GPX pour commencer';
+   $('summary-grade').hidden=!loaded || grade==='—' || grade==='-' || grade==='';
+   $('summary-grade').textContent=grade==='—'?'':(grade.includes('/5')?grade:grade+'/5');
+   $('summary-subtitle').textContent=loaded?(distance==='-'||distance==='—'?'Analyse en cours…':distance+' km · D+ '+ascent):'Choisissez une randonnée pour afficher son analyse personnalisée.';
  }
  ['route-name','difficulty-level','dist-total','d-plus','walking-time','effort-distance'].forEach(id=>{
    new MutationObserver(refreshSummary).observe($(id),{childList:true,characterData:true,subtree:true});
