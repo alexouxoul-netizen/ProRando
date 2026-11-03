@@ -10,21 +10,31 @@
     return Number.isFinite(a)&&Number.isFinite(b)&&span>0 ? a+(b-a)*(d-ds[lo-1])/span : null;
   };
   const addFactor = (text) => {const div=document.createElement('div');div.className='verdict-factor';div.textContent=text;$('verdict-factors').append(div);};
-  window.addEventListener('pr-radar-data', e => {
-    const {points:pts,distances:ds,coarseTrack}=e.detail;
+  let lastTrack=null;
+  function renderVerdict(track) {
+    const {points:pts,distances:ds,coarseTrack}=track;
     const total=ds.at(-1), status=$('verdict-status'), details=$('verdict-explanation'), locate=$('verdict-locate');
     $('verdict-factors').replaceChildren();locate.hidden=true;locate.onclick=null;
     if(!Number.isFinite(total)||total<100||pts.length<2){status.textContent='Analyse indisponible';details.textContent='Trace trop courte.';return;}
-    const bins=[];let totalRise=0, steepUp=0, verySteepUp=0, steepDown=0, maxUp=0;
+    const bins=[];let totalRise=0, steepUp=0, verySteepUp=0, steepDown=0, maxUp=0, knownSpan=0;
     for(let a=0;a<total;a+=50){
       const b=Math.min(total,a+50),z0=altAt(pts,ds,a),z1=altAt(pts,ds,b);
       if(!Number.isFinite(z0)||!Number.isFinite(z1))continue;
+      knownSpan+=b-a;
       const slope=(z1-z0)/(b-a)*100,rise=Math.max(0,z1-z0);
       bins.push({a,b,slope,rise});totalRise+=rise;
       if(slope>=15)steepUp+=b-a;
       if(slope>=25)verySteepUp+=b-a;
       if(slope<=-15)steepDown+=b-a;
       maxUp=Math.max(maxUp,slope);
+    }
+    // Sans altitudes fiables, ne jamais afficher à tort un avis favorable.
+    if (knownSpan / total < 0.85) {
+      status.dataset.level='unknown';
+      status.textContent='⚪ Verdict indisponible : altitudes insuffisantes';
+      details.textContent='Cette trace ne contient pas assez de données altimétriques pour évaluer les pentes et les dénivelés. La distance GPS reste consultable.';
+      addFactor('⚠ Altitudes exploitables sur '+Math.round(knownSpan/total*100)+' % du parcours seulement.');
+      return;
     }
     // Groupes de montées : 3 % minimum, petites interruptions de 100 m tolérées.
     const climbs=[];let current=null;
@@ -58,5 +68,12 @@
     if(hardest)addFactor('🏔 Montée la plus éprouvante : km '+fmt(hardest.start)+' à '+fmt(hardest.end)+' · environ +'+Math.round(hardest.rise)+' m sur '+fmt(hardest.length)+' km.');
     if(coarseTrack)addFactor('⚠ Trace GPS peu détaillée : les passages courts et raides peuvent être sous-estimés.');
     if(hardest){locate.hidden=false;locate.onclick=()=>{const d=(hardest.start+hardest.end)/2;let lo=0,hi=ds.length-1;while(lo<hi){const mid=(lo+hi)>>1;if(ds[mid]<d)lo=mid+1;else hi=mid;}window.proRandoUI?.showMapPoint(lo);};}
+  }
+  window.addEventListener('pr-radar-data', event => {
+    lastTrack=event.detail;
+    renderVerdict(lastTrack);
+  });
+  window.addEventListener('rv:profile-changed', () => {
+    if (lastTrack) renderVerdict(lastTrack);
   });
 })();

@@ -272,6 +272,7 @@ function analyserGPX(xmlString) {
     let distance = 0;
     let dPlus = 0;
     let dMoins = 0;
+    let knownAltitudeMeters = 0;
     const uphill = { easy: 0, moderate: 0, hard: 0, extreme: 0 };
     const downhill = { easy: 0, moderate: 0, hard: 0, extreme: 0 };
     const distancesKm = [];
@@ -316,6 +317,7 @@ function analyserGPX(xmlString) {
             // Les D+ / D- restent calculés sur les altitudes GPX d'origine.
             // Seule la classification/coloration utilise une pente locale sur 30 m.
             if (segmentDistance > 0 && previous.elevation !== null && point.elevation !== null) {
+                knownAltitudeMeters += segmentDistance;
                 const elevationDifference = point.elevation - previous.elevation;
                 if (elevationDifference > 0) dPlus += elevationDifference;
                 else if (elevationDifference < 0) dMoins += Math.abs(elevationDifference);
@@ -449,8 +451,27 @@ function analyserGPX(xmlString) {
     setText('m-bleu3', Math.round(downhill.hard) + ' m');
     setText('m-violet', Math.round(downhill.extreme) + ' m');
 
-    // Affiche un indice d'effort et une durée indicative, sans prétendre évaluer la technicité.
-    calculateDifficulty(distance, dPlus, dMoins, uphill, analyzeClimbs(points, cumulativeDistances));
+    // Ne pas afficher une fausse note facile ou 0 m D+ quand le GPX manque d'altitudes.
+    // La carte et la distance GPS restent utilisables.
+    const altitudesSuffisantes = distance > 0 && knownAltitudeMeters / distance >= 0.85;
+    if (altitudesSuffisantes) {
+        // Note GPX historique conservée à l'identique si les altitudes sont exploitables.
+        calculateDifficulty(distance, dPlus, dMoins, uphill, analyzeClimbs(points, cumulativeDistances));
+    } else {
+        setText('gpx-quality', '⚠ Altitudes insuffisantes : environ ' +
+            Math.round(100 * knownAltitudeMeters / Math.max(1, distance)) +
+            ' % de la distance dispose d’une altitude exploitable. Distance GPS disponible, dénivelés et difficulté non estimables.');
+        ['d-plus', 'd-moins', 'up-total', 'down-total'].forEach(id => setText(id, '—'));
+        setText('difficulty-level', '—');
+        setText('difficulty-name', 'Altitudes insuffisantes');
+        setText('effort-distance', '—');
+        setText('walking-time', '—');
+        setText('difficulty-reason', 'Dénivelé et pentes non estimables depuis ce GPX');
+        setText('climb-warning', '⚠ Altitudes manquantes');
+        setText('longest-climb', '—');
+        const difficultyPanel = document.getElementById('difficulty');
+        if (difficultyPanel) delete difficultyPanel.dataset.level;
+    }
 
     // Radar V7.3 : échantillonnage par distance, sans toucher aux calculs historiques.
     window.dispatchEvent(new CustomEvent('pr-radar-data', { detail: {
