@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#0984e3">
+    <meta name="theme-color" content="#f3f7f1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Pro Rando</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="style.css">
@@ -18,50 +19,40 @@
     </script>
 </head>
 <body>
-    <header class="controls">
-        <label for="gpx-file" class="upload-btn">📂 Charger GPX</label>
-        <input type="file" id="gpx-file" accept=".gpx,application/gpx+xml">
-        <select id="layer-select" aria-label="Fond de carte">
-            <option value="osm">Standard</option>
-            <option value="topo">Topographique</option>
-        </select>
-        <button type="button" id="locate-button" class="locate-btn">◎ Ma position</button>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand"><span class="brand-icon">⌁</span><div><strong>Pro Rando</strong><small>Explorez en confiance</small></div></div>
+      <details class="route-menu" id="route-menu"><summary>☰ Parcours</summary><div class="route-popover">
+        <label for="gpx-file" class="menu-action">📂 Importer un GPX</label>
+        <button type="button" id="change-route" class="menu-action">↻ Changer de parcours</button>
+        <div class="menu-caption" id="route-name">Aucun parcours chargé</div>
+      </div></details>
+      <input type="file" id="gpx-file" accept=".gpx,application/gpx+xml">
     </header>
-
-    <section class="distance-correction" aria-label="Correction de distance GPS">
-      <label for="distance-override">Distance réelle connue (km, facultatif) :</label>
-      <input id="distance-override" type="number" min="0" max="100" step="0.1" placeholder="Ex. 15" inputmode="decimal">
-      <small id="distance-info">Laisser vide pour utiliser la distance du GPX.</small>
-    </section>
-    <section id="stats" aria-live="polite">
-        <b>Distance :</b> <span id="dist-total">-</span> km<br>
-        <b>D+ :</b> <span id="d-plus">-</span> &nbsp;|&nbsp; <b>D- :</b> <span id="d-moins">-</span>
-    </section>
-
-    <section id="repartition" aria-label="Répartition des pentes">
-        <b>D+ :</b> <span id="m-vert">0 m</span> &nbsp;|&nbsp; <span id="m-orange">0 m</span> &nbsp;|&nbsp; <span id="m-rouge">0 m</span> &nbsp;|&nbsp; <span id="m-noir">0 m</span><br>
-        <b>D- :</b> <span id="m-bleu1">0 m</span> &nbsp;|&nbsp; <span id="m-bleu2">0 m</span> &nbsp;|&nbsp; <span id="m-bleu3">0 m</span> &nbsp;|&nbsp; <span id="m-violet">0 m</span>
-    </section>
-
-    <p id="gpx-quality" class="analysis-notice" aria-live="polite">—</p>
-    <p id="descent-alert" class="descent-alert is-hidden" role="status"></p>
-    <p id="descent-warning" class="analysis-notice" aria-live="polite">—</p>
-    <section id="difficulty" aria-live="polite" aria-label="Difficulté estimée du parcours">
-        <div class="difficulty-heading">Difficulté estimée <span id="difficulty-level">—</span></div>
-        <div class="difficulty-main"><strong id="difficulty-name">En attente d'un GPX</strong><span id="effort-distance">— km-effort</span></div>
-        <div class="difficulty-details"><span>⏱ <b id="walking-time">—</b></span><span id="difficulty-reason">Charge physique estimée</span></div>
-        <div class="difficulty-details"><span id="climb-warning">—</span><span>↗ Plus longue montée : <b id="longest-climb">—</b></span></div>
-        <p class="difficulty-note">Estimation indicative, hors pauses. Le GPX ne renseigne pas la technicité du terrain ni les conditions météo.</p>
-    </section>
-
-    <main>
-        <div id="map" aria-label="Carte du parcours"></div>
-        <div id="chart-container"><canvas id="elevationChart" aria-label="Profil altimétrique"></canvas></div>
-    </main>
-
+    <button type="button" id="summary-toggle" class="summary-card" aria-expanded="false">
+      <span class="summary-text"><small>MON PARCOURS</small><strong id="summary-title">Prêt pour l'aventure ?</strong><span id="summary-subtitle">Importe un fichier GPX pour commencer</span></span>
+      <span class="summary-grade" id="summary-grade">—/5</span><span class="summary-chevron">⌄</span>
+    </button>
+    <section class="summary-expanded" id="summary-expanded" hidden><div class="summary-grid"><div>Distance <strong id="summary-distance">—</strong></div><div>Dénivelé + <strong id="summary-ascent">—</strong></div><div>Durée <strong id="summary-time">—</strong></div><div>Distance-effort <strong id="summary-effort">—</strong></div></div></section>
+    <div class="workspace">
+      <section class="view active" id="view-map" aria-label="Carte">
+        <div class="map-wrap"><div id="map" aria-label="Carte interactive du parcours"></div>
+          <div class="map-tools"><select id="layer-select" aria-label="Fond de carte"><option value="osm">Plan</option><option value="topo">Topo</option></select><button id="locate-button" type="button" aria-label="Ma position">◎</button><button id="map-fullscreen" type="button" aria-label="Plein écran carte">⛶</button></div>
+          <button id="map-profile-button" type="button" class="profile-fab">⌁ Explorer le profil</button>
+        </div>
+        <div id="profile-sheet" class="profile-sheet" hidden><div class="sheet-header"><strong>Profil altimétrique</strong><div><button type="button" id="sheet-expand" aria-label="Agrandir le profil">⛶</button><button type="button" id="sheet-close" aria-label="Fermer le profil">✕</button></div></div><div id="chart-slot-sheet" class="chart-slot"></div></div>
+      </section>
+      <section class="view content-view" id="view-profile" aria-label="Profil altimétrique" hidden><div class="section-title"><small>EXPLORATION DU RELIEF</small><h2>Profil altimétrique</h2><p>Fais glisser ton doigt sur la courbe pour retrouver le point sur la carte.</p></div><div class="content-card"><div id="chart-slot-profile" class="chart-slot"></div><button id="profile-on-map" type="button" class="primary-action">Explorer sur la carte ↗</button></div></section>
+      <section class="view content-view" id="view-difficulties" aria-label="Difficultés" hidden><div class="section-title"><small>PRÉPARER SA RANDONNÉE</small><h2>Passages à surveiller</h2></div><section id="difficulty" class="content-card" aria-live="polite"><div class="difficulty-heading">Difficulté estimée <span id="difficulty-level">—</span></div><div class="difficulty-main"><strong id="difficulty-name">En attente d'un GPX</strong><span id="effort-distance">— km-effort</span></div><div class="difficulty-details"><span>⏱ <b id="walking-time">—</b></span><span id="difficulty-reason">Charge physique estimée</span></div><div class="difficulty-details"><span id="climb-warning">—</span><span>↗ Plus longue montée : <b id="longest-climb">—</b></span></div><p class="difficulty-note">Estimation indicative, hors pauses. Le GPX ne renseigne pas la technicité du terrain ni les conditions météo.</p></section><p id="descent-alert" class="descent-alert is-hidden" role="status"></p><p id="descent-warning" class="analysis-notice" aria-live="polite">—</p></section>
+      <section class="view content-view" id="view-analysis" aria-label="Analyse" hidden><div class="section-title"><small>DONNÉES DU PARCOURS</small><h2>Analyse détaillée</h2></div><section class="content-card distance-correction" aria-label="Correction de distance GPS"><label for="distance-override">Distance réelle connue (km, facultatif)</label><input id="distance-override" type="number" min="0" max="100" step="0.1" placeholder="Ex. 15" inputmode="decimal"><small id="distance-info">Laisser vide pour utiliser la distance du GPX.</small></section><section id="stats" class="content-card" aria-live="polite"><b>Distance :</b> <span id="dist-total">-</span> km<br><b>D+ :</b> <span id="d-plus">-</span> &nbsp;|&nbsp; <b>D- :</b> <span id="d-moins">-</span></section><section id="repartition" class="content-card" aria-label="Répartition des pentes"><b>D+ :</b> <span id="m-vert">0 m</span> &nbsp;|&nbsp; <span id="m-orange">0 m</span> &nbsp;|&nbsp; <span id="m-rouge">0 m</span> &nbsp;|&nbsp; <span id="m-noir">0 m</span><br><b>D- :</b> <span id="m-bleu1">0 m</span> &nbsp;|&nbsp; <span id="m-bleu2">0 m</span> &nbsp;|&nbsp; <span id="m-bleu3">0 m</span> &nbsp;|&nbsp; <span id="m-violet">0 m</span></section><p id="gpx-quality" class="analysis-notice" aria-live="polite">—</p></section>
+    </div>
+    <nav class="bottom-nav" aria-label="Navigation principale"><button type="button" data-tab="map" class="active"><span>▱</span>Carte</button><button type="button" data-tab="profile"><span>⌁</span>Profil</button><button type="button" data-tab="difficulties"><span>⚠</span>Difficultés</button><button type="button" data-tab="analysis"><span>▥</span>Analyse</button></nav>
+  </div>
+  <div id="chart-container"><canvas id="elevationChart" aria-label="Profil altimétrique"></canvas></div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js?v=64"></script>
+    <script src="script.js?v=70"></script>
+    <script src="ui-v7.js?v=70"></script>
     <script>
       document.getElementById('layer-select').addEventListener('change', changeLayer);
     </script>

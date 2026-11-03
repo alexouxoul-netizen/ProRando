@@ -490,7 +490,17 @@ function analyserGPX(xmlString) {
                         afterBody: context => {
                             if (!context.length) return [];
                             const index = context[0].dataIndex;
-                            return ['D+ cumulé : ' + dPlusList[index] + ' m', 'D- cumulé : ' + dMoinsList[index] + ' m'];
+                            const local = index > 0 ? getLocalSlope(points, cumulativeDistances, index) : 0;
+                            const start = cumulativeDistances[index];
+                            const finish = Math.min(cumulativeDistances[cumulativeDistances.length - 1], start + 100);
+                            const a0 = elevationAtDistance(points, cumulativeDistances, start);
+                            const a1 = elevationAtDistance(points, cumulativeDistances, finish);
+                            const future = finish > start && Number.isFinite(a0) && Number.isFinite(a1) ? (a1-a0)/(finish-start)*100 : null;
+                            const direction = local > 1 ? 'Montée' : local < -1 ? 'Descente' : 'Plat';
+                            const lines = ['D+ cumulé : ' + dPlusList[index] + ' m', 'D- cumulé : ' + dMoinsList[index] + ' m'];
+                            if (Number.isFinite(local)) lines.push('Pente locale : ' + (local > 0 ? '+' : '') + local.toFixed(1) + '% (' + direction + ')' + (Math.abs(local) >= 15 ? ' ⚠ Forte pente' : ''));
+                            if (future !== null) lines.push('Prochains ' + Math.round(finish-start) + ' m : ' + (future > 0 ? '+' : '') + future.toFixed(1) + '% (moyenne)');
+                            return lines;
                         }
                     }
                 }
