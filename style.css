@@ -70,3 +70,10 @@ main { display: flex; flex: 1; min-height: 0; flex-direction: column; }
 /* V6.4 : avertissement lisible sans modifier les couleurs de la carte */
 .descent-alert { margin: 8px 0; padding: 10px 12px; border-left: 4px solid #c2410c; border-radius: 7px; background: #fff2e5; color: #7c2d12; font-size: .9rem; font-weight: 650; line-height: 1.4; }
 .descent-alert.is-hidden { display: none; }
+
+/* V6.5 : passages difficiles consultables sur la carte */
+.descent-list { margin: 7px 0; padding-left: 24px; }
+.descent-list li { margin: 3px 0; }
+.descent-jump { font: inherit; color: #7c2d12; background: #fff; border: 1px solid #e7b38f; border-radius: 6px; padding: 5px 9px; text-align: left; cursor: pointer; max-width: 100%; }
+.descent-jump:hover, .descent-jump:focus-visible { background: #ffe0c2; outline-offset: 2px; }
+.descent-alert small { display: block; font-weight: normal; margin-top: 5px; }

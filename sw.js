@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pro-rando-v64-20261103';
+const CACHE_NAME = 'pro-rando-v65-20261103';
 const APP_ASSETS = ['./', './index.html', './style.css', './script.js', './manifest.json', './icon.png'];
 
 self.addEventListener('install', event => {

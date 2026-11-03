@@ -11,6 +11,7 @@ const hoverMarker = L.circleMarker([0, 0], {
 let chart = null;
 let lastTrackPoints = [];
 let lastGpxXml = null;
+let selectedDescentLayer = null;
 
 // La pente est estimée sur une fenêtre locale plutôt qu'entre deux points GPS bruts.
 // Cela stabilise les couleurs sans modifier les altitudes ni les D+/D- cumulés.
@@ -131,6 +132,7 @@ function resetStats() {
     setText('descent-warning', '—');
     setText('descent-alert', '');
     document.getElementById('descent-alert')?.classList.add('is-hidden');
+    if (selectedDescentLayer) { map.removeLayer(selectedDescentLayer); selectedDescentLayer = null; }
     const panel = document.getElementById('difficulty');
     if (panel) delete panel.dataset.level;
 }
@@ -372,20 +374,57 @@ function analyserGPX(xmlString) {
     }
 
     if (currentSteepSection) steepDescentSections.push(currentSteepSection);
-    const significantDescents = steepDescentSections.filter(section => section.steepMeters >= 30);
-    significantDescents.sort((a, b) => b.steepMeters - a.steepMeters);
+    // Afficher jusqu'à trois passages significatifs, classés par longueur raide cumulée.
+    // Le classement est indépendant de la note globale et ne modifie aucune couleur.
+    const significantDescents = steepDescentSections
+        .filter(section => section.steepMeters >= 30)
+        .sort((a, b) => b.steepMeters - a.steepMeters || a.minSlope - b.minSlope)
+        .slice(0, 3);
     const descentAlert = document.getElementById('descent-alert');
+    if (selectedDescentLayer) { map.removeLayer(selectedDescentLayer); selectedDescentLayer = null; }
     if (descentAlert) {
+        descentAlert.replaceChildren();
         if (significantDescents.length) {
-            const section = significantDescents[0];
-            const startKm = (section.start / 1000).toFixed(1).replace('.', ',');
-            const endKm = (section.lastSteepEnd / 1000).toFixed(1).replace('.', ',');
-            descentAlert.textContent = '⚠ Passage difficile : descente raide vers le km ' + startKm + ' à ' + endKm +
-                ' (' + Math.round(section.steepMeters) + ' m de pente > 15 %, jusqu’à ' +
-                Math.abs(section.minSlope).toFixed(0) + ' % estimés). Prudence : pente calculée depuis le GPX, terrain non évalué.';
+            const heading = document.createElement('strong');
+            heading.textContent = '⚠ Passages de descente raide détectés — cliquer pour localiser';
+            descentAlert.appendChild(heading);
+            const list = document.createElement('ol');
+            list.className = 'descent-list';
+            for (const section of significantDescents) {
+                const item = document.createElement('li');
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'descent-jump';
+                const km = meters => (meters / 1000).toFixed(2).replace('.', ',');
+                button.textContent = 'Km ' + km(section.start) + '–' + km(section.lastSteepEnd) +
+                    ' · ' + Math.round(section.steepMeters) + ' m raides · jusqu’à ' +
+                    Math.abs(section.minSlope).toFixed(0) + ' % estimés';
+                button.addEventListener('click', () => {
+                    if (selectedDescentLayer) map.removeLayer(selectedDescentLayer);
+                    const sectionPoints = points.filter((point, index) =>
+                        cumulativeDistances[index] >= section.start && cumulativeDistances[index] <= section.lastSteepEnd
+                    ).map(point => point.latLng);
+                    // Inclure les deux points qui encadrent le passage, même s'il est court.
+                    const startIndex = Math.max(0, cumulativeDistances.findIndex(d => d >= section.start) - 1);
+                    let endIndex = cumulativeDistances.findIndex(d => d >= section.lastSteepEnd);
+                    if (endIndex < 0) endIndex = points.length - 1;
+                    sectionPoints.unshift(points[startIndex].latLng);
+                    sectionPoints.push(points[endIndex].latLng);
+                    selectedDescentLayer = L.polyline(sectionPoints, {
+                        color: '#ffde59', weight: 9, opacity: 0.85, interactive: false
+                    }).addTo(map);
+                    map.fitBounds(selectedDescentLayer.getBounds(), { padding: [65, 65], maxZoom: 16 });
+                    button.focus();
+                });
+                item.appendChild(button);
+                list.appendChild(item);
+            }
+            descentAlert.appendChild(list);
+            const note = document.createElement('small');
+            note.textContent = 'Pentes estimées depuis le GPX : terrain et sécurité non évalués.';
+            descentAlert.appendChild(note);
             descentAlert.classList.remove('is-hidden');
         } else {
-            descentAlert.textContent = '';
             descentAlert.classList.add('is-hidden');
         }
     }
