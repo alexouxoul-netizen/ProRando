@@ -1,4 +1,4 @@
-/* RandoVista V9.4.8 TEST — calibration physique et références terrain distinctes.
+/* RandoVista V9.4.9 TEST — calibration physique et références terrain distinctes.
  * Local only, opt-in per profile, no GPX metric/experience-level mutation.
  * One distinct GPX = one physical observation; technical hikes retained as terrain references.
  */
@@ -16,7 +16,6 @@
   missingRoute:'Ancien retour : identité du GPX absente',
   differentLevel:'Niveau du profil différent, score de référence insuffisant',
   unknownPrediction:'Prévision GPX indisponible',
-  technical:'Référence terrain conservée (hors calibrage du relief)',
   ambiguous:'Difficulté ressentie absente ou invalide',
   duplicate:'Même tracé déjà représenté par un retour utilisable'
  };
@@ -97,7 +96,8 @@
       routeKey:e.routeKey||null,linked:!!e.routeKey,feeling:e.feeling,effort:e.effort,
       terrain:e.terrain.slice(),date:e.date});
     }
-    skip(e,'technical');continue;
+    // Classée comme référence terrain, PAS comme sortie rejetée.
+    continue;
    }
    if(cutoff>0&&(e.created||0)<=cutoff){skip(e,'beforeReset');continue;}
    if(!e.routeKey){skip(e,'missingRoute');continue;}
@@ -118,7 +118,7 @@
    else result.agree++;
   }
   result.distinctTracks=known.size;
-  result.excluded=rows.length-result.eligible; // Inclut les références terrain, qui ne sont pas des rejets du carnet.
+  result.excluded=result.audit.length; // Exclusions réelles uniquement, hors références terrain.
   result.disagreements=result.positive+result.negative;
   // >=3 GPX différents, >=3 écarts de même sens et >=75 % des observations.
   if(result.eligible>=MIN){
@@ -163,7 +163,7 @@
   const stats=$('adaptive-stats');
   if(stats)stats.textContent=data.journalTotal+' retour(s) dans le carnet de ce profil · '+
    data.distinctTracks+' GPX identifié(s) · '+data.eligible+' trace(s) utilisées pour le calibrage du relief · '+
-   data.terrainReferences.length+' référence(s) de terrain conservée(s), dont '+data.terrainReferences.filter(r=>!r.linked).length+' ancienne(s) sans lien GPX.';
+   data.terrainReferences.length+' référence(s) de terrain conservée(s) · '+data.excluded+' retour(s) non retenu(s) · '+data.terrainReferences.filter(r=>!r.linked).length+' référence(s) sans lien GPX.';
   const terrainBox=$('adaptive-terrain-references');
   if(terrainBox){
    terrainBox.replaceChildren();
@@ -187,7 +187,7 @@
    audit.replaceChildren();
    const reasons=Object.entries(data.ignored).filter(([,n])=>n>0);
    if(!reasons.length){
-    const li=document.createElement('li');li.textContent='Aucune exclusion : tous les retours exploitables sont utilisés.';audit.append(li);
+    const li=document.createElement('li');li.textContent='Aucune autre sortie exclue. Les références terrain sont comptées séparément.';audit.append(li);
    } else {
     for(const [reason,count] of reasons){
      const li=document.createElement('li');
