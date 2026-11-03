@@ -6,9 +6,9 @@
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#f3f7f1" name="theme-color"/>
 <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
-<title>Pro Rando</title>
+<title>RandoVista</title>
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
-<link href="style.css?v=91" rel="stylesheet"/>
+<link href="style.css?v=92" rel="stylesheet"/>
 <link href="manifest.json" rel="manifest"/>
 <link href="icon.png" rel="apple-touch-icon"/>
 <script>
@@ -22,8 +22,8 @@
 <body>
 <div class="app-shell">
 <header class="app-header">
-<div class="brand"><span class="brand-icon">▲</span><div><strong>pro rando</strong><small>L’aventure à votre rythme</small></div></div>
-<details class="route-menu" id="route-menu"><summary>☰ Parcours</summary><div class="route-popover">
+<div class="brand"><span class="brand-icon">▲</span><div><strong>RandoVista</strong><small>L’aventure à votre rythme</small></div></div>
+<details class="route-menu" id="route-menu" hidden><summary>☰ Parcours</summary><div class="route-popover">
 <label class="menu-action" for="gpx-file">📂 Importer un GPX</label>
 <button class="menu-action" id="change-route" type="button">↻ Changer de parcours</button><button class="menu-action" disabled="" id="library-open" type="button">★ Ma bibliothèque</button>
 <div class="menu-caption" id="route-name">Aucun parcours chargé</div>
@@ -33,7 +33,7 @@
 
 
 <div class="workspace">
-<section aria-label="Préparer" class="view content-view v9-prepare active" id="view-prepare"><div class="section-title"><small>L’AVENTURE COMMENCE ICI</small><h2>Prêt à prendre les sentiers ?</h2><p>Choisis ton parcours, explore le terrain et pars l’esprit tranquille.</p></div><div class="v91-cta"><div><span class="v91-eyebrow">VOTRE ITINÉRAIRE</span><strong>La montagne commence ici.</strong><p>Importez une trace GPX ou retrouvez vos randonnées enregistrées.</p></div><label class="v91-import" for="gpx-file">＋ Importer un GPX</label></div><button aria-expanded="false" class="summary-card" id="summary-toggle" type="button">
+<section aria-label="Préparer" class="view content-view v9-prepare active" id="view-prepare"><div class="section-title"><small>L’AVENTURE COMMENCE ICI</small><h2>Prêt à prendre les sentiers ?</h2><p>Choisis ton parcours, explore le terrain et pars l’esprit tranquille.</p></div><div class="v91-cta"><div><span class="v91-eyebrow">VOTRE ITINÉRAIRE</span><strong>La randonnée commence ici.</strong><p>Importez une trace GPX ou retrouvez vos randonnées enregistrées.</p></div><label class="v91-import" for="gpx-file">＋ Importer un GPX</label></div><button aria-expanded="false" class="summary-card" id="summary-toggle" type="button">
 <span class="summary-text"><small>VOTRE PROCHAINE RANDONNÉE</small><strong id="summary-title">Prêt pour l'aventure ?</strong><span id="summary-subtitle">Importe un fichier GPX pour commencer</span></span>
 <span class="summary-grade" id="summary-grade">—/5</span><span class="summary-chevron">⌄</span>
 </button><section class="summary-expanded" hidden="" id="summary-expanded"><div class="summary-grid"><div>Distance <strong id="summary-distance">—</strong></div><div>Dénivelé + <strong id="summary-ascent">—</strong></div><div>Durée <strong id="summary-time">—</strong></div><div>Distance-effort <strong id="summary-effort">—</strong></div></div></section>
@@ -50,16 +50,16 @@
 <div id="chart-container"><canvas aria-label="Profil altimétrique" id="elevationChart"></canvas></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="script.js?v=91"></script>
-<script src="ui-v7.js?v=91"></script>
-<script src="radar-v73.js?v=91"></script>
-<script src="climbs-v74.js?v=91"></script>
-<script src="verdict-v75.js?v=91"></script>
-<script src="library-v8.js?v=91"></script>
-<script src="profiles-v81.js?v=91"></script>
-<script src="journal-v82.js?v=91"></script>
+<script src="script.js?v=92"></script>
+<script src="ui-v7.js?v=92"></script>
+<script src="radar-v73.js?v=92"></script>
+<script src="climbs-v74.js?v=92"></script>
+<script src="verdict-v75.js?v=92"></script>
+<script src="library-v8.js?v=92"></script>
+<script src="profiles-v81.js?v=92"></script>
+<script src="journal-v82.js?v=92"></script>
 <script>
       document.getElementById('layer-select').addEventListener('change', changeLayer);
     </script>
-<script src="v9.js?v=91"></script></body>
+<script src="v9.js?v=92"></script></body>
 </html>
