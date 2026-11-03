@@ -9,3 +9,11 @@
  // Une randonnée déjà chargée doit rester accessible dans Préparer.
  document.addEventListener('pr:route-loaded',()=>window.proRandoUI?.showTab('prepare'));
 })();
+
+/* V9.1 — retouches de navigation et confort de lecture */
+(()=>{
+ const $=id=>document.getElementById(id);
+ document.querySelector('.v91-import')?.addEventListener('click',()=>{$('route-menu').open=false;});
+ // When the route is loaded, keep the quick profile visible, close expanded settings.
+ document.addEventListener('pr:route-loaded',()=>{document.querySelector('.v91-settings')?.removeAttribute('open');});
+})();

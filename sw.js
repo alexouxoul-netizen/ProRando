@@ -1,5 +1,5 @@
-const CACHE_NAME = 'pro-rando-v90-20261103';
-const APP_ASSETS = ['./', './index.html', './style.css', './script.js', './ui-v7.js', './radar-v73.js', './climbs-v74.js', './verdict-v75.js', './library-v8.js', './profiles-v81.js', './journal-v82.js', './manifest.json', './icon.png'];
+const CACHE_NAME = 'pro-rando-v91-20261103';
+const APP_ASSETS = ['./', './index.html', './style.css', './script.js', './ui-v7.js', './radar-v73.js', './climbs-v74.js', './verdict-v75.js', './library-v8.js', './profiles-v81.js', './journal-v82.js', './v9.js', './manifest.json', './icon.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
