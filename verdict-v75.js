@@ -15,7 +15,7 @@
     const {points:pts,distances:ds,coarseTrack}=track;
     const total=ds.at(-1), status=$('verdict-status'), details=$('verdict-explanation'), locate=$('verdict-locate');
     $('verdict-factors').replaceChildren();locate.hidden=true;locate.onclick=null;
-    if(!Number.isFinite(total)||total<100||pts.length<2){status.textContent='Analyse indisponible';details.textContent='Trace trop courte.';return;}
+    if(!Number.isFinite(total)||total<100||pts.length<2){status.dataset.level='unknown';status.dataset.baseLevel='unknown';delete status.dataset.baseScore;status.textContent='Analyse indisponible';details.textContent='Trace trop courte.';return;}
     const bins=[];let totalRise=0, steepUp=0, verySteepUp=0, steepDown=0, maxUp=0, knownSpan=0;
     for(let a=0;a<total;a+=50){
       const b=Math.min(total,a+50),z0=altAt(pts,ds,a),z1=altAt(pts,ds,b);
@@ -30,7 +30,7 @@
     }
     // Sans altitudes fiables, ne jamais afficher à tort un avis favorable.
     if (knownSpan / total < 0.85) {
-      status.dataset.level='unknown';
+      status.dataset.level='unknown';status.dataset.baseLevel='unknown';delete status.dataset.baseScore;
       status.textContent='⚪ Verdict indisponible : altitudes insuffisantes';
       details.textContent='Cette trace ne contient pas assez de données altimétriques pour évaluer les pentes et les dénivelés. La distance GPS reste consultable.';
       addFactor('⚠ Altitudes exploitables sur '+Math.round(knownSpan/total*100)+' % du parcours seulement.');
@@ -57,11 +57,19 @@
     const active = window.proRandoProfiles?.getActive?.();
     const chosenLevel = Number.isInteger(active?.level) ? active.level : 1;
     const offsets = [3, 0, -2, -4, -6];
-    const adjustedScore = Math.max(0, score + offsets[Math.max(0,Math.min(4,chosenLevel))]);
+    const baselineScore = Math.max(0, score + offsets[Math.max(0,Math.min(4,chosenLevel))]);
+    const baseLevel=baselineScore>=7?'high':baselineScore>=3?'moderate':'low';
+    const adaptive=window.RandoVistaAdaptive?.getAdjustment?.(active);
+    const correction=Number.isInteger(adaptive?.offset)?Math.max(-1,Math.min(1,adaptive.offset)):0;
+    const adjustedScore=Math.max(0,baselineScore+correction);
     const level=adjustedScore>=7?'high':adjustedScore>=3?'moderate':'low';
+    // La prévision brute est conservée dans le carnet, même si le calibrage est activé.
+    status.dataset.baseLevel=baseLevel;
+    status.dataset.baseScore=String(baselineScore);
     status.dataset.level=level;
     status.textContent=level==='high'?'🔴 À éviter pour ce niveau':level==='moderate'?'🟠 Exigeante, mais potentiellement faisable':'🟢 A priori adaptée à ce niveau';
     details.textContent=level==='high'?'Plusieurs indicateurs d’effort dépassent les repères prudents définis pour les randonnées habituellement appréciées.':level==='moderate'?'Des passages demanderont un effort notable : vérifier les montées et prévoir des pauses.':'Le GPX ne montre pas de combinaison majeure de difficultés physiques selon les repères choisis.';
+    if(correction)addFactor('🎯 Calibration personnelle : '+(correction>0?'+1':'−1')+' point sur le score, après '+adaptive.eligible+' randonnées distinctes. Le GPX et le niveau du profil sont inchangés.');
     addFactor('👤 Niveau analysé : '+(active?.name||'Référence')+' — '+(['Très débutant','Débutant','Bon marcheur','Aguerri','Expert'][chosenLevel])+(active?.temporary?' (simulation temporaire)':'')+'.');
     addFactor('↗ Montée cumulée estimée : +'+Math.round(totalRise)+' m · '+Math.round(steepUp)+' m à 15 % ou plus, dont '+Math.round(verySteepUp)+' m à 25 % ou plus.');
     addFactor('↘ Descente à 15 % ou plus : '+Math.round(steepDown)+' m · Distance totale : '+fmt(total)+' km.');
@@ -73,7 +81,7 @@
     lastTrack=event.detail;
     renderVerdict(lastTrack);
   });
-  window.addEventListener('rv:profile-changed', () => {
-    if (lastTrack) renderVerdict(lastTrack);
-  });
+  for(const name of ['rv:profile-changed','rv:journal-changed','rv:calibration-changed']) {
+    window.addEventListener(name, () => {if(lastTrack)renderVerdict(lastTrack);});
+  }
 })();

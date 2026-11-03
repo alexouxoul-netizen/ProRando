@@ -88,3 +88,14 @@
 .journal-filter-label select{max-width:70%;font:inherit;font-size:12px;min-height:38px;padding:7px;border:1px solid var(--line);border-radius:10px;color:var(--ink);background:var(--bg);}
 .journal-entry .journal-route-match{display:inline-block;font-size:11px;font-weight:700;color:var(--accent);background:var(--soft);padding:4px 8px;border-radius:30px;margin:4px 0;}
 .journal-entry .journal-prediction{margin-top:6px;line-height:1.5;}
+
+/* V9.4.4 — calibration discrète, n'encombre pas Préparer lorsqu'elle est fermée. */
+.adaptive-settings{margin:13px 0 10px;border:1px solid var(--line);border-radius:13px;background:var(--surface);padding:0 12px;color:var(--ink);}
+.adaptive-settings>summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:46px;font-size:13px;font-weight:750;list-style-position:inside;}
+.adaptive-settings>summary span{font-size:11px;font-weight:650;color:var(--accent);text-align:right;}
+.adaptive-settings p{font-size:12px;line-height:1.5;margin:8px 0;color:var(--ink);}
+.adaptive-settings .adaptive-optin{display:flex;gap:9px;align-items:center;font-size:13px;font-weight:700;margin:12px 0;}
+.adaptive-optin input{width:19px;height:19px;accent-color:var(--accent);flex:0 0 auto;}
+.adaptive-settings button{font:inherit;font-size:12px;font-weight:700;padding:9px 12px;min-height:40px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;margin:6px 0 8px;}
+.adaptive-settings button:disabled{opacity:.45;}
+.adaptive-settings>small{display:block;font-size:11px;line-height:1.4;color:var(--muted);margin:3px 0 12px;}
