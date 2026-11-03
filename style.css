@@ -99,3 +99,11 @@
 .adaptive-settings button{font:inherit;font-size:12px;font-weight:700;padding:9px 12px;min-height:40px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;margin:6px 0 8px;}
 .adaptive-settings button:disabled{opacity:.45;}
 .adaptive-settings>small{display:block;font-size:11px;line-height:1.4;color:var(--muted);margin:3px 0 12px;}
+
+/* V9.4.5 — explications sur la prise en compte des évaluations */
+.adaptive-settings .adaptive-stats{font-weight:700;color:var(--accent);padding:7px 9px;border-radius:10px;background:var(--surface-2,var(--surface));border:1px solid var(--line);}
+.adaptive-settings .adaptive-audit{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:10px 0;padding:8px 0;}
+.adaptive-settings .adaptive-audit summary{cursor:pointer;font-size:12px;font-weight:700;padding:5px 0;}
+.adaptive-settings .adaptive-audit details{margin:8px 0;}
+.adaptive-settings .adaptive-audit ul{padding:0 0 0 20px;margin:6px 0 10px;font-size:12px;line-height:1.55;}
+.adaptive-settings .adaptive-audit li{margin:5px 0;overflow-wrap:anywhere;}

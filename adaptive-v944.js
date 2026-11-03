@@ -1,4 +1,4 @@
-/* RandoVista V9.4.4 TEST — calibration personnelle prudente.
+/* RandoVista V9.4.5 TEST — calibration personnelle et audit des sorties.
  * Local only, opt-in per profile, no GPX metric/experience-level mutation.
  * One distinct GPX = one observation; technical/unknown routes excluded.
  */
@@ -7,6 +7,19 @@
  const KEY='randovista-calibration-v944';
  const MIN=3;
  const TIERS={low:0,moderate:1,high:2};
+ // Même échelle que le calcul de verdict : permet la comparaison à niveau actuel
+ // lorsque le carnet a mémorisé le score brut (V9.4.4 et suivantes).
+ const LEVEL_OFFSETS=[3,0,-2,-4,-6];
+ const REASON_LABELS={
+  beforeReset:'Avant remise à zéro',
+  missingPrediction:'Ancien retour : prévision non enregistrée',
+  missingRoute:'Ancien retour : identité du GPX absente',
+  differentLevel:'Niveau du profil différent, score de référence insuffisant',
+  unknownPrediction:'Prévision GPX indisponible',
+  technical:'Terrain signalé (pierriers, exposition, boue ou passages techniques)',
+  ambiguous:'Ressenti non classable sans supposition',
+  duplicate:'Même tracé déjà représenté par un retour utilisable'
+ };
  const empty=()=>({version:944,enabled:{},resetAt:{}});
  const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
  const dict=v=>v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
@@ -28,42 +41,73 @@
  function active(){return window.proRandoProfiles?.getActive?.()||null;}
  function entries(){return window.RandoVistaJournal?.getEntries?.()||[];}
  function observedTier(e){
-  // Seules les expériences sans difficulté de terrain signalée peuvent calibrer un modèle purement GPX.
+  // Ne pas apprendre de conditions/terrain inconnus du GPX.
   if(e.terrain?.length)return null;
-  if(e.feeling==='avoid'&&e.effort>=4&&(e.up==='hard'||e.down==='hard'))return 2;
-  if(e.feeling==='repeat'&&e.effort<=2&&e.up==='easy'&&e.down==='easy')return 0;
+  // Le bilan ressenti et la note de difficulté prévalent sur la manière précise
+  // dont l'effort a été distribué entre montées et descentes.
+  if(e.feeling==='avoid'&&e.effort>=4)return 2;
+  if(e.feeling==='repeat'&&e.effort<=2)return 0;
   if(e.feeling==='possible'&&e.effort>=3&&e.effort<=4)return 1;
-  return null; // Résultat ambigu, ne pas forcer un apprentissage.
+  return null;
+ }
+ function tierAtCurrentLevel(p,currentLevel){
+  if(!p||!Number.isInteger(p.profileLevel)||p.profileLevel<0||p.profileLevel>4)return null;
+  if(p.profileLevel===currentLevel){
+   const base=p.baseTier||p.tier;
+   return own(TIERS,base)?base:null;
+  }
+  // Ne JAMAIS inventer une prévision historique. On recalcule uniquement si
+  // la prévision a conservé son score brut et si le clamp à 0 n'a pas perdu
+  // d'information (c'est-à-dire score>0 ou ancien offset >= 0).
+  if(!Number.isInteger(p.baseScore)||p.baseScore<0||p.baseScore>100||
+      (p.baseScore===0&&LEVEL_OFFSETS[p.profileLevel]<0))return null;
+  const intrinsic=p.baseScore-LEVEL_OFFSETS[p.profileLevel];
+  if(intrinsic<0)return null;
+  const score=Math.max(0,intrinsic+LEVEL_OFFSETS[currentLevel]);
+  return score>=7?'high':score>=3?'moderate':'low';
  }
  function analyze(hiker,list,config=settings){
-  const none={offset:0,eligible:0,disagreements:0,agree:0,positive:0,negative:0,excluded:0,min:MIN,enabled:false,temporary:!!hiker?.temporary};
+  const none={offset:0,eligible:0,disagreements:0,agree:0,positive:0,negative:0,
+   excluded:0,min:MIN,enabled:false,temporary:!!hiker?.temporary,
+   journalTotal:0,usableEvaluations:0,distinctTracks:0,ignored:{},audit:[]};
   if(!hiker||typeof hiker.id!=='string'||!Number.isInteger(hiker.level))return none;
   const result={...none,enabled:own(config.enabled,hiker.id)&&config.enabled[hiker.id]===true};
   const cutoff=own(config.resetAt,hiker.id)?config.resetAt[hiker.id]:0;
   const ownEntries=list.filter(e=>e?.profileId===hiker.id);
-  const distinct=new Map();
-  for(const e of ownEntries){
-   const p=e.prediction;
-   if(!e.routeKey||!p||p.profileLevel!==hiker.level||(e.created||0)<=cutoff||
-      !own(TIERS,p.baseTier||p.tier)||!Number.isFinite(e.created)){
-     result.excluded++;continue;
-   }
-   const current=distinct.get(e.routeKey);
-   if(!current||current.created<e.created)distinct.set(e.routeKey,e);
+  result.journalTotal=ownEntries.length;
+  const used=new Set(), known=new Set();
+  const rows=ownEntries.slice().sort((a,b)=>(b?.created||0)-(a?.created||0));
+  function skip(e,reason){
+   result.ignored[reason]=(result.ignored[reason]||0)+1;
+   result.audit.push({route:String(e?.route||'Randonnée sans nom').slice(0,100),reason});
   }
-  for(const e of distinct.values()){
+  for(const e of rows){
+   if(e.routeKey)known.add(e.routeKey);
+   if(cutoff>0&&(e.created||0)<=cutoff){skip(e,'beforeReset');continue;}
+   if(!e.routeKey){skip(e,'missingRoute');continue;}
+   if(!e.prediction){skip(e,'missingPrediction');continue;}
+   const tier=tierAtCurrentLevel(e.prediction,hiker.level);
+   if(tier===null){
+    skip(e,e.prediction?.profileLevel!==hiker.level?'differentLevel':'unknownPrediction');continue;
+   }
+   if(e.terrain?.length){skip(e,'technical');continue;}
    const obs=observedTier(e);
-   if(obs===null){result.excluded++;continue;}
-   const predicted=TIERS[e.prediction.baseTier||e.prediction.tier];
-   const vote=Math.sign(obs-predicted);
+   if(obs===null){skip(e,'ambiguous');continue;}
+   // Un GPX peut être effectué plusieurs fois : tous les retours restent dans
+   // le carnet, mais un même tracé ne pèse qu'une fois dans l'ajustement.
+   result.usableEvaluations++;
+   if(used.has(e.routeKey)){skip(e,'duplicate');continue;}
+   used.add(e.routeKey);
    result.eligible++;
+   const vote=Math.sign(obs-TIERS[tier]);
    if(vote>0)result.positive++;
    else if(vote<0)result.negative++;
    else result.agree++;
   }
+  result.distinctTracks=known.size;
+  result.excluded=rows.length-result.eligible;
   result.disagreements=result.positive+result.negative;
-  // ≥3 GPX différents, ≥3 écarts de même sens, ≥75 % des observations : correction ±1 maximum.
-  // Le simple ajout d'une observation ne peut provoquer un saut de plusieurs niveaux.
+  // >=3 GPX différents, >=3 écarts de même sens et >=75 % des observations.
   if(result.eligible>=MIN){
    if(result.positive>=3&&result.positive/result.eligible>=0.75&&result.positive-result.negative>=3)result.offset=1;
    else if(result.negative>=3&&result.negative/result.eligible>=0.75&&result.negative-result.positive>=3)result.offset=-1;
@@ -83,8 +127,8 @@
   reset.disabled=!h||!!h.temporary;
   const name=h?.name||'ce profil';
   desc.textContent='Calibrage facultatif pour '+name+'. Les mesures GPX et le niveau enregistré ne changent jamais.';
-  if(h?.temporary){compact.textContent='Pause';detail.textContent='Simulation temporaire : calibration suspendue. Aucun réglage n’est modifié.';return;}
-  if(data.eligible<MIN){
+  if(h?.temporary){compact.textContent='Pause';detail.textContent='Simulation temporaire : calibration suspendue. Aucun réglage n’est modifié.';}
+  else if(data.eligible<MIN){
    compact.textContent=data.eligible+'/'+MIN+' sorties';
    detail.textContent=data.eligible+' trace'+(data.eligible>1?'s':'')+' GPX exploitable'+(data.eligible>1?'s':'')+' sur '+MIN+' nécessaires. Les passages techniques déclarés, les prévisions indisponibles et les résultats ambigus sont exclus.';
   } else if(data.offset){
@@ -93,6 +137,35 @@
   } else {
    compact.textContent=data.enabled?'Observation':'Désactivé';
    detail.textContent=data.eligible+' traces distinctes retenues, mais pas de tendance suffisamment constante pour ajuster le verdict. Les règles de départ restent appliquées.';
+  }
+  // Transparence : les anciennes randonnées restent dans le carnet, mais
+  // leur seule présence ne suffit pas à recalibrer une prévision GPX.
+  const stats=$('adaptive-stats');
+  if(stats)stats.textContent=data.journalTotal+' retour(s) dans le carnet de ce profil · '+
+   data.distinctTracks+' GPX identifié(s) · '+data.eligible+' trace(s) exploitable(s) pour le calibrage.';
+  const audit=$('adaptive-audit-list');
+  if(audit){
+   audit.replaceChildren();
+   const reasons=Object.entries(data.ignored).filter(([,n])=>n>0);
+   if(!reasons.length){
+    const li=document.createElement('li');li.textContent='Aucune exclusion : tous les retours exploitables sont utilisés.';audit.append(li);
+   } else {
+    for(const [reason,count] of reasons){
+     const li=document.createElement('li');
+     li.textContent=count+' × '+(REASON_LABELS[reason]||reason);
+     audit.append(li);
+    }
+   }
+  }
+  const detailList=$('adaptive-audit-routes');
+  if(detailList){
+   detailList.replaceChildren();
+   for(const item of data.audit.slice(0,25)){
+    const li=document.createElement('li');
+    li.textContent=item.route+' — '+(REASON_LABELS[item.reason]||item.reason);
+    detailList.append(li);
+   }
+   if(data.audit.length>25){const li=document.createElement('li');li.textContent='… et '+(data.audit.length-25)+' autre(s).';detailList.append(li);}
   }
  }
  $('adaptive-enable')?.addEventListener('change',event=>{
