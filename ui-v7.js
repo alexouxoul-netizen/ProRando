@@ -33,16 +33,24 @@
  $('sheet-expand').addEventListener('click',()=>{showTab('prepare');$('profile-sheet').hidden=true;});
  $('map-fullscreen').addEventListener('click',()=>{document.querySelector('.app-shell').classList.toggle('map-full');resizeVisuals();});
 
- $('rv93-library')?.addEventListener('click',()=>showTab('randos'));
+ $('rv93-library')?.addEventListener('click',()=>{
+   // Passer par le module bibliothèque pour rafraîchir les randonnées enregistrées.
+   if(!$('library-open').disabled) $('library-open').click();
+   else showTab('randos');
+ });
  $('summary-toggle').addEventListener('click',()=>{const el=$('summary-expanded');el.hidden=!el.hidden;$('summary-toggle').setAttribute('aria-expanded',String(!el.hidden));});
  $('change-route').addEventListener('click',()=>{$('route-menu').open=false;$('gpx-file').click();});
  $('gpx-file').addEventListener('change',e=>{const f=e.target.files?.[0];if(f){$('route-name').textContent=f.name;$('summary-title').textContent=f.name.replace(/\.gpx$/i,'');$('route-menu').open=false;showTab('prepare');setTimeout(refreshSummary,200);setTimeout(refreshSummary,700);}});
  function refreshSummary(){
    const txt=id=>$(id)?.textContent?.trim()||'—';
+   const selectedFile=$('gpx-file')?.files?.[0];
    const route=txt('route-name');
-   const loaded=route!=='Aucun parcours chargé' && route!=='—';
+   const hasRouteName=route!=='Aucun parcours chargé' && route!=='—';
+   const hasAnalysis=txt('dist-total')!=='-' && txt('dist-total')!=='—';
+   const loaded=hasRouteName || !!selectedFile || hasAnalysis;
+   const routeLabel=hasRouteName?route:(selectedFile?.name || (hasAnalysis?'Parcours chargé':'Aucun parcours sélectionné'));
    const distance=txt('dist-total'), ascent=txt('d-plus');
-   $('summary-title').textContent=loaded?route.replace(/\.gpx$/i,''):'Aucun parcours sélectionné';
+   $('summary-title').textContent=loaded?routeLabel.replace(/\.gpx$/i,''):'Aucun parcours sélectionné';
    $('summary-distance').textContent=distance==='-'||distance==='—'?'—':distance+' km';
    $('summary-ascent').textContent=ascent;
    $('summary-time').textContent=txt('walking-time');
@@ -61,7 +69,10 @@
  $('descent-alert').addEventListener('click',e=>{if(e.target.closest('.descent-jump')){showTab('prepare');setTimeout(resizeVisuals,60);}},true);
  // Le profil doit rester présent dans un conteneur visible lors de l'import.
  moveChart($('chart-slot-compare'));showTab('prepare');
- document.addEventListener('pr:route-loaded',e=>{showTab('prepare');setTimeout(refreshSummary,150);setTimeout(refreshSummary,600);});
+ document.addEventListener('pr:route-loaded',e=>{
+   if(e.detail?.name) $('route-name').textContent=e.detail.name.replace(/\.gpx$/i,'')+'.gpx';
+   showTab('prepare');refreshSummary();setTimeout(refreshSummary,150);setTimeout(refreshSummary,600);
+ });
  window.proRandoUI={showTab,showMapPoint:(index)=>{
    showTab('prepare');
    $('profile-sheet').hidden=true;
