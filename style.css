@@ -158,3 +158,29 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 
 /* V9.8 : explication de la calibration appliquée au GPX courant */
 .adaptive-context{padding:11px 13px;border-radius:11px;background:rgba(46,115,72,.09);border:1px solid rgba(46,115,72,.2);font-size:.88rem;line-height:1.45;overflow-wrap:anywhere;}
+
+/* V10 — Tableau de bord sobre, limité à la lecture du carnet */
+.rv-dashboard{margin-bottom:18px;padding:18px;}
+.rv-dashboard-head,.rv-dashboard-title{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.rv-dashboard-head small{font-size:.7rem;letter-spacing:.09em;color:var(--muted,#6c8172);}
+.rv-dashboard-head h3{margin:4px 0 0;font-size:1.35rem;}
+.rv-dashboard-pill{border-radius:99px;padding:6px 10px;background:#e6efe4;color:#24573a;font-size:.75rem;font-weight:700;}
+.rv-dashboard-filter{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;font-size:.88rem;flex-wrap:wrap;}
+.rv-dashboard-filter select{max-width:100%;min-height:42px;padding:8px;border-radius:10px;}
+.rv-dashboard-context{color:var(--muted,#607565);font-size:.85rem;margin:10px 0;}
+.rv-dashboard-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px;}
+.rv-dashboard-kpis>div{background:#edf3e9;border:1px solid #dae5d6;border-radius:14px;padding:13px;min-width:0;}
+.rv-dashboard-kpis small{display:block;font-size:.66rem;font-weight:700;letter-spacing:.035em;color:#50725b;}
+.rv-dashboard-kpis strong{display:block;margin-top:6px;color:#224f36;font-size:1.65rem;line-height:1.2;}
+.rv-dashboard-distance,.rv-dashboard-note{font-size:.8rem;line-height:1.5;color:var(--muted,#667567);}
+.rv-dashboard-section{margin-top:18px;}
+.rv-dashboard-title strong{font-size:.95rem;}
+.rv-dashboard-title button{border:1px solid #aec8b4;background:transparent;border-radius:10px;padding:9px 11px;font:inherit;font-size:.8rem;color:inherit;cursor:pointer;}
+.rv-dashboard-recent{margin-top:10px;}
+.rv-dashboard-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid #dce7d9;}
+.rv-dashboard-entry>div{min-width:0;}.rv-dashboard-entry strong,.rv-dashboard-entry small{display:block;overflow-wrap:anywhere;}
+.rv-dashboard-entry strong{font-size:.9rem;}.rv-dashboard-entry small{font-size:.77rem;color:var(--muted,#627467);margin-top:4px;}
+.rv-dashboard-grade{white-space:nowrap;background:#e6efe4;color:#275439;border-radius:10px;padding:7px 9px;font-weight:700;font-size:.88rem;}
+.rv-dashboard-empty{font-size:.85rem;color:var(--muted,#627467);}
+@media(max-width:350px){.rv-dashboard{padding:12px;}.rv-dashboard-kpis strong{font-size:1.35rem;}}
+@media(prefers-color-scheme:dark){.rv-dashboard-kpis>div,.rv-dashboard-pill,.rv-dashboard-grade{background:#274735;color:#e3efe0;border-color:#43644a;}.rv-dashboard-kpis small,.rv-dashboard-kpis strong{color:#e3efe0;}}

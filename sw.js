@@ -1,6 +1,6 @@
 // RandoVista V9.8 TEST — priorité au réseau pour charger les corrections publiées.
-const CACHE_NAME = 'randovista-v980-test-20261103';
-const APP_ASSETS = ['./', './index.html', './style.css', './script.js', './ui-v7.js', './radar-v73.js', './climbs-v74.js', './verdict-v75.js', './library-v8.js', './profiles-v81.js', './journal-v944.js', './adaptive-v944.js', './v9.js', './polish-v97.js', './manifest.json', './icon.png', './icon-512.png'];
+const CACHE_NAME = 'randovista-v1000-test-20261103';
+const APP_ASSETS = ['./', './index.html', './style.css', './script.js', './ui-v7.js', './radar-v73.js', './climbs-v74.js', './verdict-v75.js', './library-v8.js', './profiles-v81.js', './journal-v944.js', './adaptive-v944.js', './v9.js', './polish-v97.js', './dashboard-v100.js', './manifest.json', './icon.png', './icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_ASSETS)).then(() => self.skipWaiting()));
 });
