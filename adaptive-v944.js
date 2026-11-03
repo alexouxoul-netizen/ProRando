@@ -1,4 +1,4 @@
-/* RandoVista V9.4.5 TEST — calibration personnelle et audit des sorties.
+/* RandoVista V9.4.6 TEST — calibration personnelle et audit des sorties.
  * Local only, opt-in per profile, no GPX metric/experience-level mutation.
  * One distinct GPX = one observation; technical/unknown routes excluded.
  */
@@ -17,7 +17,7 @@
   differentLevel:'Niveau du profil différent, score de référence insuffisant',
   unknownPrediction:'Prévision GPX indisponible',
   technical:'Terrain signalé (pierriers, exposition, boue ou passages techniques)',
-  ambiguous:'Ressenti non classable sans supposition',
+  ambiguous:'Difficulté ressentie absente ou invalide',
   duplicate:'Même tracé déjà représenté par un retour utilisable'
  };
  const empty=()=>({version:944,enabled:{},resetAt:{}});
@@ -41,14 +41,15 @@
  function active(){return window.proRandoProfiles?.getActive?.()||null;}
  function entries(){return window.RandoVistaJournal?.getEntries?.()||[];}
  function observedTier(e){
-  // Ne pas apprendre de conditions/terrain inconnus du GPX.
-  if(e.terrain?.length)return null;
-  // Le bilan ressenti et la note de difficulté prévalent sur la manière précise
-  // dont l'effort a été distribué entre montées et descentes.
-  if(e.feeling==='avoid'&&e.effort>=4)return 2;
-  if(e.feeling==='repeat'&&e.effort<=2)return 0;
-  if(e.feeling==='possible'&&e.effort>=3&&e.effort<=4)return 1;
-  return null;
+  // La difficulté physique (1–5) et le plaisir de refaire un parcours sont
+  // deux notions distinctes. Une sortie notée 3/5 et « à refaire avec plaisir »
+  // reste une observation modérée, jamais une combinaison contradictoire.
+  // Les terrains techniques restent exclus du calibrage des seules pentes GPX.
+  if(e?.terrain?.length)return null;
+  if(!Number.isInteger(e?.effort)||e.effort<1||e.effort>5)return null;
+  if(e.effort<=2)return 0;
+  if(e.effort===3)return 1;
+  return 2;
  }
  function tierAtCurrentLevel(p,currentLevel){
   if(!p||!Number.isInteger(p.profileLevel)||p.profileLevel<0||p.profileLevel>4)return null;
@@ -130,7 +131,7 @@
   if(h?.temporary){compact.textContent='Pause';detail.textContent='Simulation temporaire : calibration suspendue. Aucun réglage n’est modifié.';}
   else if(data.eligible<MIN){
    compact.textContent=data.eligible+'/'+MIN+' sorties';
-   detail.textContent=data.eligible+' trace'+(data.eligible>1?'s':'')+' GPX exploitable'+(data.eligible>1?'s':'')+' sur '+MIN+' nécessaires. Les passages techniques déclarés, les prévisions indisponibles et les résultats ambigus sont exclus.';
+   detail.textContent=data.eligible+' trace'+(data.eligible>1?'s':'')+' GPX exploitable'+(data.eligible>1?'s':'')+' sur '+MIN+' nécessaires. Les terrains techniques déclarés, les prévisions indisponibles et les difficultés ressenties invalides sont exclus.';
   } else if(data.offset){
    compact.textContent=data.enabled?'Actif '+(data.offset>0?'+1':'−1'):'Prêt (désactivé)';
    detail.textContent=data.eligible+' traces distinctes retenues · '+data.positive+' sortie(s) plus exigeante(s) que prévu · '+data.negative+' moins exigeante(s) · '+data.agree+' cohérente(s). Proposition : '+(data.offset>0?'+1':'−1')+' point maximum au score du verdict.';
