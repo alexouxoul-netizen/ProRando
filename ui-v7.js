@@ -31,6 +31,7 @@
  $('descent-alert').addEventListener('click',e=>{if(e.target.closest('.descent-jump')){showTab('map');setTimeout(resizeVisuals,60);}},true);
  // Le profil doit rester présent dans un conteneur visible lors de l'import.
  moveChart($('chart-slot-profile'));showTab('map');
- window.proRandoUI={showMapPoint:(index)=>{showTab('map');$('profile-sheet').hidden=true;moveChart($('chart-slot-profile'));if(Number.isInteger(index))window.proRandoRelief?.select(index);requestAnimationFrame(()=>{map.invalidateSize();window.proRandoRelief?.focusOnMap();});}};
+ document.addEventListener('pr:route-loaded',e=>{showTab('map');setTimeout(refreshSummary,150);setTimeout(refreshSummary,600);});
+ window.proRandoUI={showTab,showMapPoint:(index)=>{showTab('map');$('profile-sheet').hidden=true;moveChart($('chart-slot-profile'));if(Number.isInteger(index))window.proRandoRelief?.select(index);requestAnimationFrame(()=>{map.invalidateSize();window.proRandoRelief?.focusOnMap();});}};
  window.addEventListener('resize',resizeVisuals);
 })();
