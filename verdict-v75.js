@@ -42,10 +42,17 @@
     if(verySteepUp>=150)score+=2;else if(verySteepUp>=50)score++;
     if(hardest&&hardest.rise>=300)score+=2;else if(hardest&&hardest.rise>=160)score++;
     if(steepDown>=500)score+=2;else if(steepDown>=200)score++;
-    const level=score>=7?'high':score>=3?'moderate':'low';
+    // Ajustement indicatif de la sensibilité selon le niveau actif.
+    // Les indicateurs physiques GPX restent inchangés.
+    const active = window.proRandoProfiles?.getActive?.();
+    const chosenLevel = Number.isInteger(active?.level) ? active.level : 1;
+    const offsets = [3, 0, -2, -4, -6];
+    const adjustedScore = Math.max(0, score + offsets[Math.max(0,Math.min(4,chosenLevel))]);
+    const level=adjustedScore>=7?'high':adjustedScore>=3?'moderate':'low';
     status.dataset.level=level;
-    status.textContent=level==='high'?'🔴 À éviter pour le niveau de référence':level==='moderate'?'🟠 Exigeante, mais potentiellement faisable':'🟢 A priori adaptée au niveau de référence';
+    status.textContent=level==='high'?'🔴 À éviter pour ce niveau':level==='moderate'?'🟠 Exigeante, mais potentiellement faisable':'🟢 A priori adaptée à ce niveau';
     details.textContent=level==='high'?'Plusieurs indicateurs d’effort dépassent les repères prudents définis pour les randonnées habituellement appréciées.':level==='moderate'?'Des passages demanderont un effort notable : vérifier les montées et prévoir des pauses.':'Le GPX ne montre pas de combinaison majeure de difficultés physiques selon les repères choisis.';
+    addFactor('👤 Niveau analysé : '+(active?.name||'Référence')+' — '+(['Très débutant','Débutant','Bon marcheur','Aguerri','Expert'][chosenLevel])+(active?.temporary?' (simulation temporaire)':'')+'.');
     addFactor('↗ Montée cumulée estimée : +'+Math.round(totalRise)+' m · '+Math.round(steepUp)+' m à 15 % ou plus, dont '+Math.round(verySteepUp)+' m à 25 % ou plus.');
     addFactor('↘ Descente à 15 % ou plus : '+Math.round(steepDown)+' m · Distance totale : '+fmt(total)+' km.');
     if(hardest)addFactor('🏔 Montée la plus éprouvante : km '+fmt(hardest.start)+' à '+fmt(hardest.end)+' · environ +'+Math.round(hardest.rise)+' m sur '+fmt(hardest.length)+' km.');
