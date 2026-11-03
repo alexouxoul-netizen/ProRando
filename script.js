@@ -9,6 +9,8 @@ const hoverMarker = L.circleMarker([0, 0], {
     radius: 7, color: '#ffffff', weight: 2, fillColor: '#0984e3', fillOpacity: 1
 });
 let chart = null;
+let gainChart = null;
+let sharedChartIndex = -1;
 let lastTrackPoints = [];
 let lastGpxXml = null;
 let selectedDescentLayer = null;
@@ -46,7 +48,7 @@ legend.onAdd = function () {
     L.DomEvent.disableClickPropagation(div);
     return div;
 };
-legend.addTo(map);
+// V7.1 : légende à la demande dans les commandes de la carte.
 
 function getPenteColor(pente) {
     if (pente >= 0) {
@@ -439,6 +441,8 @@ function analyserGPX(xmlString) {
     setText('distance-info', manualKm > 0 && manualKm <= 100 ? 'Distance corrigée manuellement (trace GPS conservée)' : 'Distance GPS brute : vérifier en cas de dérive');
     setText('d-plus', Math.round(dPlus) + ' m');
     setText('d-moins', Math.round(dMoins) + ' m');
+    setText('up-total', '+' + Math.round(dPlus) + ' m');
+    setText('down-total', '−' + Math.round(dMoins) + ' m');
     setText('m-vert', Math.round(uphill.easy) + ' m');
     setText('m-orange', Math.round(uphill.moderate) + ' m');
     setText('m-rouge', Math.round(uphill.hard) + ' m');
@@ -462,6 +466,8 @@ function analyserGPX(xmlString) {
     }
 
     if (chart) chart.destroy();
+    if (gainChart) { gainChart.destroy(); gainChart = null; }
+    sharedChartIndex = -1;
     const canvas = document.getElementById('elevationChart');
     chart = new Chart(canvas, {
         type: 'line',
@@ -510,16 +516,55 @@ function analyserGPX(xmlString) {
                 y: { title: { display: true, text: 'Altitude (m)' } }
             },
             onHover: (event, activeElements) => {
-                if (activeElements.length) {
-                    const index = activeElements[0].index;
-                    const selectedPoint = points[index];
-                    if (selectedPoint) hoverMarker.setLatLng(selectedPoint.latLng).addTo(map);
-                } else {
-                    hoverMarker.remove();
-                }
+                if (activeElements.length) syncReliefCursor(activeElements[0].index, 'altitude');
+                else clearReliefCursor();
             }
         }
     });
+    // Deuxième graphique : mêmes points GPX, même abscisse, valeurs cumulées réelles.
+    const gainCanvas = document.getElementById('gainChart');
+    if (gainCanvas) {
+        gainChart = new Chart(gainCanvas, {
+            type: 'line',
+            data: { labels: distancesKm, datasets: [
+                { label: 'D+ cumulé', data: dPlusList, borderColor: '#FF9F43', backgroundColor: 'transparent', pointRadius: 0, pointHitRadius: 15, borderWidth: 2.5, tension: 0 },
+                { label: 'D− cumulé', data: dMoinsList, borderColor: '#0984e3', backgroundColor: 'transparent', pointRadius: 0, pointHitRadius: 15, borderWidth: 2.5, tension: 0 }
+            ] },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, callbacks: {
+                    title: items => items.length ? 'Km ' + Number(items[0].label).toFixed(2) : '',
+                    label: item => item.dataset.label + ' : ' + Math.round(item.raw) + ' m'
+                } } },
+                scales: { x: { ticks: { maxTicksLimit: 6 }, title: { display: true, text: 'Distance (km)' } }, y: { beginAtZero: true, title: { display: true, text: 'Dénivelé (m)' } } },
+                onHover: (event, elements) => { if (elements.length) syncReliefCursor(elements[0].index, 'gain'); else clearReliefCursor(); }
+            }
+        });
+    }
+    // Exposer uniquement la sélection courante pour la navigation de l'interface.
+    window.proRandoRelief = { select: i => syncReliefCursor(i, 'external'), getIndex: () => sharedChartIndex };
+    function syncReliefCursor(index, source) {
+        if (!Number.isInteger(index) || index < 0 || index >= points.length) return;
+        sharedChartIndex = index;
+        hoverMarker.setLatLng(points[index].latLng).addTo(map);
+        const readout = document.getElementById('compare-readout');
+        if (readout) readout.textContent = 'Km ' + distancesKm[index].toFixed(2) + '  ·  Alt. ' + (Number.isFinite(elevations[index]) ? Math.round(elevations[index]) + ' m' : '—') + '  ·  D+ ' + dPlusList[index] + ' m  ·  D− ' + dMoinsList[index] + ' m';
+        // Mettre à jour l'autre graphique sans relancer son événement tactile.
+        if (source !== 'altitude' && chart) {
+            chart.setActiveElements([{ datasetIndex: 0, index }]);
+            chart.tooltip?.setActiveElements([{ datasetIndex: 0, index }], { x: chart.chartArea.left, y: chart.chartArea.top });
+            chart.update('none');
+        }
+        if (source !== 'gain' && gainChart) {
+            gainChart.setActiveElements([{ datasetIndex: 0, index }, { datasetIndex: 1, index }]);
+            gainChart.tooltip?.setActiveElements([{ datasetIndex: 0, index }, { datasetIndex: 1, index }], { x: gainChart.chartArea.left, y: gainChart.chartArea.top });
+            gainChart.update('none');
+        }
+    }
+    function clearReliefCursor() {
+        // Conserver le dernier point sélectionné pour le retrouver sur la carte.
+    }
 }
 
 // Géolocalisation ponctuelle : évite de suivre la position en permanence

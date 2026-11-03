@@ -4,12 +4,17 @@
  const chartEl = $('chart-container');
  const tabs = ['map','profile','difficulties','analysis'];
  let activeTab = 'map';
- function resizeVisuals(){requestAnimationFrame(()=>{if(typeof map!=='undefined')map.invalidateSize();if(typeof chart!=='undefined'&&chart)chart.resize();});}
+ function resizeVisuals(){requestAnimationFrame(()=>{if(typeof map!=='undefined')map.invalidateSize();if(typeof chart!=='undefined'&&chart)chart.resize();if(typeof gainChart!=='undefined'&&gainChart)gainChart.resize();});}
  function moveChart(host){if(host && chartEl.parentNode!==host){host.appendChild(chartEl);resizeVisuals();}}
- function showTab(tab){if(!tabs.includes(tab))return;activeTab=tab;tabs.forEach(t=>{$('view-'+t).hidden=t!==tab;document.querySelector(`[data-tab="${t}"]`).classList.toggle('active',t===tab);});if(tab==='profile'){moveChart($('chart-slot-profile'));}else if(tab==='map'&&!$('profile-sheet').hidden){moveChart($('chart-slot-sheet'));}resizeVisuals();}
+ function showTab(tab){if(!tabs.includes(tab))return;activeTab=tab;tabs.forEach(t=>{$('view-'+t).hidden=t!==tab;document.querySelector(`[data-tab="${t}"]`).classList.toggle('active',t===tab);});if(tab==='profile'){moveChart($('chart-slot-profile'));}else if(tab==='analysis'){moveChart($('chart-slot-compare'));}else if(tab==='map'&&!$('profile-sheet').hidden){moveChart($('chart-slot-sheet'));}resizeVisuals();}
  document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
  function openSheet(){showTab('map');$('profile-sheet').hidden=false;moveChart($('chart-slot-sheet'));resizeVisuals();}
  $('map-profile-button').addEventListener('click',openSheet);
+ $('compare-on-map').addEventListener('click',()=>{openSheet();const idx=window.proRandoRelief?.getIndex();if(Number.isInteger(idx)&&idx>=0)window.proRandoRelief.select(idx);});
+ const legendToggle=$('legend-toggle'), legendPanel=$('slope-legend');
+ function toggleLegend(force){const open=typeof force==='boolean'?force:legendPanel.hidden;legendPanel.hidden=!open;legendToggle.setAttribute('aria-expanded',String(open));}
+ legendToggle.addEventListener('click',()=>toggleLegend());
+ $('legend-close').addEventListener('click',()=>toggleLegend(false));
  $('profile-on-map').addEventListener('click',openSheet);
  $('sheet-close').addEventListener('click',()=>{$('profile-sheet').hidden=true;moveChart($('chart-slot-profile'));resizeVisuals();});
  $('sheet-expand').addEventListener('click',()=>{showTab('profile');$('profile-sheet').hidden=true;});
