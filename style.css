@@ -40,3 +40,22 @@
 
 /* V8.2 — Carnet de randonnée */
 .hike-journal h3{font-size:19px;margin:3px 0 0}.journal-intro,.journal-disclaimer{font-size:12px;color:var(--muted);line-height:1.6}.hike-journal form{display:flex;flex-direction:column;gap:9px;margin:12px 0}.hike-journal form>label{font-weight:750;font-size:12px}.hike-journal select,.hike-journal input[type=date],.hike-journal textarea{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);padding:11px;font-size:15px}.hike-journal input[type=range]{width:100%;accent-color:#246c48}.hike-journal fieldset{border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;gap:7px;padding:10px}.hike-journal fieldset legend{font-weight:750;font-size:12px}.hike-journal fieldset label{font-size:12px}.hike-journal fieldset input{accent-color:#246c48}.journal-save{background:#246c48;color:white;border:0;border-radius:11px;min-height:45px;font-weight:750}.journal-save:disabled{opacity:.5}.journal-history-head{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line);margin-top:16px}.journal-history-head h4{font-size:14px}.journal-history-head span{color:var(--muted);font-size:11px}.journal-entry{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:9px}.journal-entry strong,.journal-entry small{display:block;overflow-wrap:anywhere}.journal-entry small{color:var(--muted);margin:4px 0}.journal-entry p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}.journal-entry button,.journal-backup button,.journal-backup label{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--soft);color:var(--accent);font-size:12px;font-weight:750}.journal-backup{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.journal-backup label{cursor:pointer}.journal-empty{color:var(--muted);font-size:12px}#journal-message{color:var(--accent);font-size:12px;margin:0}
+
+/* V9 : trois espaces clairement séparés */
+.bottom-nav{grid-template-columns:repeat(3,minmax(0,1fr))}
+.v9-prepare{overflow-y:auto;overscroll-behavior:contain;padding:10px 5px 24px}
+.v9-map{height:min(54vh,490px);min-height:280px;margin-bottom:16px}
+.v9-map .profile-sheet{height:min(34vh,270px)}
+.v9-prepare .content-card{margin-bottom:12px!important}
+.v9-technical{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;margin:12px 0;box-shadow:var(--shadow)}
+.v9-technical>summary{font-weight:750;cursor:pointer;padding:9px 4px;color:var(--accent)}
+.v9-technical[open]>summary{margin-bottom:12px}
+.v9-library{position:static;inset:auto;z-index:auto;display:flex;overflow:visible;padding:0 0 18px;background:transparent;min-height:0}
+.v9-library[hidden]{display:flex!important}
+#view-randos{overflow-y:auto}
+#view-randos .library-top{padding:0 4px}
+#view-randos #library-close{display:none}
+.app-shell.map-full #view-prepare{display:block!important;padding:0;overflow:hidden}
+.app-shell.map-full .v9-map{height:100%;margin:0;border-radius:0}
+.app-shell.map-full #view-prepare>:not(.v9-map){display:none!important}
+@media(max-width:390px){.v9-map{height:48vh;min-height:250px}}
