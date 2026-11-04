@@ -69,7 +69,7 @@
  function analyze(hiker,list,config=settings){
   const none={offset:0,eligible:0,disagreements:0,agree:0,positive:0,negative:0,
    excluded:0,min:MIN,enabled:false,temporary:!!hiker?.temporary,
-   journalTotal:0,usableEvaluations:0,distinctTracks:0,terrainReferences:[],physicalExamples:[],ignored:{},audit:[]};
+   journalTotal:0,usableEvaluations:0,distinctTracks:0,terrainReferences:[],physicalExamples:[],ignored:{},audit:[],classifications:Object.create(null)};
   if(!hiker||typeof hiker.id!=='string'||!Number.isInteger(hiker.level))return none;
   const result={...none,enabled:own(config.enabled,hiker.id)&&config.enabled[hiker.id]===true};
   const cutoff=own(config.resetAt,hiker.id)?config.resetAt[hiker.id]:0;
@@ -78,6 +78,7 @@
   const used=new Set(), known=new Set(), terrainSeen=new Set();
   const rows=ownEntries.slice().sort((a,b)=>(b?.created||0)-(a?.created||0));
   function skip(e,reason){
+   result.classifications[e.id]={kind:'excluded',reason};
    result.ignored[reason]=(result.ignored[reason]||0)+1;
    result.audit.push({route:String(e?.route||'Randonnée sans nom').slice(0,100),reason});
   }
@@ -90,6 +91,7 @@
    // rapproche JAMAIS automatiquement d'un GPX sur la seule base de son nom.
    if(Array.isArray(e.terrain)&&e.terrain.length){
     const referenceId=e.routeKey||('legacy:'+e.id);
+    result.classifications[e.id]={kind:'terrain',duplicate:terrainSeen.has(referenceId),linked:!!e.routeKey};
     if(!terrainSeen.has(referenceId)){
      terrainSeen.add(referenceId);
      result.terrainReferences.push({route:String(e.route||'Randonnée').slice(0,100),
@@ -113,6 +115,7 @@
    used.add(e.routeKey);
    result.eligible++;
    const vote=Math.sign(obs-TIERS[tier]);
+   result.classifications[e.id]={kind:'physical',vote};
    // Garder le sens du retour avec ses mesures : des sorties comparables
    // mais contradictoires ne doivent pas valider une tendance générale.
    const distance=Number(e.prediction.distanceKm), ascent=Number(e.prediction.ascentM);

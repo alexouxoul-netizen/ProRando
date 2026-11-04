@@ -127,6 +127,9 @@ function refresh(){
    }catch(err){chooser.replaceChildren(node('p','','Impossible de consulter la bibliothèque : '+err.message));}
   });
   item.append(linkBox);
+  const recapBtn=node('button','journal-recap-button','Voir le bilan de cette sortie');recapBtn.type='button';
+  recapBtn.addEventListener('click',()=>window.RandoVistaRecap?.show?.(e.id,{scroll:true}));
+  item.append(recapBtn);
   const del=node('button','','Supprimer ce retour');del.type='button';
   del.addEventListener('click',()=>{
    if(!confirm('Supprimer définitivement ce retour d’expérience ?'))return;
@@ -158,7 +161,7 @@ $('journal-form').addEventListener('submit',event=>{
   created:Date.now(),prediction:snapshot(p)
  };
  if(!valid(entry)){msg.textContent='Certaines informations sont invalides. Vérifie le formulaire.';return;}
- try{persist([entry,...entries]);msg.textContent='✓ Ressenti enregistré pour '+p.name+' sur « '+name+' ».';refresh();}
+ try{persist([entry,...entries]);msg.textContent='✓ Ressenti enregistré pour '+p.name+' sur « '+name+' ».';refresh();window.dispatchEvent(new CustomEvent('rv:journal-entry-saved',{detail:{id:entry.id}}));}
  catch(err){msg.textContent='Enregistrement impossible : espace de stockage plein ou indisponible. Exporte ton carnet. '+err.message;}
 });
 function download(data){

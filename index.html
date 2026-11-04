@@ -7,8 +7,9 @@
 <meta content="#f3f7f1" name="theme-color"/>
 <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
 <title>RandoVista</title>
+<meta name="apple-mobile-web-app-title" content="RandoVista"/>
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
-<link href="style.css?v=1020test" rel="stylesheet"/>
+<link href="style.css?v=1030test" rel="stylesheet"/>
 <link href="manifest.json" rel="manifest"/>
 <link href="icon.png" rel="apple-touch-icon"/>
 <script>
@@ -22,7 +23,7 @@
 <body>
 <div class="app-shell">
 <header class="app-header">
-<div class="brand"><span class="brand-icon">▲</span><div><strong>RandoVista</strong><small>L’aventure à votre rythme</small></div></div><span class="rv-build-marker" aria-label="Version de test 10.1">V10.2 TEST</span>
+<div class="brand"><span class="brand-icon">▲</span><div><strong>RandoVista</strong><small>L’aventure à votre rythme</small></div></div><span class="rv-build-marker" aria-label="Version de test 10.3">V10.3 TEST</span>
 <details class="route-menu" id="route-menu" hidden><summary>☰ Parcours</summary><div class="route-popover">
 <label class="menu-action" for="gpx-file">📂 Importer un GPX</label>
 <button class="menu-action" id="change-route" type="button">↻ Changer de parcours</button><button class="menu-action" disabled="" id="library-open" type="button">★ Ma bibliothèque</button>
@@ -65,7 +66,15 @@
 <p class="rv-dashboard-note">Statistiques issues des évaluations du carnet, pas des GPX simplement importés. La distance renseignée dans une ancienne prévision est indicative et n'est pas une distance réellement mesurée pendant la sortie.</p>
 </details>
 </section><section aria-label="Bibliothèque de randonnées" class="library-panel v9-library" id="library-panel"><div class="library-top"><div><small>MES PARCOURS</small><h2>Bibliothèque</h2><p id="library-count">0 parcours enregistré</p></div><button aria-label="Fermer" id="library-close" type="button">✕</button></div><input aria-label="Rechercher une randonnée" id="library-search" placeholder="Rechercher une randonnée…" type="search"/><div class="library-list" id="library-list"></div><div class="library-backup"><button id="library-export" type="button">↓ Exporter une sauvegarde</button><label for="library-import">↑ Restaurer une sauvegarde</label><input accept=".json,application/json" id="library-import" type="file"/><p>Les parcours sont stockés sur cet appareil. Pense à exporter une sauvegarde régulièrement.</p></div></section></section>
-<section aria-label="Évaluer" class="view content-view" hidden="" id="view-evaluate"><div class="section-title"><small>APRÈS LA RANDONNÉE</small><h2>Raconter ma randonnée</h2><p>Une trace de chaque sortie, pour progresser à votre rythme.</p></div><section aria-label="Carnet de randonnée" class="content-card hike-journal" id="hike-journal"><div class="verdict-head"><div><small>APRÈS LA SORTIE</small><h3>Mon carnet de randonnée</h3></div></div><p class="journal-intro">Enregistre le ressenti du profil sélectionné pour cette randonnée. Les simulations temporaires ne sont pas enregistrées.</p><div class="journal-route-actions" id="journal-route-actions" hidden><p>Pour évaluer une sortie, sélectionne d’abord sa trace GPX.</p><div><button id="journal-open-library" type="button">Mes randos</button><button id="journal-choose-gpx" type="button">Importer un GPX</button></div></div><form id="journal-form"><p class="hiker-current" id="journal-context">Choisis un parcours GPX et un profil.</p><label for="journal-date">Date de la sortie</label><input id="journal-date" required="" type="date"/><label for="journal-effort">Difficulté ressentie <strong id="journal-effort-label">3/5</strong></label><input id="journal-effort" max="5" min="1" step="1" type="range" value="3"/><label for="journal-fatigue">Fatigue à l'arrivée <strong id="journal-fatigue-label">3/5</strong></label><input id="journal-fatigue" max="5" min="1" step="1" type="range" value="3"/><label for="journal-up">Montées</label><select id="journal-up"><option value="easy">Faciles</option><option selected="" value="ok">Soutenues mais faisables</option><option value="hard">Très difficiles</option></select><label for="journal-down">Descentes</label><select id="journal-down"><option value="easy">Faciles</option><option selected="" value="ok">Demandent de l'attention</option><option value="hard">Très difficiles</option></select><fieldset><legend>Terrain rencontré</legend><label><input name="terrain" type="checkbox" value="rocks"/> Pierriers / pierres instables</label><label><input name="terrain" type="checkbox" value="technical"/> Passages techniques</label><label><input name="terrain" type="checkbox" value="exposed"/> Passages exposés</label><label><input name="terrain" type="checkbox" value="mud"/> Boue / terrain glissant</label></fieldset><label for="journal-feeling">Bilan</label><select id="journal-feeling"><option value="repeat">À refaire avec plaisir</option><option selected="" value="possible">Faisable, mais exigeante</option><option value="avoid">À éviter pour ce profil</option></select><label for="journal-notes">Notes personnelles (facultatif)</label><textarea id="journal-notes" maxlength="1200" placeholder="Ce qui a été facile, difficile, surprenant…" rows="3"></textarea><button class="journal-save" type="submit">Enregistrer mon ressenti</button><p aria-live="polite" id="journal-message" role="status"></p></form><div class="journal-history-head"><h4>Historique des sorties</h4><span id="journal-count">0 sortie</span></div><label class="journal-filter-label" for="journal-history-filter">Afficher <select id="journal-history-filter"><option value="active">Profil actif</option><option value="all">Tous les profils, y compris archivés</option></select></label><p class="journal-link-help">Pour une ancienne évaluation, utilise « Associer un GPX enregistré » afin que RandoVista reconnaisse ce tracé à l’avenir. Vérifie la correspondance avant de confirmer.</p><div class="journal-history" id="journal-history"></div><div class="journal-backup"><button id="journal-export" type="button">↓ Exporter le carnet</button><label for="journal-import">↑ Restaurer le carnet</label><input accept=".json,application/json" hidden="" id="journal-import" type="file"/></div><p class="journal-disclaimer">Les retours restent sur cet appareil. Le calibrage est facultatif et doit être activé pour chaque profil dans Préparer.</p></section></section>
+<section aria-label="Évaluer" class="view content-view" hidden="" id="view-evaluate"><div class="section-title"><small>APRÈS LA RANDONNÉE</small><h2>Raconter ma randonnée</h2><p>Une trace de chaque sortie, pour progresser à votre rythme.</p></div><section aria-label="Carnet de randonnée" class="content-card hike-journal" id="hike-journal"><div class="verdict-head"><div><small>APRÈS LA SORTIE</small><h3>Mon carnet de randonnée</h3></div></div><p class="journal-intro">Enregistre le ressenti du profil sélectionné pour cette randonnée. Les simulations temporaires ne sont pas enregistrées.</p><div class="journal-route-actions" id="journal-route-actions" hidden><p>Pour évaluer une sortie, sélectionne d’abord sa trace GPX.</p><div><button id="journal-open-library" type="button">Mes randos</button><button id="journal-choose-gpx" type="button">Importer un GPX</button></div></div><form id="journal-form"><p class="hiker-current" id="journal-context">Choisis un parcours GPX et un profil.</p><label for="journal-date">Date de la sortie</label><input id="journal-date" required="" type="date"/><label for="journal-effort">Difficulté ressentie <strong id="journal-effort-label">3/5</strong></label><input id="journal-effort" max="5" min="1" step="1" type="range" value="3"/><label for="journal-fatigue">Fatigue à l'arrivée <strong id="journal-fatigue-label">3/5</strong></label><input id="journal-fatigue" max="5" min="1" step="1" type="range" value="3"/><label for="journal-up">Montées</label><select id="journal-up"><option value="easy">Faciles</option><option selected="" value="ok">Soutenues mais faisables</option><option value="hard">Très difficiles</option></select><label for="journal-down">Descentes</label><select id="journal-down"><option value="easy">Faciles</option><option selected="" value="ok">Demandent de l'attention</option><option value="hard">Très difficiles</option></select><fieldset><legend>Terrain rencontré</legend><label><input name="terrain" type="checkbox" value="rocks"/> Pierriers / pierres instables</label><label><input name="terrain" type="checkbox" value="technical"/> Passages techniques</label><label><input name="terrain" type="checkbox" value="exposed"/> Passages exposés</label><label><input name="terrain" type="checkbox" value="mud"/> Boue / terrain glissant</label></fieldset><label for="journal-feeling">Bilan</label><select id="journal-feeling"><option value="repeat">À refaire avec plaisir</option><option selected="" value="possible">Faisable, mais exigeante</option><option value="avoid">À éviter pour ce profil</option></select><label for="journal-notes">Notes personnelles (facultatif)</label><textarea id="journal-notes" maxlength="1200" placeholder="Ce qui a été facile, difficile, surprenant…" rows="3"></textarea><button class="journal-save" type="submit">Enregistrer mon ressenti</button><p aria-live="polite" id="journal-message" role="status"></p></form><section class="rv-recap" id="rv-recap" hidden aria-labelledby="rv-recap-title" aria-live="polite">
+<div class="rv-recap-head"><div><small>BILAN APRÈS RANDONNÉE</small><h4 id="rv-recap-title">Ce que cette sortie nous apprend</h4></div><button type="button" id="rv-recap-close" aria-label="Fermer le bilan">✕</button></div>
+<p class="rv-recap-context" id="rv-recap-context"></p>
+<div class="rv-recap-grid"><div class="rv-recap-forecast"><small>PRÉVISION ENREGISTRÉE</small><strong id="rv-recap-prediction">—</strong></div><div class="rv-recap-observed"><small>DIFFICULTÉ RESSENTIE</small><strong id="rv-recap-observed">—</strong></div></div>
+<p id="rv-recap-comparison" class="rv-recap-comparison"></p>
+<div class="rv-recap-detail"><strong>Ce que tu as signalé</strong><ul id="rv-recap-evidence"></ul></div>
+<div class="rv-recap-learning"><strong>Apport à la calibration</strong><p id="rv-recap-calibration"></p></div>
+<p class="rv-recap-footnote">Ce bilan rapproche une estimation du GPX et ton retour d'expérience : il ne peut pas identifier avec certitude la cause d'un écart. Une seule sortie ne change pas automatiquement le niveau du profil ni les mesures du GPX.</p>
+</section><div class="journal-history-head"><h4>Historique des sorties</h4><span id="journal-count">0 sortie</span></div><label class="journal-filter-label" for="journal-history-filter">Afficher <select id="journal-history-filter"><option value="active">Profil actif</option><option value="all">Tous les profils, y compris archivés</option></select></label><p class="journal-link-help">Pour une ancienne évaluation, utilise « Associer un GPX enregistré » afin que RandoVista reconnaisse ce tracé à l’avenir. Vérifie la correspondance avant de confirmer.</p><div class="journal-history" id="journal-history"></div><div class="journal-backup"><button id="journal-export" type="button">↓ Exporter le carnet</button><label for="journal-import">↑ Restaurer le carnet</label><input accept=".json,application/json" hidden="" id="journal-import" type="file"/></div><p class="journal-disclaimer">Les retours restent sur cet appareil. Le calibrage est facultatif et doit être activé pour chaque profil dans Préparer.</p></section></section>
 <button class="rv-back-top" id="rv-back-top" type="button" aria-label="Revenir en haut de cet onglet" title="Revenir en haut" hidden>↑ <span>En haut</span></button>
 </div>
 <nav aria-label="Navigation principale" class="bottom-nav"><button class="active" data-tab="prepare" type="button"><span>⌖</span>Préparer</button><button data-tab="evaluate" type="button"><span>✎</span>Évaluer</button><button data-tab="randos" type="button"><span>▤</span>Mes randos</button></nav>
@@ -73,19 +82,19 @@
 <div id="chart-container"><canvas aria-label="Profil altimétrique" id="elevationChart"></canvas></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="script.js?v=1020test"></script>
-<script src="ui-v7.js?v=1020test"></script>
-<script src="radar-v73.js?v=1020test"></script>
-<script src="climbs-v74.js?v=1020test"></script>
-<script src="verdict-v75.js?v=1020test"></script>
-<script src="library-v8.js?v=1020test"></script>
-<script src="profiles-v81.js?v=1020test"></script>
-<script src="journal-v944.js?v=1020test"></script>
-<script src="adaptive-v944.js?v=1020test"></script>
+<script src="script.js?v=1030test"></script>
+<script src="ui-v7.js?v=1030test"></script>
+<script src="radar-v73.js?v=1030test"></script>
+<script src="climbs-v74.js?v=1030test"></script>
+<script src="verdict-v75.js?v=1030test"></script>
+<script src="library-v8.js?v=1030test"></script>
+<script src="profiles-v81.js?v=1030test"></script>
+<script src="journal-v944.js?v=1030test"></script>
+<script src="adaptive-v944.js?v=1030test"></script>
 <script>
       document.getElementById('layer-select').addEventListener('change', changeLayer);
     </script>
-<script src="v9.js?v=1020test"></script>
-<script src="polish-v97.js?v=1020test"></script>
-<script src="dashboard-v100.js?v=1020test"></script><script src="compare-v102.js?v=1020test"></script></body>
+<script src="v9.js?v=1030test"></script>
+<script src="polish-v97.js?v=1030test"></script>
+<script src="dashboard-v100.js?v=1030test"></script><script src="compare-v102.js?v=1030test"></script><script src="recap-v103.js?v=1030test"></script></body>
 </html>
