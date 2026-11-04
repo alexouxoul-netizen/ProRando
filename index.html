@@ -9,7 +9,7 @@
 <title>RandoVista</title>
 <meta content="RandoVista" name="apple-mobile-web-app-title"/>
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
-<link href="style.css?v=1040test" rel="stylesheet"/>
+<link href="style.css?v=1050test" rel="stylesheet"/>
 <link href="manifest.json" rel="manifest"/>
 <link href="icon.png" rel="apple-touch-icon"/>
 <script>
@@ -23,7 +23,7 @@
 <body>
 <div class="app-shell">
 <header class="app-header">
-<div class="brand"><span class="brand-icon">▲</span><div><strong>RandoVista</strong><small>L’aventure à votre rythme</small></div></div><span aria-label="Version de test 10.4" class="rv-build-marker">V10.4 TEST</span>
+<div class="brand"><span class="brand-icon">▲</span><div><strong>RandoVista</strong><small>L’aventure à votre rythme</small></div></div><span aria-label="Version de test 10.5" class="rv-build-marker">V10.5 TEST</span>
 <details class="route-menu" hidden="" id="route-menu"><summary>☰ Parcours</summary><div class="route-popover">
 <label class="menu-action" for="gpx-file">📂 Importer un GPX</label>
 <button class="menu-action" id="change-route" type="button">↻ Changer de parcours</button><button class="menu-action" disabled="" id="library-open" type="button">★ Ma bibliothèque</button>
@@ -65,7 +65,14 @@
 <p class="rv104-disclaimer">Une trace GPX renseigne la distance et le relief, pas les pierriers, l’exposition, la météo ni l’état du sentier. Une comparaison favorable n’est pas une garantie de sécurité.</p>
 </div>
 </div>
-</details><section aria-label="Verdict personnalisé" class="content-card verdict-card" id="personal-verdict"><div class="verdict-head"><div><small>VOTRE VERDICT</small><h3>Cette rando est-elle pour moi ?</h3></div></div><div class="verdict-status" id="verdict-status">Importe un GPX pour obtenir un avis indicatif.</div><p class="verdict-explanation" id="verdict-explanation">L’avis tient compte des montées prolongées et raides, des descentes et de la distance.</p><section aria-live="polite" class="rv-experience" hidden="" id="rv-experience">
+</details><section aria-label="Verdict personnalisé" class="content-card verdict-card" id="personal-verdict"><div class="verdict-head"><div><small>VOTRE VERDICT</small><h3>Cette rando est-elle pour moi ?</h3></div></div><div class="verdict-status" id="verdict-status">Importe un GPX pour obtenir un avis indicatif.</div><p class="verdict-explanation" id="verdict-explanation">L’avis tient compte des montées prolongées et raides, des descentes et de la distance.</p><section class="rv105-advisor" id="rv105-advisor" aria-labelledby="rv105-title" hidden="">
+  <div class="rv105-head"><div><small>AVANT LE DÉPART</small><h4 id="rv105-title">Le conseil RandoVista</h4></div><span aria-hidden="true">⌁</span></div>
+  <p class="rv105-context" id="rv105-context"></p>
+  <p class="rv105-headline" id="rv105-headline"></p>
+  <ul class="rv105-highlights" id="rv105-highlights"></ul>
+  <p class="rv105-tip" id="rv105-tip"></p>
+  <details class="rv105-limits"><summary>Ce que le GPX ne peut pas prévoir</summary><p id="rv105-caveat"></p></details>
+</section><section aria-live="polite" class="rv-experience" hidden="" id="rv-experience">
 <div class="rv-experience-top"><span class="rv-experience-kicker">🥾 DÉJÀ PARCOURUE</span><span class="rv-experience-count" id="rv-experience-count"></span></div>
 <div class="rv-experience-grid"><div><small>RESSENTI ENREGISTRÉ</small><strong id="rv-experience-effort">—</strong></div><div><small>BILAN PERSONNEL</small><strong id="rv-experience-feeling">—</strong></div></div>
 <p class="rv-experience-terrain" hidden="" id="rv-experience-terrain"></p><p class="rv-experience-notes" hidden="" id="rv-experience-notes"></p>
@@ -109,19 +116,19 @@
 <div id="chart-container"><canvas aria-label="Profil altimétrique" id="elevationChart"></canvas></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="script.js?v=1040test"></script>
-<script src="ui-v7.js?v=1040test"></script>
-<script src="radar-v73.js?v=1040test"></script>
-<script src="climbs-v74.js?v=1040test"></script>
-<script src="verdict-v75.js?v=1040test"></script>
-<script src="library-v8.js?v=1040test"></script>
-<script src="profiles-v81.js?v=1040test"></script>
-<script src="journal-v944.js?v=1040test"></script>
-<script src="adaptive-v944.js?v=1040test"></script>
+<script src="script.js?v=1050test"></script>
+<script src="ui-v7.js?v=1050test"></script>
+<script src="radar-v73.js?v=1050test"></script>
+<script src="climbs-v74.js?v=1050test"></script>
+<script src="verdict-v75.js?v=1050test"></script>
+<script src="library-v8.js?v=1050test"></script>
+<script src="profiles-v81.js?v=1050test"></script>
+<script src="journal-v944.js?v=1050test"></script>
+<script src="adaptive-v944.js?v=1050test"></script>
 <script>
       document.getElementById('layer-select').addEventListener('change', changeLayer);
     </script>
-<script src="v9.js?v=1040test"></script>
-<script src="polish-v97.js?v=1040test"></script>
-<script src="dashboard-v100.js?v=1040test"></script><script src="compare-v102.js?v=1040test"></script><script src="recap-v103.js?v=1040test"></script><script src="compare-gpx-v104.js?v=1040test"></script></body>
+<script src="v9.js?v=1050test"></script>
+<script src="polish-v97.js?v=1050test"></script>
+<script src="dashboard-v100.js?v=1050test"></script><script src="compare-v102.js?v=1050test"></script><script src="recap-v103.js?v=1050test"></script><script src="compare-gpx-v104.js?v=1050test"></script><script src="advisor-v105.js?v=1050test"></script></body>
 </html>

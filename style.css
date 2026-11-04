@@ -301,3 +301,25 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 .rv104-disclaimer{margin:10px 0 0;}
 @media (max-width:450px){.rv104-choices{grid-template-columns:1fr;}.rv104-results{gap:7px;}.rv104-card{padding:9px;}.rv104-card-head{font-size:12px;}.rv104-line{display:block;}.rv104-line strong{display:block;text-align:left;margin-top:2px;}}
 @media (prefers-reduced-motion:reduce){.rv104-chevron{transition:none;}}
+
+/* RandoVista V10.5 — conseiller sobre, pensé pour un écran iPhone. */
+.rv105-advisor{margin:15px 0 18px;padding:16px;background:var(--soft);border:1px solid var(--line);border-radius:17px;color:var(--ink);overflow-wrap:anywhere;}
+.rv105-advisor[hidden]{display:none!important;}
+.rv105-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;}
+.rv105-head small{font-size:10px;font-weight:850;letter-spacing:.14em;color:var(--accent);}
+.rv105-head h4{font-size:19px;line-height:1.2;margin:4px 0 0;color:var(--ink);}
+.rv105-head>span{font-size:24px;color:var(--accent);}
+.rv105-context{font-size:11px;line-height:1.5;color:var(--muted);margin:8px 0;}
+.rv105-headline{font-size:14px;line-height:1.5;font-weight:700;margin:11px 0;color:var(--ink);}
+.rv105-advisor[data-tone="high"] .rv105-headline{color:#a13c35;}
+.rv105-advisor[data-tone="unknown"] .rv105-headline{color:#875c29;}
+.rv105-highlights{list-style:none;margin:12px 0;padding:0;display:grid;gap:8px;}
+.rv105-point{display:flex;flex-direction:column;align-items:flex-start;gap:7px;margin:0;padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-size:12px;line-height:1.5;}
+.rv105-point.rv105-priority{border-left:3px solid #bd8c3e;}
+.rv105-map-jump{min-height:40px;align-self:flex-start;padding:7px 12px;border:1px solid var(--line);border-radius:10px;background:var(--soft);color:var(--accent);font:inherit;font-size:12px;font-weight:750;cursor:pointer;}
+.rv105-map-jump:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+.rv105-tip{border-left:3px solid var(--accent);padding:6px 0 6px 10px;font-size:12px;line-height:1.5;margin:12px 0;}
+.rv105-limits{border-top:1px solid var(--line);padding-top:10px;margin-top:12px;font-size:12px;line-height:1.5;color:var(--muted);}
+.rv105-limits>summary{cursor:pointer;color:var(--accent);font-weight:750;padding:5px 0;}
+.rv105-limits p{margin:7px 0 0;}
+@media(max-width:380px){.rv105-advisor{padding:13px;}.rv105-head h4{font-size:18px;}}
