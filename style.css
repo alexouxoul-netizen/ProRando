@@ -184,3 +184,21 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 .rv-dashboard-empty{font-size:.85rem;color:var(--muted,#627467);}
 @media(max-width:350px){.rv-dashboard{padding:12px;}.rv-dashboard-kpis strong{font-size:1.35rem;}}
 @media(prefers-color-scheme:dark){.rv-dashboard-kpis>div,.rv-dashboard-pill,.rv-dashboard-grade{background:#274735;color:#e3efe0;border-color:#43644a;}.rv-dashboard-kpis small,.rv-dashboard-kpis strong{color:#e3efe0;}}
+
+/* V10.1 — tableau de bord repliable et graphiques sobres */
+.rv-dashboard-fold{margin-top:13px;}
+.rv-dashboard-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;min-height:46px;border:1px solid #b8cbb7;border-radius:12px;padding:11px 13px;font-weight:650;color:inherit;font-size:.9rem;}
+.rv-dashboard-fold>summary::-webkit-details-marker{display:none;}
+.rv-dashboard-fold-indicator{font-size:1.25rem;transition:transform .18s ease;}
+.rv-dashboard-fold[open] .rv-dashboard-fold-indicator{transform:rotate(180deg);}
+.rv-dashboard-fold>summary:focus-visible{outline:3px solid #6b9c80;outline-offset:3px;}
+.rv-dashboard-chart-info{font-size:.78rem;line-height:1.5;color:var(--muted,#667567);margin:8px 0 12px;}
+.rv-dashboard-chart-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+.rv-dashboard-chart-card{border:1px solid #d9e5d6;border-radius:14px;padding:12px;min-width:0;}
+.rv-dashboard-chart-card>strong{font-size:.88rem;display:block;margin-bottom:7px;}
+.rv-dashboard-chart svg{display:block;width:100%;height:auto;max-height:150px;overflow:visible;}
+.rv-dashboard-chart svg text{fill:currentColor;font-size:10px;}
+.rv-dashboard-chart-empty{font-size:.8rem;color:var(--muted,#667567);margin:12px 0;}
+@media(min-width:680px){.rv-dashboard-chart-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(prefers-color-scheme:dark){.rv-dashboard-chart-card{border-color:#43644a;}}
+@media(prefers-reduced-motion:reduce){.rv-dashboard-fold-indicator{transition:none;}}
