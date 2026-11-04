@@ -8,7 +8,7 @@
 <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
 <title>RandoVista</title>
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
-<link href="style.css?v=1010test" rel="stylesheet"/>
+<link href="style.css?v=1020test" rel="stylesheet"/>
 <link href="manifest.json" rel="manifest"/>
 <link href="icon.png" rel="apple-touch-icon"/>
 <script>
@@ -22,7 +22,7 @@
 <body>
 <div class="app-shell">
 <header class="app-header">
-<div class="brand"><span class="brand-icon">▲</span><div><strong>RandoVista</strong><small>L’aventure à votre rythme</small></div></div><span class="rv-build-marker" aria-label="Version de test 10.1">V10.1 TEST</span>
+<div class="brand"><span class="brand-icon">▲</span><div><strong>RandoVista</strong><small>L’aventure à votre rythme</small></div></div><span class="rv-build-marker" aria-label="Version de test 10.1">V10.2 TEST</span>
 <details class="route-menu" id="route-menu" hidden><summary>☰ Parcours</summary><div class="route-popover">
 <label class="menu-action" for="gpx-file">📂 Importer un GPX</label>
 <button class="menu-action" id="change-route" type="button">↻ Changer de parcours</button><button class="menu-action" disabled="" id="library-open" type="button">★ Ma bibliothèque</button>
@@ -61,7 +61,7 @@
 </div>
 <p class="rv-dashboard-distance" id="rv-dashboard-distance"></p>
 <section class="rv-dashboard-section rv-dashboard-charts" aria-label="Évolution des ressentis"><div class="rv-dashboard-title"><strong>Évolution de mes ressentis</strong></div><p class="rv-dashboard-chart-info">Les 12 dernières sorties datées du carnet, de la plus ancienne à la plus récente. Chaque point correspond à une évaluation.</p><div class="rv-dashboard-chart-grid"><div class="rv-dashboard-chart-card"><strong>Difficulté ressentie</strong><div id="rv-chart-effort" class="rv-dashboard-chart"></div></div><div class="rv-dashboard-chart-card"><strong>Fatigue à l'arrivée</strong><div id="rv-chart-fatigue" class="rv-dashboard-chart"></div></div></div></section>
-<div class="rv-dashboard-section"><div class="rv-dashboard-title"><strong>Mes dernières expériences</strong><button type="button" id="rv-dashboard-open-journal">Voir le carnet</button></div><div id="rv-dashboard-recent" class="rv-dashboard-recent"></div></div>
+<details class="rv-compare" id="rv-compare"><summary><span>Comparer deux profils sur une même randonnée</span><span aria-hidden="true">⌄</span></summary><div class="rv-compare-body"><p class="rv-compare-help">Compare les derniers ressentis enregistrés par deux personnes sur une <strong>trace GPX identique</strong>. Les dates de sortie peuvent différer.</p><div class="rv-compare-selects"><label for="rv-compare-a">Premier profil<select id="rv-compare-a" aria-label="Premier profil à comparer"></select></label><label for="rv-compare-b">Deuxième profil<select id="rv-compare-b" aria-label="Deuxième profil à comparer"></select></label></div><p id="rv-compare-status" role="status" aria-live="polite"></p><div id="rv-compare-results"></div><button type="button" id="rv-compare-more" hidden>Afficher plus</button><p class="rv-compare-disclaimer">Données issues du carnet. Il s’agit des derniers retours de chaque profil pour un GPX donné, et non forcément de la même sortie. Le nom seul d'un parcours ne suffit pas à établir une correspondance.</p></div></details><div class="rv-dashboard-section"><div class="rv-dashboard-title"><strong>Mes dernières expériences</strong><button type="button" id="rv-dashboard-open-journal">Voir le carnet</button></div><div id="rv-dashboard-recent" class="rv-dashboard-recent"></div></div>
 <p class="rv-dashboard-note">Statistiques issues des évaluations du carnet, pas des GPX simplement importés. La distance renseignée dans une ancienne prévision est indicative et n'est pas une distance réellement mesurée pendant la sortie.</p>
 </details>
 </section><section aria-label="Bibliothèque de randonnées" class="library-panel v9-library" id="library-panel"><div class="library-top"><div><small>MES PARCOURS</small><h2>Bibliothèque</h2><p id="library-count">0 parcours enregistré</p></div><button aria-label="Fermer" id="library-close" type="button">✕</button></div><input aria-label="Rechercher une randonnée" id="library-search" placeholder="Rechercher une randonnée…" type="search"/><div class="library-list" id="library-list"></div><div class="library-backup"><button id="library-export" type="button">↓ Exporter une sauvegarde</button><label for="library-import">↑ Restaurer une sauvegarde</label><input accept=".json,application/json" id="library-import" type="file"/><p>Les parcours sont stockés sur cet appareil. Pense à exporter une sauvegarde régulièrement.</p></div></section></section>
@@ -73,19 +73,19 @@
 <div id="chart-container"><canvas aria-label="Profil altimétrique" id="elevationChart"></canvas></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="script.js?v=1010test"></script>
-<script src="ui-v7.js?v=1010test"></script>
-<script src="radar-v73.js?v=1010test"></script>
-<script src="climbs-v74.js?v=1010test"></script>
-<script src="verdict-v75.js?v=1010test"></script>
-<script src="library-v8.js?v=1010test"></script>
-<script src="profiles-v81.js?v=1010test"></script>
-<script src="journal-v944.js?v=1010test"></script>
-<script src="adaptive-v944.js?v=1010test"></script>
+<script src="script.js?v=1020test"></script>
+<script src="ui-v7.js?v=1020test"></script>
+<script src="radar-v73.js?v=1020test"></script>
+<script src="climbs-v74.js?v=1020test"></script>
+<script src="verdict-v75.js?v=1020test"></script>
+<script src="library-v8.js?v=1020test"></script>
+<script src="profiles-v81.js?v=1020test"></script>
+<script src="journal-v944.js?v=1020test"></script>
+<script src="adaptive-v944.js?v=1020test"></script>
 <script>
       document.getElementById('layer-select').addEventListener('change', changeLayer);
     </script>
-<script src="v9.js?v=1010test"></script>
-<script src="polish-v97.js?v=1010test"></script>
-<script src="dashboard-v100.js?v=1010test"></script></body>
+<script src="v9.js?v=1020test"></script>
+<script src="polish-v97.js?v=1020test"></script>
+<script src="dashboard-v100.js?v=1020test"></script><script src="compare-v102.js?v=1020test"></script></body>
 </html>
