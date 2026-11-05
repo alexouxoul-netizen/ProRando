@@ -1,0 +1,8 @@
+RandoVista V11 - correctif de publication pour GitHub Pages
+
+Tous les fichiers de l'application sont maintenant directement a la racine du ZIP.
+Sur GitHub, ouvrir le depot > Add file > Upload files, puis deposer TOUS les fichiers extraits (pas le ZIP lui-meme).
+Attendre la publication Pages et recharger Safari. Le message vendor/leaflet.js doit disparaitre.
+Ne pas supprimer l'application iPhone ni les donnees locales.
+Si le souci persiste, verifier la presence du fichier leaflet.js a la racine du depot et son URL Pages.
+Supabase et la synchronisation multi-appareils demandent encore une validation independante.
