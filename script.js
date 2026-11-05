@@ -508,6 +508,7 @@ function analyserGPX(xmlString) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { display: false },

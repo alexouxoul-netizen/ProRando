@@ -1,36 +1,15 @@
-// RandoVista V10.4 TEST — priorité au réseau pour charger les corrections publiées.
-const CACHE_NAME = 'randovista-v1050-test-20261104';
-const APP_ASSETS = ['./', './index.html', './style.css', './script.js', './ui-v7.js', './radar-v73.js', './climbs-v74.js', './verdict-v75.js', './library-v8.js', './profiles-v81.js', './journal-v944.js', './adaptive-v944.js', './v9.js', './polish-v97.js', './dashboard-v100.js', './compare-v102.js', './recap-v103.js', './compare-gpx-v104.js', './advisor-v105.js', './manifest.json', './icon.png', './icon-512.png'];
-self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_ASSETS)).then(() => self.skipWaiting()));
-});
-self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => (key.startsWith('pro-rando-') || key.startsWith('randovista-')) && key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
-});
-self.addEventListener('fetch', event => {
-  const request = event.request;
-  if(request.method !== 'GET') return;
-  const url = new URL(request.url);
-  if(url.hostname.includes('tile.openstreetmap.org') || url.hostname.includes('opentopomap.org')) {
-    event.respondWith(caches.match(request).then(hit => hit || fetch(request).then(response => {
-      if(response?.ok) caches.open(CACHE_NAME).then(cache => cache.put(request,response.clone()));
-      return response;
-    })));
-    return;
-  }
-  if(url.origin !== self.location.origin) return;
-  // Réseau d'abord : publier un correctif ne doit plus laisser l'ancien écran figé.
-  // Hors ligne, repli vers la dernière copie disponible.
-  event.respondWith(fetch(request, {cache:'no-store'}).then(response => {
-    if(response?.ok) {
-      const copy = response.clone();
-      event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(request, copy)));
-    }
-    return response;
-  }).catch(async () => {
-    const cached = await caches.match(request, {ignoreSearch:true});
-    if(cached) return cached;
-    if(request.mode === 'navigate') return caches.match('./index.html');
-    return Response.error();
-  }));
+/* V11 atomic app shell: fixed release assets, no cache of auth or cloud data. */
+const CACHE='randovista-v11-test-4';
+const ASSETS=["./advisor-v105.js", "./", "./index.html", "./journal-v944.js", "./adaptive-v944.js", "./verdict-v75.js", "./radar-v73.js", "./compare-v102.js", "./library-v8.js", "./cloud-config.js", "./storage-v11.js", "./dashboard-v100.js", "./icon-512.png", "./v9.js", "./profiles-v81.js", "./sync-v11.js", "./icon.png", "./ui-v7.js", "./compare-gpx-v104.js", "./manifest.json", "./recap-v103.js", "./boot-v11.js", "./script.js", "./climbs-v74.js", "./sync-core-v11.js", "./style.css", "./polish-v97.js", "./vendor/leaflet.js", "./vendor/supabase.js", "./vendor/leaflet.css", "./vendor/chart.umd.js", "./vendor/images/layers-2x.png", "./vendor/images/marker-icon-2x.png", "./vendor/images/marker-icon.png", "./vendor/images/marker-shadow.png", "./vendor/images/layers.png"];
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
+self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
+self.addEventListener('fetch',event=>{
+ const r=event.request,u=new URL(r.url);if(r.method!=='GET'||u.origin!==self.location.origin)return;
+ const paths=new Set(ASSETS.map(a=>new URL(a,self.registration.scope).pathname));
+ if(!paths.has(u.pathname)&&r.mode!=='navigate')return;
+ event.respondWith(caches.open(CACHE).then(async c=>{
+  const hit=await c.match(r,{ignoreSearch:true});if(hit)return hit;
+  if(r.mode==='navigate')return (await c.match('./index.html'))||fetch(r);
+  return fetch(r);
+ }));
 });

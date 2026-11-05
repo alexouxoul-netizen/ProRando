@@ -302,6 +302,11 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 @media (max-width:450px){.rv104-choices{grid-template-columns:1fr;}.rv104-results{gap:7px;}.rv104-card{padding:9px;}.rv104-card-head{font-size:12px;}.rv104-line{display:block;}.rv104-line strong{display:block;text-align:left;margin-top:2px;}}
 @media (prefers-reduced-motion:reduce){.rv104-chevron{transition:none;}}
 
+/* V11: account and sync, matching the existing forest/cream palette. */
+.rv-account{margin:12px 16px;padding:14px 16px;border:1px solid #c5d3c7;border-radius:18px;background:var(--card-bg,#f6f8f2);color:var(--text,#244737)}
+.rv-account>summary{font-weight:700;cursor:pointer}.rv-account summary span{font-size:.7em;margin-left:8px}.rv-account p,.rv-account small{font-size:.85rem;line-height:1.55}.rv-account-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.rv-account button{border:1px solid #b8cebd;border-radius:10px;padding:10px 12px;background:#edf3e9;color:#244737;cursor:pointer}.rv-account button:disabled{opacity:.5}.rv-account input,.rv-account select{max-width:100%;padding:10px;border:1px solid #b8cebd;border-radius:8px;font-size:16px}.rv-account label,.rv-account small{display:block;margin:8px 0}.rv-account fieldset{margin:12px 0;border:1px solid #b8cebd;border-radius:10px;min-width:0}.rv-account pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:200px;overflow:auto}.rv-boot-error{padding:20px;background:#fff2dc;color:#573300}.rv-account [hidden]{display:none!important}
+@media(prefers-color-scheme:dark){.rv-account{background:#173228;color:#edf3e9;border-color:#466453}.rv-account button{background:#264736;color:#edf3e9}.rv-account input,.rv-account select{background:#183b29;color:#fff}}
+
 /* RandoVista V10.5 — conseiller sobre, pensé pour un écran iPhone. */
 .rv105-advisor{margin:15px 0 18px;padding:16px;background:var(--soft);border:1px solid var(--line);border-radius:17px;color:var(--ink);overflow-wrap:anywhere;}
 .rv105-advisor[hidden]{display:none!important;}

@@ -61,7 +61,7 @@ function snapshot(p){
  if(Number.isInteger(baseScore)&&baseScore>=0&&baseScore<=100&&status?.dataset.baseScore!=='')result.baseScore=baseScore;
  return result;
 }
-window.RandoVistaJournal={getEntries:()=>entries.slice(),getActiveRouteKey:()=>routeKey(route()),fingerprint:xml=>routeKey({xml})};
+window.RandoVistaJournal={validate:valid,getEntries:()=>entries.slice(),getActiveRouteKey:()=>routeKey(route()),fingerprint:xml=>routeKey({xml})};
 function refresh(){
  const p=active(),r=route(),name=currentRouteName(),sim=!!p?.temporary;
  const ctx=$('journal-context');
@@ -198,5 +198,6 @@ $('journal-import').addEventListener('change',async event=>{
 });
 window.addEventListener('rv:profile-changed',()=>{$('journal-message').textContent='';refresh();});
 document.addEventListener('rv:route-state',event=>{if(['ready','updated','error'].includes(event.detail?.status)){$('journal-message').textContent='';refresh();}});
+window.addEventListener('rv:sync-applied',()=>{entries=JSON.parse(localStorage.getItem(KEY)||'[]');refresh();window.dispatchEvent(new CustomEvent('rv:journal-changed'));});
 refresh();
 })();

@@ -282,5 +282,6 @@
  });
  window.RandoVistaAdaptive={getAdjustment,getReferenceForRoute,analyze,exportSettings,importSettings,validSettings,observedTier,isComparable};
  for(const ev of ['rv:profile-changed','rv:journal-changed','rv:calibration-changed'])window.addEventListener(ev,publishState);
+ window.addEventListener('rv:sync-applied',()=>{settings=JSON.parse(localStorage.getItem(KEY)||'null')||empty();publishState();});
  publishState();
 })();

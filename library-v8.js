@@ -3,7 +3,7 @@
 const $=id=>document.getElementById(id);let db=null,records=[],filter='';
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function openDB(){return new Promise((resolve,reject)=>{if(!('indexedDB'in window)){reject(new Error('Stockage indisponible'));return;}const r=indexedDB.open('pro-rando-library',1);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('routes'))d.createObjectStore('routes',{keyPath:'id'});};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
-function tx(mode,action){return new Promise((resolve,reject)=>{const t=db.transaction('routes',mode),s=t.objectStore('routes');let value;const r=action(s);if(r){r.onsuccess=()=>value=r.result;}t.oncomplete=()=>resolve(value);t.onerror=()=>reject(t.error);});}
+function tx(mode,action){return new Promise((resolve,reject)=>{const t=db.transaction('routes',mode),s=t.objectStore('routes');let value;const r=action(s);if(r){r.onsuccess=()=>value=r.result;}t.oncomplete=()=>{resolve(value);if(mode==='readwrite')window.dispatchEvent(new CustomEvent('rv:library-changed'));};t.onerror=()=>reject(t.error);});}
 async function reload(){records=await tx('readonly',s=>s.getAll());render();}
 function render(){const host=$('library-list');if(!host)return;const q=filter.toLocaleLowerCase('fr');const rows=records.filter(r=>r.name.toLocaleLowerCase('fr').includes(q)).sort((a,b)=>Number(b.favorite)-Number(a.favorite)||b.updated-a.updated);$('library-count').textContent=`${records.length} parcours enregistré${records.length>1?'s':''}`;host.innerHTML=rows.length?rows.map(r=>`<article class="library-route"><div class="library-route-main"><strong>${escape(r.name)}</strong><small>${new Date(r.updated).toLocaleDateString('fr-FR')} · ${Math.round(new Blob([r.xml]).size/1024)} Ko</small></div><div class="library-actions"><button type="button" data-open="${escape(r.id)}" aria-label="Ouvrir ${escape(r.name)}">Ouvrir</button><button type="button" data-fav="${escape(r.id)}" aria-label="Favori" title="Favori">${r.favorite?'★':'☆'}</button><button type="button" data-delete="${escape(r.id)}" aria-label="Supprimer ${escape(r.name)}" title="Supprimer">✕</button></div></article>`).join(''):'<p class="library-empty">Aucune randonnée trouvée. Importe un GPX pour commencer.</p>';}
 function show(){ $('library-panel').hidden=false;$('route-menu').open=false;window.proRandoUI?.showTab?.('randos');reload().catch(report);}
@@ -28,5 +28,6 @@ async function getSavedRoutes(){
   .map(r=>({id:r.id,name:r.name,xml:r.xml}));
 }
 window.RandoVistaLibrary={show,reload,getSavedRoutes};
+window.addEventListener('rv:sync-applied',()=>reload().catch(report));
 init();
 })();
