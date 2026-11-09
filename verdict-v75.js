@@ -59,7 +59,7 @@
       maxUp=Math.max(maxUp,slope);
     }
     // Sans altitudes fiables, ne jamais afficher à tort un avis favorable.
-    if (knownSpan / total < 0.85 || track.measurementIncomplete) {
+    if (knownSpan / total < 0.85) {
       status.dataset.level='unknown';status.dataset.baseLevel='unknown';delete status.dataset.baseScore;
       status.textContent='⚪ Verdict indisponible : altitudes insuffisantes';
       details.textContent='Cette trace ne contient pas assez de données altimétriques pour évaluer les pentes et les dénivelés. La distance GPS reste consultable.';
@@ -126,6 +126,11 @@
         details.textContent='Tu as déjà évalué ce tracé comme « à éviter » pour ce profil. Ce retour réel prime sur le seul calcul physique du GPX ; les difficultés techniques ne sont pas détectables dans les altitudes.';
       }
       // L'expérience vécue apparaît dans son encart dédié ci-dessous, sans doublon.
+    }
+    if(track.measurementIncomplete){
+      status.textContent+=' — analyse partielle';
+      details.textContent+=' Des portions du parcours ne sont pas enregistrées : cet avis concerne uniquement les portions disponibles.';
+      addFactor('⚠ Parcours incomplet : distance, dénivelés et difficulté réelle peuvent être sous-estimés.');
     }
     renderPastExperience(active,baseLevel,level);
     if(correction)addFactor('🎯 Calibration personnelle : '+(correction>0?'+1':'−1')+' point sur le score, après '+adaptive.eligible+' randonnées distinctes. Le GPX et le niveau du profil sont inchangés.');

@@ -391,13 +391,13 @@ function analyserGPX(xmlString) {
 
     // Ne pas afficher une fausse note facile ou 0 m D+ quand le GPX manque d'altitudes.
     // La carte et la distance GPS restent utilisables.
-    const altitudesSuffisantes = distance > 0 && measurement.knownShare >= 0.85 && measurement.quality.breaks === 0 && measurement.quality.invalid === 0;
+    const altitudesSuffisantes = distance > 0 && measurement.knownShare >= 0.85;
     if (altitudesSuffisantes) {
         // Note GPX historique conservée à l'identique si les altitudes sont exploitables.
         calculateDifficulty(distance, dPlus, dMoins, uphill, analyzeClimbs(points, cumulativeDistances));
     } else {
-        setText('gpx-quality', '⚠ Trace incomplète ou altitudes insuffisantes : environ ' +
-            Math.round(100 * knownAltitudeMeters / Math.max(1, distance)) +
+        setText('gpx-quality', '⚠ Altitudes insuffisantes : environ ' +
+            Math.round(100 * measurement.knownShare) +
             ' % de la distance dispose d’une altitude exploitable. Distance GPS disponible, dénivelés et difficulté non estimables.');
         ['d-plus', 'd-moins', 'up-total', 'down-total'].forEach(id => setText(id, '—'));
         setText('difficulty-level', '—');
@@ -409,6 +409,15 @@ function analyserGPX(xmlString) {
         setText('longest-climb', '—');
         const difficultyPanel = document.getElementById('difficulty');
         if (difficultyPanel) delete difficultyPanel.dataset.level;
+    }
+
+    if (altitudesSuffisantes && (measurement.quality.breaks > 0 || measurement.quality.invalid > 0)) {
+        ['d-plus', 'd-moins', 'up-total', 'down-total'].forEach(id => {
+            const node = document.getElementById(id);
+            if (node) node.textContent += ' (partiel)';
+        });
+        const node = document.getElementById('gpx-quality');
+        if (node) node.textContent += ' ⚠ Analyse partielle : seuls les tronçons enregistrés sont analysés. Distance et dénivelés du parcours complet peuvent être sous-estimés.';
     }
 
     const q = measurement.quality;

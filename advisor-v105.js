@@ -18,14 +18,7 @@
   const levelNames = ['Très débutant', 'Débutant', 'Bon marcheur', 'Aguerri', 'Expert'];
   let lastTrack = null, lastFacts = null;
 
-  function altitudeAt(points, ds, d) {
-    let lo = 0, hi = ds.length - 1;
-    while (lo < hi) { const mid = (lo + hi) >>> 1; if (ds[mid] < d) lo = mid + 1; else hi = mid; }
-    if (lo === 0) return points[0].elevation;
-    const a = points[lo-1].elevation, b = points[lo].elevation, span = ds[lo] - ds[lo-1];
-    return Number.isFinite(a) && Number.isFinite(b) && span > 0
-      ? a + (b-a) * (d-ds[lo-1]) / span : null;
-  }
+  function altitudeAt(points, ds, d) { return RVGPX.at(points, ds, d); }
 
   function getFacts(track) {
     const pts = track?.points, ds = track?.distances;
@@ -36,7 +29,7 @@
     let known = 0, ascent = 0, steepUp = 0, verySteepUp = 0, steepDown = 0;
     for (let start=0; start<total; start+=50) {
       const end=Math.min(total,start+50), a=altitudeAt(pts,ds,start), b=altitudeAt(pts,ds,end);
-      if (!Number.isFinite(a) || !Number.isFinite(b)) { bins.push({start,end,slope:null,rise:0,drop:0}); continue; }
+      if (!RVGPX.intervalKnown(pts,ds,start,end) || !Number.isFinite(a) || !Number.isFinite(b)) { bins.push({start,end,slope:null,rise:0,drop:0}); continue; }
       const slope=100*(b-a)/(end-start), rise=Math.max(0,b-a), drop=Math.max(0,a-b);
       known+=end-start;ascent+=rise;
       if (slope>=15) steepUp+=end-start;
@@ -93,7 +86,7 @@
       if (gap>=0 && gap<=350 && order[i].rise>=35 && order[i-1].rise>=35)
         closePairs.push({a:order[i-1],b:order[i],gap});
     }
-    return {total,knownShare:known/total,altitudeOk:known/total>=.85,ascent,
+    return {total,incomplete:!!track.measurementIncomplete,knownShare:known/total,altitudeOk:known/total>=.85,ascent,
       steepUp,verySteepUp,steepDown,climbs,descents,closePairs,
       coarse:!!track.coarseTrack,distances:ds};
   }
@@ -174,6 +167,7 @@
         : 'Pour choisir : confronte ces passages à un second GPX et aux informations terrain de la fiche de randonnée.';
       tip.textContent=choiceHint;
     }
+    if(facts.incomplete && facts.altitudeOk) addPoint('Analyse partielle : seules les portions enregistrées sont prises en compte ; le parcours complet peut être plus exigeant.',null,true);
     // Les données incertaines ne doivent jamais être remplacées par de fausses assurances.
     caveat.textContent=(manuallyCorrected?'La distance saisie sert au résumé, mais les repères kilométriques restent basés sur le GPX brut. ':'')+
       (facts.coarse?'⚠ Trace GPS peu détaillée : les passages courts peuvent être sous-estimés. ':'')+

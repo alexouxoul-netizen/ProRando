@@ -69,7 +69,7 @@
   longest=Math.max(longest,run);
   ascent=measurement.ascent;descent=measurement.descent;
   const knownShare=measurement.knownShare;
-  const altitudeOk=knownShare>=.85&&measurement.quality.breaks===0&&measurement.quality.invalid===0;
+  const altitudeOk=knownShare>=.85;
   const bins=[];let rise50=0,steep50=0,verySteep50=0,down50=0,known50=0;
   for(let a=0;a<distance;a+=50){
    const b=Math.min(distance,a+50),z0=at(points,ds,a),z1=at(points,ds,b);
@@ -113,7 +113,7 @@
   if(down50>=500)intrinsic+=2;else if(down50>=200)intrinsic++;
   const spacings=[];for(let i=1;i<ds.length;i++){const d=ds[i]-ds[i-1];if(d>.2)spacings.push(d);}spacings.sort((a,b)=>a-b);
   const coarse=(spacings.length?spacings[Math.floor(spacings.length/2)]:Infinity)>15||points.length<50;
-  return {distance,ascent,descent,knownShare,altitudeOk:altitudeOk&&known50/distance>=.85,physicalGrade,
+  return {distance,ascent,descent,knownShare,incomplete:measurement.quality.breaks>0||measurement.quality.invalid>0,altitudeOk:altitudeOk&&known50/distance>=.85,physicalGrade,
    uphill,steepUp,steepDown,verySteepUp,longest,hardest,coarse,intrinsic,
    verdictRise:rise50,verdictSteep:steep50,verdictDescent:down50,points:points.length};
  }
@@ -191,7 +191,7 @@
   const header=el('div','rv104-card-head');header.append(el('span','rv104-letter',id.toUpperCase()),el('strong','',name));card.append(header);
   const verdict=el('p','rv104-verdict rv104-'+report.level,labels[report.level]);card.append(verdict);
   const lines=el('div','rv104-lines');
-  lines.append(makeLine('Distance',km(m.distance)),makeLine('Dénivelé +',m.altitudeOk?('+'+meter(m.ascent)):'Non disponible'));
+  lines.append(makeLine('Distance'+(m.incomplete?' (partielle)':''),km(m.distance)),makeLine('Dénivelé +',m.altitudeOk?('+'+meter(m.ascent)):'Non disponible'));
   lines.append(makeLine('Dénivelé −',m.altitudeOk?('−'+meter(m.descent)):'Non disponible'));
   lines.append(makeLine('Note physique GPX',m.physicalGrade!==null&&m.altitudeOk?m.physicalGrade+'/5':'Non disponible'));
   lines.append(makeLine('Montées ≥ 15 % (50 m)',m.altitudeOk?meter(m.verdictSteep):'Inconnues'));
@@ -199,6 +199,7 @@
   if(m.hardest&&m.altitudeOk)lines.append(makeLine('Montée exigeante','km '+(m.hardest.start/1000).toFixed(1).replace('.',',')+'–'+(m.hardest.end/1000).toFixed(1).replace('.',',')+' (+'+meter(m.hardest.rise)+')'));
   card.append(lines);
   if(m.coarse)card.append(el('p','rv104-caution','⚠ Trace peu détaillée : certains passages courts et raides peuvent être sous-estimés.'));
+  if(m.incomplete)card.append(el('p','rv104-caution','⚠ Analyse partielle : ces mesures et cet avis concernent uniquement les portions enregistrées ; le parcours complet peut être plus exigeant.'));
   if(!m.altitudeOk)card.append(el('p','rv104-caution','⚠ Altitudes insuffisantes : verdict impossible. Ne pas interpréter une distance courte comme une randonnée facile.'));
   if(report.history){
    const label={repeat:'À refaire avec plaisir',possible:'Faisable, mais exigeante',avoid:'À éviter pour ce profil'}[report.history.feeling]||'Bilan conservé';
