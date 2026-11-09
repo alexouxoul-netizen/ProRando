@@ -35,7 +35,7 @@
     const bins = [];
     for (let a = 0; a < total; a += 50) {
       const b = Math.min(total, a + 50), z0 = elAt(points, distances, a), z1 = elAt(points, distances, b);
-      const slope = Number.isFinite(z0) && Number.isFinite(z1) ? 100 * (z1 - z0) / (b - a) : null;
+      const slope = RVGPX.intervalKnown(points,distances,a,b) && Number.isFinite(z0) && Number.isFinite(z1) ? 100 * (z1 - z0) / (b - a) : null;
       bins.push({a, b, slope, rise: slope === null ? 0 : Math.max(0, z1 - z0)});
     }
     const climbs = []; let active = null;

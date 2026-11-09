@@ -29,7 +29,7 @@
     const step=50, bins=[];
     for(let a=0;a<total;a+=step){
       const b=Math.min(total,a+step), z0=elevationAt(points,distances,a),z1=elevationAt(points,distances,b);
-      const slope=Number.isFinite(z0)&&Number.isFinite(z1)?(z1-z0)/(b-a)*100:null;
+      const slope=RVGPX.intervalKnown(points,distances,a,b)&&Number.isFinite(z0)&&Number.isFinite(z1)?(z1-z0)/(b-a)*100:null;
       bins.push({a,b,key:classify(slope),slope});
     }
     const groups=[];

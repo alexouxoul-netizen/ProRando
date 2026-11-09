@@ -49,7 +49,7 @@
     const bins=[];let totalRise=0, steepUp=0, verySteepUp=0, steepDown=0, maxUp=0, knownSpan=0;
     for(let a=0;a<total;a+=50){
       const b=Math.min(total,a+50),z0=altAt(pts,ds,a),z1=altAt(pts,ds,b);
-      if(!Number.isFinite(z0)||!Number.isFinite(z1))continue;
+      if(!RVGPX.intervalKnown(pts,ds,a,b)||!Number.isFinite(z0)||!Number.isFinite(z1))continue;
       knownSpan+=b-a;
       const slope=(z1-z0)/(b-a)*100,rise=Math.max(0,z1-z0);
       bins.push({a,b,slope,rise});totalRise+=rise;
@@ -59,7 +59,7 @@
       maxUp=Math.max(maxUp,slope);
     }
     // Sans altitudes fiables, ne jamais afficher à tort un avis favorable.
-    if (knownSpan / total < 0.85) {
+    if (knownSpan / total < 0.85 || track.measurementIncomplete) {
       status.dataset.level='unknown';status.dataset.baseLevel='unknown';delete status.dataset.baseScore;
       status.textContent='⚪ Verdict indisponible : altitudes insuffisantes';
       details.textContent='Cette trace ne contient pas assez de données altimétriques pour évaluer les pentes et les dénivelés. La distance GPS reste consultable.';

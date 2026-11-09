@@ -11,7 +11,7 @@
  const caches={a:null,b:null},readSeq={a:0,b:0};let saved=[],revision=0;
  const option=(value,label)=>{const o=document.createElement('option');o.value=value;o.textContent=label;return o;};
  const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
- const km=n=>(n/1000).toFixed(1).replace('.',',')+' km';
+ const km=n=>(n/1000).toFixed(2).replace('.',',')+' km';
  const meter=n=>Math.round(n)+' m';
  const routeName=name=>String(name||'Randonnée').replace(/\.gpx$/i,'').slice(0,150);
  const classify=score=>score>=7?'high':score>=3?'moderate':'low';
@@ -38,24 +38,12 @@
   const h=Math.sin(dp/2)**2+Math.cos(phi1)*Math.cos(phi2)*Math.sin(dl/2)**2;
   return 2*R*Math.asin(Math.min(1,Math.sqrt(h)));
  }
- function at(points,ds,target){
-  if(target<0||target>ds[ds.length-1])return null;
-  let lo=0,hi=ds.length-1;
-  while(lo<hi){const mid=(lo+hi)>>1;if(ds[mid]<target)lo=mid+1;else hi=mid;}
-  if(lo===0)return points[0].elevation;
-  if(ds[lo]===target)return points[lo].elevation;
-  const a=points[lo-1].elevation,b=points[lo].elevation,span=ds[lo]-ds[lo-1];
-  return Number.isFinite(a)&&Number.isFinite(b)&&span>0?a+(b-a)*(target-ds[lo-1])/span:null;
- }
- function slopeAt(points,ds,i){
-  const mid=(ds[i-1]+ds[i])/2,start=Math.max(0,mid-15),end=Math.min(ds[ds.length-1],mid+15),span=end-start;
-  if(span<=0)return null;
-  const a=at(points,ds,start),b=at(points,ds,end);
-  return Number.isFinite(a)&&Number.isFinite(b)?(b-a)/span*100:null;
- }
+ function at(points,ds,target){return RVGPX.at(points,ds,target);}
+ function slopeAt(points,ds,i){return RVGPX.slope(points,ds,i);}
  function parseMetrics(xml){
-  const points=getPoints(xml),ds=[0];
-  for(let i=1;i<points.length;i++)ds.push(ds[i-1]+geoDistance(points[i-1],points[i]));
+  if(typeof xml!=='string'||!xml.trim()||xml.length>maxXml)throw Error('GPX vide ou trop volumineux.');
+  const measurement=RVGPX.analyze(RVGPX.read(new DOMParser().parseFromString(xml,'application/xml')));
+  const points=measurement.points,ds=measurement.distances;
   const distance=ds[ds.length-1];if(!Number.isFinite(distance)||distance<100)throw Error('GPX trop court : moins de 100 mètres exploitables.');
   let ascent=0,descent=0,knownMeters=0,steepUp=0,steepDown=0,verySteepUp=0;
   const uphill={easy:0,moderate:0,hard:0,extreme:0};
@@ -65,8 +53,7 @@
    if(len<=0)continue;
    if(a.elevation!==null&&b.elevation!==null){
     knownMeters+=len;
-    const dz=b.elevation-a.elevation;
-    if(dz>0)ascent+=dz;else if(dz<0)descent-=dz;
+
     const slope=slopeAt(points,ds,i);
     if(slope!==null){
      const abs=Math.abs(slope);
@@ -80,12 +67,13 @@
    else{gap+=len;if(gap>80){longest=Math.max(longest,run);run=0;gap=0;}}
   }
   longest=Math.max(longest,run);
-  const knownShare=knownMeters/distance;
-  const altitudeOk=knownShare>=.85;
+  ascent=measurement.ascent;descent=measurement.descent;
+  const knownShare=measurement.knownShare;
+  const altitudeOk=knownShare>=.85&&measurement.quality.breaks===0&&measurement.quality.invalid===0;
   const bins=[];let rise50=0,steep50=0,verySteep50=0,down50=0,known50=0;
   for(let a=0;a<distance;a+=50){
    const b=Math.min(distance,a+50),z0=at(points,ds,a),z1=at(points,ds,b);
-   if(!Number.isFinite(z0)||!Number.isFinite(z1))continue;
+   if(!RVGPX.intervalKnown(points,ds,a,b)||!Number.isFinite(z0)||!Number.isFinite(z1))continue;
    known50+=b-a;
    const slope=(z1-z0)/(b-a)*100,rise=Math.max(0,z1-z0);
    bins.push({a,b,slope,rise});rise50+=rise;

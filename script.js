@@ -16,7 +16,7 @@ let lastGpxXml = null;
 let selectedDescentLayer = null;
 
 // La pente est estimée sur une fenêtre locale plutôt qu'entre deux points GPS bruts.
-// Cela stabilise les couleurs sans modifier les altitudes ni les D+/D- cumulés.
+// Les pentes et les dénivelés utilisent le profil altimétrique contrôlé commun.
 const SLOPE_WINDOW_METERS = 30;
 
 function changeLayer() {
@@ -71,49 +71,13 @@ function getElementsByLocalName(xmlDoc, name) {
 // Interpole l'altitude à une distance donnée le long du parcours.
 // Renvoie null si l'intervalle concerné ne possède pas deux altitudes valides.
 function elevationAtDistance(points, cumulativeDistances, targetDistance) {
-    if (targetDistance < 0 || targetDistance > cumulativeDistances[cumulativeDistances.length - 1]) return null;
-
-    let low = 0;
-    let high = cumulativeDistances.length - 1;
-    while (low < high) {
-        const middle = Math.floor((low + high) / 2);
-        if (cumulativeDistances[middle] < targetDistance) low = middle + 1;
-        else high = middle;
-    }
-
-    let right = low;
-    if (right === 0) return points[0].elevation;
-    if (cumulativeDistances[right] === targetDistance) return points[right].elevation;
-
-    const left = right - 1;
-    const distanceSpan = cumulativeDistances[right] - cumulativeDistances[left];
-    const leftElevation = points[left].elevation;
-    const rightElevation = points[right].elevation;
-    if (distanceSpan <= 0 || leftElevation === null || rightElevation === null) return null;
-
-    const ratio = (targetDistance - cumulativeDistances[left]) / distanceSpan;
-    return leftElevation + (rightElevation - leftElevation) * ratio;
+    return RVGPX.at(points, cumulativeDistances, targetDistance);
 }
-
 // Pente moyenne locale centrée sur le milieu du segment (fenêtre de 30 m).
 // Aux extrémités du parcours, la fenêtre est automatiquement raccourcie.
 function getLocalSlope(points, cumulativeDistances, segmentIndex, windowMeters = SLOPE_WINDOW_METERS) {
-    const segmentStart = cumulativeDistances[segmentIndex - 1];
-    const segmentEnd = cumulativeDistances[segmentIndex];
-    const midpoint = (segmentStart + segmentEnd) / 2;
-    const halfWindow = windowMeters / 2;
-    const start = Math.max(0, midpoint - halfWindow);
-    const end = Math.min(cumulativeDistances[cumulativeDistances.length - 1], midpoint + halfWindow);
-    const horizontalDistance = end - start;
-
-    if (horizontalDistance <= 0) return null;
-    const startElevation = elevationAtDistance(points, cumulativeDistances, start);
-    const endElevation = elevationAtDistance(points, cumulativeDistances, end);
-    if (startElevation === null || endElevation === null) return null;
-
-    return ((endElevation - startElevation) / horizontalDistance) * 100;
+    return RVGPX.slope(points, cumulativeDistances, segmentIndex, windowMeters);
 }
-
 function setText(id, value) {
     const element = document.getElementById(id);
     if (element) element.textContent = value;
@@ -241,32 +205,9 @@ function analyserGPX(xmlString) {
         throw new Error('Le fichier GPX semble invalide ou endommagé.');
     }
 
-    // Certains GPX contiennent une trace (trkpt), d’autres une route (rtept).
-    let rawPoints = getElementsByLocalName(xmlDoc, 'trkpt');
-    if (!rawPoints.length) rawPoints = getElementsByLocalName(xmlDoc, 'rtept');
-    if (!rawPoints.length) {
-        throw new Error('Aucun point de parcours trouvé dans ce fichier GPX.');
-    }
-
-    const points = [];
-    for (const node of rawPoints) {
-        const lat = Number(node.getAttribute('lat'));
-        const lon = Number(node.getAttribute('lon'));
-        const eleNode = getElementsByLocalName(node, 'ele')[0];
-        const elevationValue = eleNode ? Number(eleNode.textContent) : NaN;
-        if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) continue;
-        points.push({
-            lat,
-            lon,
-            elevation: Number.isFinite(elevationValue) ? elevationValue : null,
-            latLng: L.latLng(lat, lon)
-        });
-    }
-
-    if (points.length < 2) {
-        throw new Error('Le fichier doit contenir au moins deux points GPS valides.');
-    }
-
+    const measurement = RVGPX.analyze(RVGPX.read(xmlDoc));
+    const points = measurement.points;
+    points.forEach(p => { p.latLng = L.latLng(p.lat, p.lon); });
     currentLayerGroup.clearLayers();
     hoverMarker.remove();
     let distance = 0;
@@ -280,10 +221,7 @@ function analyserGPX(xmlString) {
     const dPlusList = [];
     const dMoinsList = [];
     const validLatLngs = points.map(point => point.latLng);
-    const cumulativeDistances = [0];
-    for (let i = 1; i < points.length; i++) {
-        cumulativeDistances.push(cumulativeDistances[i - 1] + map.distance(points[i - 1].latLng, points[i].latLng));
-    }
+    const cumulativeDistances = measurement.distances;
 
     // Qualité de la géométrie : la médiane évite de confondre quelques pauses GPS
     // avec une trace entière simplifiée. Ne prétend pas mesurer la précision altimétrique.
@@ -309,18 +247,16 @@ function analyserGPX(xmlString) {
     for (let i = 0; i < points.length; i++) {
         const point = points[i];
         distance = cumulativeDistances[i];
-        if (i > 0) {
+        if (i > 0 && !point.breakBefore) {
             const previous = points[i - 1];
             const segmentDistance = cumulativeDistances[i] - cumulativeDistances[i - 1];
             distance = cumulativeDistances[i];
 
-            // Les D+ / D- restent calculés sur les altitudes GPX d'origine.
-            // Seule la classification/coloration utilise une pente locale sur 30 m.
+            // Profil contrôlé commun ; D+/D− cumulés avec seuil de retournement.
             if (segmentDistance > 0 && previous.elevation !== null && point.elevation !== null) {
                 knownAltitudeMeters += segmentDistance;
-                const elevationDifference = point.elevation - previous.elevation;
-                if (elevationDifference > 0) dPlus += elevationDifference;
-                else if (elevationDifference < 0) dMoins += Math.abs(elevationDifference);
+                dPlus = measurement.ascentList[i];
+                dMoins = measurement.descentList[i];
 
                 const slope = getLocalSlope(points, cumulativeDistances, i);
                 const displaySlope = getLocalSlope(points, cumulativeDistances, i, visualWindow);
@@ -369,11 +305,13 @@ function analyserGPX(xmlString) {
         }
 
         distancesKm.push(Number((distance / 1000).toFixed(3)));
-        elevations.push(point.elevation);
+        elevations.push(point.breakBefore ? null : point.elevation);
+        dPlus = measurement.ascentList[i]; dMoins = measurement.descentList[i];
         dPlusList.push(Math.round(dPlus));
         dMoinsList.push(Math.round(dMoins));
     }
 
+    dPlus = measurement.ascent; dMoins = measurement.descent;
     if (currentSteepSection) steepDescentSections.push(currentSteepSection);
     // Afficher jusqu'à trois passages significatifs, classés par longueur raide cumulée.
     // Le classement est indépendant de la note globale et ne modifie aucune couleur.
@@ -436,8 +374,8 @@ function analyserGPX(xmlString) {
     map.fitBounds(L.latLngBounds(validLatLngs), { padding: [20, 20] });
 
     const manualKm = Number(document.getElementById('distance-override')?.value);
-    setText('dist-total', (manualKm > 0 && manualKm <= 100 ? manualKm : distance / 1000).toFixed(1));
-    setText('distance-info', manualKm > 0 && manualKm <= 100 ? 'Distance corrigée manuellement (trace GPS conservée)' : 'Distance GPS brute : vérifier en cas de dérive');
+    setText('dist-total', (manualKm > 0 && manualKm <= 100 ? manualKm : distance / 1000).toFixed(2));
+    setText('distance-info', manualKm > 0 && manualKm <= 100 ? 'Distance corrigée manuellement (trace GPS conservée)' : (measurement.quality.breaks ? 'Distance des portions connues : trace interrompue, total réel indéterminé' : 'Distance après simplification à 3 m ; distance brute : ' + (measurement.rawDistance / 1000).toFixed(2) + ' km'));
     setText('d-plus', Math.round(dPlus) + ' m');
     setText('d-moins', Math.round(dMoins) + ' m');
     setText('up-total', '+' + Math.round(dPlus) + ' m');
@@ -453,17 +391,17 @@ function analyserGPX(xmlString) {
 
     // Ne pas afficher une fausse note facile ou 0 m D+ quand le GPX manque d'altitudes.
     // La carte et la distance GPS restent utilisables.
-    const altitudesSuffisantes = distance > 0 && knownAltitudeMeters / distance >= 0.85;
+    const altitudesSuffisantes = distance > 0 && measurement.knownShare >= 0.85 && measurement.quality.breaks === 0 && measurement.quality.invalid === 0;
     if (altitudesSuffisantes) {
         // Note GPX historique conservée à l'identique si les altitudes sont exploitables.
         calculateDifficulty(distance, dPlus, dMoins, uphill, analyzeClimbs(points, cumulativeDistances));
     } else {
-        setText('gpx-quality', '⚠ Altitudes insuffisantes : environ ' +
+        setText('gpx-quality', '⚠ Trace incomplète ou altitudes insuffisantes : environ ' +
             Math.round(100 * knownAltitudeMeters / Math.max(1, distance)) +
             ' % de la distance dispose d’une altitude exploitable. Distance GPS disponible, dénivelés et difficulté non estimables.');
         ['d-plus', 'd-moins', 'up-total', 'down-total'].forEach(id => setText(id, '—'));
         setText('difficulty-level', '—');
-        setText('difficulty-name', 'Altitudes insuffisantes');
+        setText('difficulty-name', 'Mesures insuffisantes');
         setText('effort-distance', '—');
         setText('walking-time', '—');
         setText('difficulty-reason', 'Dénivelé et pentes non estimables depuis ce GPX');
@@ -473,10 +411,14 @@ function analyserGPX(xmlString) {
         if (difficultyPanel) delete difficultyPanel.dataset.level;
     }
 
+    const q = measurement.quality;
+    const qualityText = document.getElementById('gpx-quality');
+    if (qualityText) qualityText.textContent += ' Simplification à ' + measurement.simplificationMeters + ' m : ' + measurement.geometryIndices.length + ' sommets du tracé (observations altimétriques conservées). Contrôle GPX : ' + q.spikes + ' excursions retirées, ' + q.breaks + ' ruptures, ' + q.invalid + ' coordonnées invalides, ' + q.interpolated + ' altitudes interpolées (trous ≤ 50 m), ' + q.altitudeSpikes + ' pics altimétriques, ' + q.suspectZeros + ' zéros altimétriques suspects. Couverture altitude : ' + Math.round(measurement.knownShare * 100) + ' %. D+/D− estimés après lissage sur 20 m et seuil de retournement de 3 m.';
+
     // Radar V7.3 : échantillonnage par distance, sans toucher aux calculs historiques.
     window.dispatchEvent(new CustomEvent('pr-radar-data', { detail: {
-        points: points.map(p => ({lat:p.lat,lon:p.lon,elevation:p.elevation})),
-        distances: cumulativeDistances.slice(), visualWindow,
+        points: points.map(p => ({lat:p.lat,lon:p.lon,elevation:p.elevation,block:p.block,breakBefore:p.breakBefore})),
+        distances: cumulativeDistances.slice(), visualWindow, measurementIncomplete: measurement.quality.breaks > 0 || measurement.quality.invalid > 0,
         coarseTrack
     }}));
 
@@ -527,7 +469,7 @@ function analyserGPX(xmlString) {
                             const finish = Math.min(cumulativeDistances[cumulativeDistances.length - 1], start + 100);
                             const a0 = elevationAtDistance(points, cumulativeDistances, start);
                             const a1 = elevationAtDistance(points, cumulativeDistances, finish);
-                            const future = finish > start && Number.isFinite(a0) && Number.isFinite(a1) ? (a1-a0)/(finish-start)*100 : null;
+                            const future = RVGPX.intervalKnown(points,cumulativeDistances,start,finish) && finish > start && Number.isFinite(a0) && Number.isFinite(a1) ? (a1-a0)/(finish-start)*100 : null;
                             const direction = local > 1 ? 'Montée' : local < -1 ? 'Descente' : 'Plat';
                             const lines = ['D+ cumulé : ' + dPlusList[index] + ' m', 'D- cumulé : ' + dMoinsList[index] + ' m'];
                             if (Number.isFinite(local)) lines.push('Pente locale : ' + (local > 0 ? '+' : '') + local.toFixed(1) + '% (' + direction + ')' + (Math.abs(local) >= 15 ? ' ⚠ Forte pente' : ''));
