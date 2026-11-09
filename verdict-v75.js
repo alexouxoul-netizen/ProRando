@@ -74,23 +74,33 @@
       else if(current&&b.b-current.last>100)finish();
     }finish();
     const hardest=climbs.reduce((best,c)=>!best||c.rise*(1+c.steep/Math.max(c.up,1))>best.rise*(1+best.steep/Math.max(best.up,1))?c:best,null);
-    // Indicateurs transparents, à ajuster après essais sur randonnées de référence.
+    // V11.1 (étalonnage pilote) : séparer les montées progressives des rampes
+    // raides et répétées. Les profils, la technicité documentée et la calibration
+    // individuelle demeurent distincts de ce score GPX physique de base.
+    // La correction manuelle de distance concerne seulement la charge de
+    // distance; les repères kilométriques cartographiques restent ceux du GPX.
+    const manualKm = Number($('distance-override')?.value);
+    const effortKm = Number.isFinite(manualKm) && manualKm > 0 && manualKm <= 100
+      ? manualKm : total / 1000;
     let score=0;
-    if(total>=18000)score+=2;else if(total>=12000)score++;
-    if(totalRise>=700)score+=3;else if(totalRise>=450)score+=2;else if(totalRise>=250)score++;
-    if(steepUp>=650)score+=3;else if(steepUp>=250)score+=2;else if(steepUp>=100)score++;
-    if(verySteepUp>=150)score+=2;else if(verySteepUp>=50)score++;
-    if(hardest&&hardest.rise>=300)score+=2;else if(hardest&&hardest.rise>=160)score++;
-    if(steepDown>=500)score+=2;else if(steepDown>=200)score++;
-    // Ajustement indicatif de la sensibilité selon le niveau actif.
-    // Les indicateurs physiques GPX restent inchangés.
+    if(effortKm>=20)score+=2;else if(effortKm>=14)score+=1;
+    if(totalRise>=1000)score+=3;else if(totalRise>=650)score+=2;else if(totalRise>=350)score+=1;
+    if(steepUp>=1200)score+=3;else if(steepUp>=650)score+=2;else if(steepUp>=250)score+=1;
+    if(verySteepUp>=300)score+=2;else if(verySteepUp>=100)score+=1;
+    // Une montée longue mais régulière ne suffit pas à classer un parcours
+    // « à éviter ». Sa sévérité dépend aussi des portions à >=15 %.
+    if(hardest && hardest.rise>=350 && hardest.steep>=250)score+=2;
+    else if(hardest && hardest.rise>=220 && hardest.steep>=120)score+=1;
+    if(steepDown>=700)score+=2;else if(steepDown>=250)score+=1;
     const active = window.proRandoProfiles?.getActive?.();
     const chosenLevel = Number.isInteger(active?.level) ? active.level : 1;
-    const offsets = [3, 0, -2, -4, -6];
+    // Garde une marge plus élevée pour les tout débutants, sans rejeter par
+    // principe les randonnées progressives accessibles avec des pauses.
+    const offsets = [3, 1, 0, -2, -4];
     const baselineScore = Math.max(0, score + offsets[Math.max(0,Math.min(4,chosenLevel))]);
     const baseLevel=baselineScore>=7?'high':baselineScore>=3?'moderate':'low';
     const adaptive=window.RandoVistaAdaptive?.getAdjustment?.(active,{
-      distanceKm:total/1000,ascentM:totalRise
+      distanceKm:effortKm,ascentM:totalRise
     });
     // Ne déclenche pas un recalcul du verdict : seulement son explication.
     window.dispatchEvent(new CustomEvent('rv:calibration-preview',{detail:adaptive||null}));
@@ -123,6 +133,7 @@
     addFactor('↗ Montée cumulée estimée : +'+Math.round(totalRise)+' m · '+Math.round(steepUp)+' m à 15 % ou plus, dont '+Math.round(verySteepUp)+' m à 25 % ou plus.');
     addFactor('↘ Descente à 15 % ou plus : '+Math.round(steepDown)+' m · Distance totale : '+fmt(total)+' km.');
     if(hardest)addFactor('🏔 Montée la plus éprouvante : km '+fmt(hardest.start)+' à '+fmt(hardest.end)+' · environ +'+Math.round(hardest.rise)+' m sur '+fmt(hardest.length)+' km.');
+    if(Number.isFinite(manualKm)&&manualKm>0&&manualKm<=100&&Math.abs(manualKm-total/1000)>0.05)addFactor('📏 Distance corrigée : '+manualKm.toFixed(1).replace('.',',')+' km pour estimer l’effort. Les repères sur la carte suivent la trace GPS brute.');
     if(coarseTrack)addFactor('⚠ Trace GPS peu détaillée : les passages courts et raides peuvent être sous-estimés.');
     if(hardest){locate.hidden=false;locate.onclick=()=>{const d=(hardest.start+hardest.end)/2;let lo=0,hi=ds.length-1;while(lo<hi){const mid=(lo+hi)>>1;if(ds[mid]<d)lo=mid+1;else hi=mid;}window.proRandoUI?.showMapPoint(lo);};}
   }

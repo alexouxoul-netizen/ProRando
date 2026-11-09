@@ -1,5 +1,5 @@
 /* V11 atomic app shell: fixed release assets, no cache of auth or cloud data. */
-const CACHE='randovista-v11-flat-fix-1';
+const CACHE='randovista-v111-recalibration-1';
 const ASSETS=["./advisor-v105.js", "./", "./index.html", "./journal-v944.js", "./adaptive-v944.js", "./verdict-v75.js", "./radar-v73.js", "./compare-v102.js", "./library-v8.js", "./cloud-config.js", "./storage-v11.js", "./dashboard-v100.js", "./icon-512.png", "./v9.js", "./profiles-v81.js", "./sync-v11.js", "./icon.png", "./ui-v7.js", "./compare-gpx-v104.js", "./manifest.json", "./recap-v103.js", "./boot-v11.js", "./script.js", "./climbs-v74.js", "./sync-core-v11.js", "./style.css", "./polish-v97.js", "./leaflet.js", "./supabase.js", "./leaflet.css", "./chart.umd.js", "./rv-layers-2x.png", "./rv-marker-icon-2x.png", "./rv-marker-icon.png", "./rv-marker-shadow.png", "./rv-layers.png"];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
