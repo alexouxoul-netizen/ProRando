@@ -4,8 +4,23 @@ let client=null,busy=false,timer=null,pending=null,draft=false;
 $('journal-form').addEventListener('input',()=>{draft=true;});
 window.addEventListener('rv:journal-entry-saved',()=>{draft=false;schedule();});
 const status=text=>{$('rv-sync-status').textContent=text;};
-function download(name,data){const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),5000);}
-async function backup(){download('RandoVista-sauvegarde-complete.json',await S.snapshot());}
+function download(name,data){const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);}
+function displayDate(value){const date=new Date(value);return value&&Number.isFinite(date.getTime())?date.toLocaleString('fr-FR'):'date inconnue';}
+async function refreshBackupStatus(){
+ const [last,restore,review]=await Promise.all([S.metaGet('backupExport'),S.metaGet('lastRestore'),S.metaGet('restoreReview')]);
+ const exported=$('rv-backup-status');if(exported)exported.textContent=last?'Dernier export préparé : '+displayDate(last.preparedAt)+' · '+last.fileName:'Aucune date d’export complet enregistrée sur cet appareil.';
+ const restored=$('rv-restore-status');if(restored)restored.textContent=restore?'Dernière restauration : '+displayDate(restore.restoredAt)+(review?.required?' · Synchronisation en attente de ta confirmation.':''):'';
+}
+async function backup(){
+ if(busy)throw Error('Attends la fin de l’opération en cours.');if(draft)throw Error('Enregistre le ressenti en cours avant d’exporter toutes tes données.');busy=true;$('rv-backup-all').disabled=true;
+ try{
+  const snapshot=await S.snapshot();if(draft)throw Error('Enregistre le ressenti en cours avant d’exporter toutes tes données.');const now=new Date(),pad=n=>String(n).padStart(2,'0');
+  const fileName='RandoVista-sauvegarde-'+now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+'-'+pad(now.getHours())+pad(now.getMinutes())+pad(now.getSeconds())+'.json';
+  download(fileName,snapshot);
+  try{await S.metaSet('backupExport',{preparedAt:now.toISOString(),fileName,sourceCreatedAt:snapshot.createdAt});await refreshBackupStatus();status('Sauvegarde complète préparée. Vérifie que le fichier est bien présent dans tes téléchargements.');}
+  catch(e){status('Le fichier a été préparé, mais la date de cet export n’a pas pu être mémorisée : '+e.message);}
+ }finally{busy=false;$('rv-backup-all').disabled=false;}
+}
 function describe(value){if(value===undefined)return 'Supprimé';return JSON.stringify(value,null,2).slice(0,1200);}
 function showConflicts(conflicts){
  const host=$('rv-sync-conflicts');host.replaceChildren();
@@ -24,6 +39,7 @@ async function sync(resolution){
  if(!navigator.onLine){status('Hors connexion · tes modifications restent sur cet appareil.');return;}
  busy=true;$('rv-sync-now').disabled=true;
  try{
+  if((await S.metaGet('restoreReview'))?.required){status('Données restaurées sur cet appareil. Clique sur Synchroniser pour confirmer la reprise avec le compte partagé.');return;}
   const auth=await session();if(!auth){status('Mode local · connecte le compte partagé pour synchroniser.');return;}
   const meta=await S.metaGet('sync')||{owner:null,base:{}};
   if(!meta.owner){status('Compte connecté · associe cet appareil pour démarrer la synchronisation.');$('rv-bind').hidden=false;return;}
@@ -69,18 +85,30 @@ $('rv-restore-all').onchange=async e=>{
  busy=true;
  try{
   if(draft)throw Error('Enregistre le ressenti en cours avant de restaurer.');
-  const incoming=JSON.parse(await f.text());if(incoming.app!=='RandoVista'||incoming.type!=='complete-backup'||incoming.version!==11||!Array.isArray(incoming.routes)||!incoming.localStorage||!S.KEYS.every(k=>incoming.localStorage[k]===null||typeof incoming.localStorage[k]==='string'))throw Error('Sauvegarde complète V11 invalide');
-  // Legacy data is validated before touching storage; original raw values remain exported.
-  const entries=S.parse(incoming);S.validate(entries);
-  if(!confirm('Restaurer cette sauvegarde complète sur cet appareil ? Les données actuelles seront conservées dans une sauvegarde de secours. La synchronisation reprendra ensuite.'))return;
-  const before=await S.snapshot();await S.commit(incoming,before);status('Sauvegarde restaurée.');schedule();
- }catch(err){status('Restauration impossible : '+err.message);}finally{busy=false;e.target.value='';}
+  document.querySelector('.app-shell').inert=true;
+  const incoming=JSON.parse(await f.text()),summary=S.inspectBackup(incoming);
+  if(draft)throw Error('Enregistre le ressenti en cours avant de restaurer.');
+  const date=summary.createdAt?displayDate(summary.createdAt):'date inconnue';
+  if(!confirm('Restaurer la sauvegarde du '+date+' ?\n'+summary.profiles+' profil(s), '+summary.routes+' GPX, '+summary.journal+' retour(s), '+summary.favorites+' favori(s).\nLes données actuelles seront conservées dans une copie de secours avant remplacement. La synchronisation restera en pause jusqu’à ta confirmation.'))return;
+  const before=await S.snapshot();if(draft)throw Error('Enregistre le ressenti en cours avant de restaurer.');await S.commit(incoming,before,null,{restoring:true});
+  await refreshBackupStatus();status('Sauvegarde restaurée sur cet appareil. Une copie de l’état précédent est disponible. La synchronisation attend ta confirmation.');
+ }catch(err){status('Restauration impossible : '+err.message);}finally{busy=false;document.querySelector('.app-shell').inert=!!S.isBlocked?.();e.target.value='';}
 };
 $('rv-resolve').onclick=()=>{
  const choices=Object.fromEntries([...$('rv-sync-conflicts').querySelectorAll('select')].map(e=>[e.dataset.key,e.value]));
  if(Object.values(choices).some(v=>!v)){status('Choisis une version pour chaque conflit.');return;}sync(choices);
 };
-$('rv-sync-now').onclick=()=>sync();
+$('rv-sync-now').onclick=async()=>{
+ if(busy){status('Attends la fin de l’opération en cours.');return;}
+ if(draft){status('Enregistre le ressenti en cours avant de synchroniser.');return;}
+ try{
+  if((await S.metaGet('restoreReview'))?.required){
+   if(!confirm('Reprendre la synchronisation des données restaurées avec le compte partagé ? Les différences seront vérifiées et les conflits éventuels te seront présentés avant remplacement.'))return;
+   await S.metaSet('restoreReview',null);await refreshBackupStatus();
+  }
+  await sync();
+ }catch(e){status('Synchronisation en attente : '+e.message);}
+};
 $('rv-bind').onclick=async()=>{
  if(busy){status('Attends la fin de la synchronisation.');return;}
  busy=true;
@@ -116,5 +144,6 @@ for(const ev of ['rv:profile-changed','rv:journal-changed','rv:calibration-chang
 window.addEventListener('offline',()=>status('Hors connexion · tes modifications restent sur cet appareil.'));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule();});
 setInterval(()=>{if(!document.hidden)sync();},30000);
-window.RandoVistaSync={sync,backup};
+refreshBackupStatus().catch(e=>{const el=$('rv-backup-status');if(el)el.textContent='Date de sauvegarde indisponible : '+e.message;});
+window.RandoVistaSync={sync,backup,refreshBackupStatus};
 })();

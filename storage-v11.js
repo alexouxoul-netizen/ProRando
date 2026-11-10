@@ -15,6 +15,16 @@ async function snapshot(){
  if(!RVSyncCore.equal(before,raw()))throw Error('Données en cours de modification. Réessaie dans un instant.');
  return {app:'RandoVista',type:'complete-backup',version:11,createdAt:new Date().toISOString(),localStorage:before,routes};
 }
+function inspectBackup(value){
+ if(!value||typeof value!=='object'||value.app!=='RandoVista'||value.type!=='complete-backup'||value.version!==11||!Array.isArray(value.routes)||!value.localStorage||typeof value.localStorage!=='object'||Array.isArray(value.localStorage)||!KEYS.every(k=>Object.hasOwn(value.localStorage,k)&&(value.localStorage[k]===null||typeof value.localStorage[k]==='string')))throw Error('Sauvegarde complète V11 invalide');
+ const values=value.localStorage;
+ const p=values[KEYS[0]]===null?null:JSON.parse(values[KEYS[0]]);
+ if(p!==null&&!window.proRandoProfiles?.validate?.(p))throw Error('Profils ou profil sélectionné invalides dans la sauvegarde');
+ const settings=values[KEYS[2]]===null?{version:944,enabled:{},resetAt:{}}:JSON.parse(values[KEYS[2]]);
+ if(!window.RandoVistaAdaptive?.validSettings?.(settings))throw Error('Réglages de calibration invalides dans la sauvegarde');
+ const records=parse(value),checked=validate(records);
+ return {profiles:checked.profiles.length,routes:checked.routes.length,journal:checked.journal.length,favorites:checked.routes.filter(r=>r.favorite).length,selectedProfile:p?.selected??null,calibratedProfiles:Object.values(settings.enabled).filter(v=>v===true).length,createdAt:typeof value.createdAt==='string'&&Number.isFinite(Date.parse(value.createdAt))?value.createdAt:null};
+}
 function parse(snapshot){
  const result=Object.create(null),values=snapshot.localStorage;
  const p=values[KEYS[0]]===null?{profiles:[],selected:null}:JSON.parse(values[KEYS[0]]);
@@ -54,7 +64,8 @@ function materialize(data,previous){
  values[KEYS[1]]=JSON.stringify(journal);values[KEYS[2]]=JSON.stringify(calibration);
  return {...previous,localStorage:values,routes};
 }
-async function commit(next,expected,meta){
+async function commit(next,expected,meta,options={}){
+ const summary=inspectBackup(next);
  if(blocked)throw Error("Rouvre RandoVista pour terminer la récupération des données.");
  const current=await snapshot();
  if(!RVSyncCore.equal(current.localStorage,expected.localStorage)||!RVSyncCore.equal(current.routes,expected.routes))throw Error('Les données ont changé pendant la synchronisation. Nouvelle tentative nécessaire.');
@@ -62,7 +73,11 @@ async function commit(next,expected,meta){
  try{
   await metaSet('recovery',current); // Durable before any mutation; startup rolls back interrupted writes.
   writeRaw(next.localStorage);await writeRoutes(next.routes);
-  await transaction(metaDB,'state','readwrite',s=>{s.put(current,'lastBackup');if(meta)s.put(meta,'sync');s.delete('recovery');});
+  await transaction(metaDB,'state','readwrite',s=>{
+   s.put(current,'lastBackup');if(meta)s.put(meta,'sync');
+   if(options.restoring){const restoredAt=new Date().toISOString();s.put({restoredAt,sourceCreatedAt:summary.createdAt,summary},'lastRestore');s.put({required:true,restoredAt},'restoreReview');}
+   s.delete('recovery');
+  });
  }catch(e){
   try{writeRaw(current.localStorage);await writeRoutes(current.routes);await transaction(metaDB,'state','readwrite',s=>s.delete('recovery'));}catch(_){blocked=true;throw Error('Restauration nécessaire : ferme puis rouvre RandoVista avant toute modification.');}
   throw e;
@@ -74,5 +89,5 @@ async function init(){
  const pending=await metaGet('recovery');if(pending){writeRaw(pending.localStorage);await writeRoutes(pending.routes);await transaction(metaDB,'state','readwrite',s=>s.delete('recovery'));}
  if(!await metaGet('initialBackup'))await metaSet('initialBackup',await snapshot());
 }
-window.RVStore={isBlocked:()=>blocked,init,snapshot,parse,validate,materialize,commit,metaGet,metaSet,KEYS};
+window.RVStore={isBlocked:()=>blocked,init,snapshot,inspectBackup,parse,validate,materialize,commit,metaGet,metaSet,KEYS};
 })();
