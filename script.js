@@ -422,12 +422,12 @@ function analyserGPX(xmlString) {
 
     const q = measurement.quality;
     const qualityText = document.getElementById('gpx-quality');
-    if (qualityText) qualityText.textContent += ' Simplification à ' + measurement.simplificationMeters + ' m : ' + measurement.geometryIndices.length + ' sommets du tracé (observations altimétriques conservées). Contrôle GPX : ' + q.spikes + ' excursions retirées, ' + q.breaks + ' ruptures, ' + q.invalid + ' coordonnées invalides, ' + q.interpolated + ' altitudes interpolées (trous ≤ 50 m), ' + q.altitudeSpikes + ' pics altimétriques, ' + q.suspectZeros + ' zéros altimétriques suspects. Couverture altitude : ' + Math.round(measurement.knownShare * 100) + ' %. D+/D− estimés après lissage sur 20 m et seuil de retournement de 3 m.';
+    if (qualityText) qualityText.textContent += ' Simplification à ' + measurement.simplificationMeters + ' m : ' + measurement.geometryIndices.length + ' sommets du tracé (observations altimétriques conservées). Contrôle GPX : ' + q.spikes + ' excursions retirées, ' + q.breaks + ' ruptures, ' + q.invalid + ' coordonnées invalides, ' + q.interpolated + ' altitudes interpolées (trous ≤ 50 m), ' + q.altitudeSpikes + ' pics altimétriques, ' + q.suspectZeros + ' zéros altimétriques suspects. Couverture altitude : ' + Math.round(measurement.knownShare * 100) + ' %. D+/D− estimés sur un profil régulier à pas maximal de 5 m ; extrémités conservées, lissage triangulaire sur au plus 20 m et retournements de 3 m.';
 
     // Radar V7.3 : échantillonnage par distance, sans toucher aux calculs historiques.
     window.dispatchEvent(new CustomEvent('pr-radar-data', { detail: {
         points: points.map(p => ({lat:p.lat,lon:p.lon,elevation:p.elevation,block:p.block,breakBefore:p.breakBefore})),
-        distances: cumulativeDistances.slice(), visualWindow, measurementIncomplete: measurement.quality.breaks > 0 || measurement.quality.invalid > 0,
+        distances: cumulativeDistances.slice(), visualWindow, measurementIncomplete: measurement.quality.breaks > 0 || measurement.quality.invalid > 0, measurementAscent: measurement.ascent, measurementDescent: measurement.descent,
         coarseTrack
     }}));
 

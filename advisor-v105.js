@@ -86,7 +86,7 @@
       if (gap>=0 && gap<=350 && order[i].rise>=35 && order[i-1].rise>=35)
         closePairs.push({a:order[i-1],b:order[i],gap});
     }
-    return {total,incomplete:!!track.measurementIncomplete,knownShare:known/total,altitudeOk:known/total>=.85,ascent,
+    return {total,incomplete:!!track.measurementIncomplete,knownShare:known/total,altitudeOk:known/total>=.85,ascent:Number.isFinite(track.measurementAscent)?track.measurementAscent:ascent,
       steepUp,verySteepUp,steepDown,climbs,descents,closePairs,
       coarse:!!track.coarseTrack,distances:ds};
   }

@@ -135,7 +135,7 @@
     renderPastExperience(active,baseLevel,level);
     if(correction)addFactor('🎯 Calibration personnelle : '+(correction>0?'+1':'−1')+' point sur le score, après '+adaptive.eligible+' randonnées distinctes. Le GPX et le niveau du profil sont inchangés.');
     addFactor('👤 Niveau analysé : '+(active?.name||'Référence')+' — '+(['Très débutant','Débutant','Bon marcheur','Aguerri','Expert'][chosenLevel])+(active?.temporary?' (simulation temporaire)':'')+'.');
-    addFactor('↗ Montée cumulée estimée : +'+Math.round(totalRise)+' m · '+Math.round(steepUp)+' m à 15 % ou plus, dont '+Math.round(verySteepUp)+' m à 25 % ou plus.');
+    addFactor('↗ Montée cumulée estimée : +'+Math.round(Number.isFinite(track.measurementAscent)?track.measurementAscent:totalRise)+' m · '+Math.round(steepUp)+' m à 15 % ou plus, dont '+Math.round(verySteepUp)+' m à 25 % ou plus.');
     addFactor('↘ Descente à 15 % ou plus : '+Math.round(steepDown)+' m · Distance totale : '+fmt(total)+' km.');
     if(hardest)addFactor('🏔 Montée la plus éprouvante : km '+fmt(hardest.start)+' à '+fmt(hardest.end)+' · environ +'+Math.round(hardest.rise)+' m sur '+fmt(hardest.length)+' km.');
     if(Number.isFinite(manualKm)&&manualKm>0&&manualKm<=100&&Math.abs(manualKm-total/1000)>0.05)addFactor('📏 Distance corrigée : '+manualKm.toFixed(1).replace('.',',')+' km pour estimer l’effort. Les repères sur la carte suivent la trace GPS brute.');

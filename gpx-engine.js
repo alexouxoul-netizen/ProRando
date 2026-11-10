@@ -91,6 +91,61 @@ function analyze(input, options={}){
   if(start>0&&j<ids.length){const l=ids[start-1],r=ids[j],span=ds[r]-ds[l];if(span>0&&span<=50){for(let k=start;k<j;k++){const i=ids[k];points[i].elevation=points[l].elevation+(points[r].elevation-points[l].elevation)*(ds[i]-ds[l])/span;quality.interpolated++;}}}
  }
  }
+ const altitudeMethod=options.altitudeMethod??'regular';
+ if(!['regular','legacy'].includes(altitudeMethod))throw Error('Méthode altimétrique invalide.');
+ for(const point of points)point.controlledElevation=point.elevation;
+ const {ascent,descent,ascentList,descentList}=altitudeMethod==='legacy'?legacyAltitude(points,ds):regularAltitude(points,ds);
+ const recordedDistance=ds.at(-1);
+ const shape=geometry(points,ds,groups,tolerance);
+ let geometryKnownMeters=0;
+ for(let i=1;i<points.length;i++)if(!points[i].breakBefore&&points[i-1].elevation!==null&&points[i].elevation!==null)geometryKnownMeters+=shape.distances[i]-shape.distances[i-1];
+ return {points,distances:shape.distances,distance:shape.distance,recordedDistance,altitudeDistances:ds,rawDistance,ascent,descent,ascentList,descentList,knownMeters:geometryKnownMeters,knownShare:shape.distance?geometryKnownMeters/shape.distance:0,quality,spacing,gapLimit,discontinuities,geometryIndices:shape.vertices,simplificationMeters:tolerance,altitudeMethod,altitudeStepMeters:altitudeMethod==='regular'?5:null};
+}
+function regularAltitude(points,ds){
+ const ascentList=Array(points.length).fill(0),descentList=Array(points.length).fill(0);
+ let ascent=0,descent=0,start=0;
+ while(start<points.length){
+  if(points[start].elevation===null){ascentList[start]=ascent;descentList[start]=descent;start++;continue;}
+  let end=start;while(end+1<points.length&&!points[end+1].breakBefore&&points[end+1].elevation!==null)end++;
+  const span=ds[end]-ds[start];
+  if(span<=1e-9){for(let i=start;i<=end;i++){ascentList[i]=ascent;descentList[i]=descent;}start=end+1;continue;}
+  const count=Math.max(1,Math.ceil(span/5-1e-9)),step=span/count,x=[],z=[];let right=start;
+  for(let k=0;k<=count;k++){
+   const target=k===count?ds[end]:ds[start]+k*step;x.push(target);
+   if(k===0){z.push(points[start].elevation);continue;}if(k===count){z.push(points[end].elevation);continue;}
+   while(right<end&&ds[right+1]<=target)right++;
+   if(ds[right]===target||right===end){z.push(points[right].elevation);continue;}
+   const ratio=(target-ds[right])/(ds[right+1]-ds[right]);z.push(points[right].elevation+(points[right+1].elevation-points[right].elevation)*ratio);
+  }
+  // Symmetric triangular filter, support <=20 m. Known run endpoints are untouched.
+  const smooth=z.map((v,i)=>i<2||i>z.length-3?v:(z[i-2]+2*z[i-1]+3*v+2*z[i+1]+z[i+2])/9);
+  const turns=[0];let direction=0,extreme=0,anchor=0;
+  for(let k=1;k<smooth.length;k++){
+   const value=smooth[k];
+   if(!direction){if(Math.abs(value-smooth[anchor])>=3){direction=Math.sign(value-smooth[anchor]);extreme=k;}}
+   else if(direction*(value-smooth[extreme])>=0)extreme=k;
+   else if(direction*(smooth[extreme]-value)>=3){turns.push(extreme);anchor=extreme;direction=-direction;extreme=k;}
+  }
+  if(turns.at(-1)!==smooth.length-1)turns.push(smooth.length-1);
+  const ups=Array(x.length).fill(0),downs=Array(x.length).fill(0);let runUp=0,runDown=0;
+  for(let k=1;k<turns.length;k++){
+   const a=turns[k-1],b=turns[k],dz=smooth[b]-smooth[a];
+   for(let j=a;j<=b;j++){const fraction=(x[j]-x[a])/(x[b]-x[a]);ups[j]=runUp+Math.max(0,dz)*fraction;downs[j]=runDown+Math.max(0,-dz)*fraction;}
+   runUp+=Math.max(0,dz);runDown+=Math.max(0,-dz);
+  }
+  let left=0;
+  for(let i=start;i<=end;i++){
+   while(left<x.length-2&&x[left+1]<ds[i])left++;
+   const fraction=Math.max(0,Math.min(1,(ds[i]-x[left])/(x[left+1]-x[left])));
+   points[i].elevation=smooth[left]+(smooth[left+1]-smooth[left])*fraction;
+   ascentList[i]=ascent+ups[left]+(ups[left+1]-ups[left])*fraction;
+   descentList[i]=descent+downs[left]+(downs[left+1]-downs[left])*fraction;
+  }
+  ascent+=runUp;descent+=runDown;start=end+1;
+ }
+ return {ascent,descent,ascentList,descentList};
+}
+function legacyAltitude(points,ds){
  // Distance-weighted sampling avoids dependence on recording frequency / pauses.
  const source=points.map(p=>({...p}));
  for(let i=0;i<points.length;i++){
@@ -114,11 +169,7 @@ function analyze(input, options={}){
   if(terminal&&anchor!==null&&z!==null){const end=dir?extreme:z;if(end>anchor)ascent+=end-anchor;else descent+=anchor-end;anchor=z;extreme=z;dir=0;}
   ascentList.push(ascent+(dir>0?extreme-anchor:0));descentList.push(descent+(dir<0?anchor-extreme:0));
  }
- const recordedDistance=ds.at(-1);
- const shape=geometry(points,ds,groups,tolerance);
- let geometryKnownMeters=0;
- for(let i=1;i<points.length;i++)if(!points[i].breakBefore&&points[i-1].elevation!==null&&points[i].elevation!==null)geometryKnownMeters+=shape.distances[i]-shape.distances[i-1];
- return {points,distances:shape.distances,distance:shape.distance,recordedDistance,altitudeDistances:ds,rawDistance,ascent,descent,ascentList,descentList,knownMeters:geometryKnownMeters,knownShare:shape.distance?geometryKnownMeters/shape.distance:0,quality,spacing,gapLimit,discontinuities,geometryIndices:shape.vertices,simplificationMeters:tolerance};
+ return {ascent,descent,ascentList,descentList};
 }
 function at(points,ds,target,block){
  if(target<0||target>ds.at(-1))return null;
