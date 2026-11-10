@@ -5,7 +5,7 @@
 (()=>{'use strict';
  const $=id=>document.getElementById(id);
  const root=$('rv104-comparator');if(!root)return;
- const R=6371000, maxXml=15000000, levelOffsets=[3,0,-2,-4,-6];
+ const R=6371000, maxXml=15000000;
  const profiles=['Très débutant','Débutant','Bon marcheur','Aguerri','Expert'];
  const labels={low:'A priori adaptée',moderate:'Exigeante, mais potentiellement faisable',high:'À éviter pour ce niveau',unknown:'Difficulté indisponible'};
  const caches={a:null,b:null},readSeq={a:0,b:0};let saved=[],revision=0;
@@ -14,7 +14,7 @@
  const km=n=>(n/1000).toFixed(2).replace('.',',')+' km';
  const meter=n=>Math.round(n)+' m';
  const routeName=name=>String(name||'Randonnée').replace(/\.gpx$/i,'').slice(0,150);
- const classify=score=>score>=7?'high':score>=3?'moderate':'low';
+ const classify=score=>RVVerdictRules.classify(score);
  function getPoints(xml){
   if(typeof xml!=='string'||!xml.trim()||xml.length>maxXml)throw Error('GPX vide ou trop volumineux (15 Mo maximum).');
   const doc=new DOMParser().parseFromString(xml,'application/xml');
@@ -104,13 +104,7 @@
    physicalGrade=score<1.1?1:score<2.7?2:score<3.5?3:score<4.35?4:5;
    if(steep>=500&&steep/Math.max(1,distance)>.13)physicalGrade=Math.max(physicalGrade,3);
   }
-  let intrinsic=0;
-  if(distance>=18000)intrinsic+=2;else if(distance>=12000)intrinsic++;
-  if(rise50>=700)intrinsic+=3;else if(rise50>=450)intrinsic+=2;else if(rise50>=250)intrinsic++;
-  if(steep50>=650)intrinsic+=3;else if(steep50>=250)intrinsic+=2;else if(steep50>=100)intrinsic++;
-  if(verySteep50>=150)intrinsic+=2;else if(verySteep50>=50)intrinsic++;
-  if(hardest&&hardest.rise>=300)intrinsic+=2;else if(hardest&&hardest.rise>=160)intrinsic++;
-  if(down50>=500)intrinsic+=2;else if(down50>=200)intrinsic++;
+  const intrinsic=RVVerdictRules.intrinsic({distanceKm:distance/1000,rise:rise50,steepUp:steep50,verySteepUp:verySteep50,steepDown:down50,hardest});
   const spacings=[];for(let i=1;i<ds.length;i++){const d=ds[i]-ds[i-1];if(d>.2)spacings.push(d);}spacings.sort((a,b)=>a-b);
   const coarse=(spacings.length?spacings[Math.floor(spacings.length/2)]:Infinity)>15||points.length<50;
   return {distance,ascent,descent,knownShare,incomplete:measurement.quality.breaks>0||measurement.quality.invalid>0,altitudeOk:altitudeOk&&known50/distance>=.85,physicalGrade,
@@ -131,15 +125,15 @@
   if(!metrics.altitudeOk){
    // Si la difficulté physique est inconnue, un retour « à éviter » reste
    // une alerte réelle, sans prétendre déduire les pentes absentes.
-   const knownAvoid=reference?.feeling==='avoid'||history?.feeling==='avoid';
-   return {level:knownAvoid?'high':'unknown',score:null,baseScore:null,calibration:null,reference,history,offset:0,missingAlt:true};
+   const knownAvoid=reference?.feeling==='avoid';
+   return {level:'unknown',score:null,baseScore:null,calibration:null,reference,history,offset:0,missingAlt:true};
   }
   const level=Number.isInteger(profile.level)?Math.max(0,Math.min(4,profile.level)):1;
-  const baseScore=Math.max(0,metrics.intrinsic+levelOffsets[level]);
+  const {baseScore}=RVVerdictRules.forProfile(metrics.intrinsic,level);
   const correction=window.RandoVistaAdaptive?.getAdjustment?.(profile,{distanceKm:metrics.distance/1000,ascentM:metrics.verdictRise});
   const offset=Number.isInteger(correction?.offset)?Math.max(-1,Math.min(1,correction.offset)):0;
   const score=Math.max(0,baseScore+offset);
-  const knownAvoid=reference?.feeling==='avoid'||history?.feeling==='avoid';
+  const knownAvoid=reference?.feeling==='avoid';
   return {level:knownAvoid?'high':classify(score),score,baseScore,calibration:correction,reference,history,offset};
  }
 
@@ -205,7 +199,8 @@
    const label={repeat:'À refaire avec plaisir',possible:'Faisable, mais exigeante',avoid:'À éviter pour ce profil'}[report.history.feeling]||'Bilan conservé';
    card.append(el('p','rv104-history','🥾 Déjà parcourue pour ce profil : '+report.history.effort+'/5 · '+label+'.'));
   }
-  if(report.reference?.feeling==='avoid'||report.history?.feeling==='avoid')card.append(el('p','rv104-history-warning','⚠ Évaluée « à éviter » pour ce profil : l’expérience réelle prévaut sur la prévision physique.'));
+  if(report.reference?.feeling==='avoid')card.append(el('p','rv104-history-warning','⚠ Référence terrain « à éviter » pour ce profil : ce retour réel prime sur la prévision physique.'));
+  else if(report.history?.feeling==='avoid')card.append(el('p','rv104-history-warning','⚠ Retour précédent « à éviter » conservé dans le carnet, distinct de cette prévision physique.'));
   else if(report.reference&&!report.history)card.append(el('p','rv104-history','Expérience de terrain enregistrée pour ce même GPX et ce profil.'));
   if(report.offset)card.append(el('p','rv104-calibration','🎯 Calibrage personnel : '+(report.offset>0?'+1':'−1')+' point sur le score.'));
   const action=el('button','rv104-choose-btn','Préparer ce parcours');action.type='button';action.addEventListener('click',()=>{

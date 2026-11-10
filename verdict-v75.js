@@ -82,23 +82,12 @@
     const manualKm = Number($('distance-override')?.value);
     const effortKm = Number.isFinite(manualKm) && manualKm > 0 && manualKm <= 100
       ? manualKm : total / 1000;
-    let score=0;
-    if(effortKm>=20)score+=2;else if(effortKm>=14)score+=1;
-    if(totalRise>=1000)score+=3;else if(totalRise>=650)score+=2;else if(totalRise>=350)score+=1;
-    if(steepUp>=1200)score+=3;else if(steepUp>=650)score+=2;else if(steepUp>=250)score+=1;
-    if(verySteepUp>=300)score+=2;else if(verySteepUp>=100)score+=1;
-    // Une montée longue mais régulière ne suffit pas à classer un parcours
-    // « à éviter ». Sa sévérité dépend aussi des portions à >=15 %.
-    if(hardest && hardest.rise>=350 && hardest.steep>=250)score+=2;
-    else if(hardest && hardest.rise>=220 && hardest.steep>=120)score+=1;
-    if(steepDown>=700)score+=2;else if(steepDown>=250)score+=1;
+    const score=RVVerdictRules.intrinsic({distanceKm:effortKm,rise:totalRise,steepUp,verySteepUp,steepDown,hardest});
     const active = window.proRandoProfiles?.getActive?.();
     const chosenLevel = Number.isInteger(active?.level) ? active.level : 1;
     // Garde une marge plus élevée pour les tout débutants, sans rejeter par
     // principe les randonnées progressives accessibles avec des pauses.
-    const offsets = [3, 1, 0, -2, -4];
-    const baselineScore = Math.max(0, score + offsets[Math.max(0,Math.min(4,chosenLevel))]);
-    const baseLevel=baselineScore>=7?'high':baselineScore>=3?'moderate':'low';
+    const {baseScore:baselineScore,level:baseLevel}=RVVerdictRules.forProfile(score,chosenLevel);
     const adaptive=window.RandoVistaAdaptive?.getAdjustment?.(active,{
       distanceKm:effortKm,ascentM:totalRise
     });
@@ -106,7 +95,7 @@
     window.dispatchEvent(new CustomEvent('rv:calibration-preview',{detail:adaptive||null}));
     const correction=Number.isInteger(adaptive?.offset)?Math.max(-1,Math.min(1,adaptive.offset)):0;
     const adjustedScore=Math.max(0,baselineScore+correction);
-    const level=adjustedScore>=7?'high':adjustedScore>=3?'moderate':'low';
+    const level=RVVerdictRules.classify(adjustedScore);
     // La prévision brute est conservée dans le carnet, même si le calibrage est activé.
     status.dataset.baseLevel=baseLevel;
     status.dataset.baseScore=String(baselineScore);
