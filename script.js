@@ -588,6 +588,7 @@ function analyserGPX(xmlString) {
     function clearReliefCursor() {
         // Conserver le dernier point sélectionné pour le retrouver sur la carte.
     }
+    window.RandoVistaMeasurements=Object.freeze({xml:xmlString,incomplete:measurement.quality.breaks>0||measurement.quality.invalid>0||measurement.knownShare<0.999999,altitudeKnownShare:measurement.knownShare});
 }
 
 // Géolocalisation ponctuelle : évite de suivre la position en permanence

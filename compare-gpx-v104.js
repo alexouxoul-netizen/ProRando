@@ -199,6 +199,7 @@
    const label={repeat:'À refaire avec plaisir',possible:'Faisable, mais exigeante',avoid:'À éviter pour ce profil'}[report.history.feeling]||'Bilan conservé';
    card.append(el('p','rv104-history','🥾 Déjà parcourue pour ce profil : '+report.history.effort+'/5 · '+label+'.'));
   }
+  if(report.history?.conditions?.includes('heat'))card.append(el('p','rv104-history','☀ Forte chaleur signalée pour cette sortie : le ressenti est conservé sans calibrage des autres parcours.'));
   if(report.reference?.feeling==='avoid')card.append(el('p','rv104-history-warning','⚠ Référence terrain « à éviter » pour ce profil : ce retour réel prime sur la prévision physique.'));
   else if(report.history?.feeling==='avoid')card.append(el('p','rv104-history-warning','⚠ Retour précédent « à éviter » conservé dans le carnet, distinct de cette prévision physique.'));
   else if(report.reference&&!report.history)card.append(el('p','rv104-history','Expérience de terrain enregistrée pour ce même GPX et ce profil.'));

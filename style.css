@@ -328,3 +328,6 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 .rv105-limits>summary{cursor:pointer;color:var(--accent);font-weight:750;padding:5px 0;}
 .rv105-limits p{margin:7px 0 0;}
 @media(max-width:380px){.rv105-advisor{padding:13px;}.rv105-head h4{font-size:18px;}}
+
+/* Context flag in saved outing cards. */
+.journal-condition-control{display:flex;align-items:flex-start;gap:7px;font-size:12px;line-height:1.5;margin:9px 0;color:var(--ink)}.journal-condition-control input{flex:none;margin-top:3px;accent-color:#246c48}

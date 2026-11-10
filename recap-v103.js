@@ -8,7 +8,7 @@
  const TIER_LABELS={low:'Plutôt adaptée',moderate:'Exigeante',high:'À éviter'};
  const TERRAIN={rocks:'Pierriers / pierres instables',technical:'Passages techniques',exposed:'Passages exposés',mud:'Boue / terrain glissant'};
  const FEELINGS={repeat:'À refaire avec plaisir',possible:'Faisable, mais exigeante',avoid:'À éviter pour ce profil'};
- const REASONS={beforeReset:'Ce retour date d’avant la remise à zéro de la calibration.',missingPrediction:'L’ancienne évaluation ne possède pas de prévision mémorisée.',missingRoute:'Ce retour n’est pas encore associé à un GPX identifié.',differentLevel:'Le niveau du profil a changé et la prévision historique est insuffisante pour recalculer la référence.',unknownPrediction:'La prévision GPX était indisponible.',ambiguous:'La difficulté ressentie est absente ou invalide.',duplicate:'Un retour plus récent du même GPX représente déjà cette trace dans le calibrage physique.'};
+ const REASONS={heat:'La forte chaleur a influencé cette sortie : son ressenti est conservé sans durcir les prévisions des autres parcours.',incompletePrediction:'La prévision utilisait un GPX partiel : ce retour ne sert pas au calibrage global.',beforeReset:'Ce retour date d’avant la remise à zéro de la calibration.',missingPrediction:'L’ancienne évaluation ne possède pas de prévision mémorisée.',missingRoute:'Ce retour n’est pas encore associé à un GPX identifié.',differentLevel:'Le niveau du profil a changé et la prévision historique est insuffisante pour recalculer la référence.',unknownPrediction:'La prévision GPX était indisponible.',ambiguous:'La difficulté ressentie est absente ou invalide.',duplicate:'Un retour plus récent du même GPX représente déjà cette trace dans le calibrage physique.'};
  const getEntries=()=>window.RandoVistaJournal?.getEntries?.()||[];
  const active=()=>window.proRandoProfiles?.getActive?.()||null;
  let selectedId=null;
@@ -28,6 +28,7 @@
   else if(e.up==='ok')list.push('Montées : soutenues mais faisables.');
   if(e.down==='hard')list.push('Descentes : très difficiles selon ton retour.');
   else if(e.down==='ok')list.push('Descentes : attention nécessaire.');
+  if(e.conditions?.includes('heat'))list.push('Conditions signalées : forte chaleur ayant augmenté l’effort.');
   for(const t of e.terrain||[])if(TERRAIN[t])list.push('Terrain signalé : '+TERRAIN[t].toLowerCase()+'.');
   if(Number(e.fatigue)>=4)list.push('Fatigue à l’arrivée : '+e.fatigue+'/5.');
   list.push('Bilan personnel : '+(FEELINGS[e.feeling]||'Non renseigné')+'.');

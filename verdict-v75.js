@@ -30,8 +30,9 @@
     $('rv-experience-effort').textContent=last.effort+'/5';
     $('rv-experience-feeling').textContent=feelingNames[last.feeling]||'Bilan enregistré';
     const terrains=Array.isArray(last.terrain)?last.terrain.map(t=>terrainNames[t]).filter(Boolean):[];
+    if(last.conditions?.includes('heat'))terrains.push('forte chaleur ayant augmenté l’effort');
     $('rv-experience-terrain').hidden=!terrains.length;
-    $('rv-experience-terrain').textContent=terrains.length?'⚠ Terrain signalé : '+terrains.join(', ')+'.':'';
+    $('rv-experience-terrain').textContent=terrains.length?'⚠ Terrain ou conditions signalés : '+terrains.join(', ')+'.':'';
     const notes=String(last.notes||'').trim().slice(0,240);
     $('rv-experience-notes').hidden=!notes;
     $('rv-experience-notes').textContent=notes?'« '+notes+(String(last.notes||'').trim().length>240?'…':'')+' »':'';

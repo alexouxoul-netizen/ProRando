@@ -1,52 +1,66 @@
-# RandoVista — cohérence des verdicts de la fiche et du comparateur
+# RandoVista — calibration personnelle et contexte des retours
 
-10 novembre 2026. Version de test séparée, sans publication. Ce rapport décrit la livraison COHERENCE-TEST.
+10 novembre 2026. Version de test séparée, sans publication. La base COHERENCE-TEST validée reste disponible dans son archive inchangée.
 
-## Problème trouvé
+## Confrontation aux ressentis connus
 
-La fiche et le comparateur utilisaient deux générations de règles : seuils différents pour la distance, le dénivelé, les pentes, les montées continues et la descente, ainsi que des décalages différents selon le niveau du profil. La distance, le D+/D− et les notes physiques pouvaient être les mêmes, mais le verdict diverger.
+| Randonnée | Ressenti de référence | Note physique actuelle | Lecture du résultat |
+|---|---:|---:|---|
+| Gavarnie | 2/5 | 2/5 | Cohérent ; passage technique signalé avant le demi-tour. |
+| Orlu | 3/5 | 3/5 | Cohérent, mais trace partielle. |
+| Fontargente | 5/5 | 5/5 | Cohérent ; référence technique, pas un exemple du seul relief. |
+| Oô | 2/5 | 3/5 | Écart d’un point ; le trajet pendant une interruption manque. |
+| Saint-Félix | 4/5 avec forte chaleur | 2/5 | La chaleur peut expliquer un effort vécu supérieur au relief ; le ressenti reste 4/5. |
+| Gaube | 1/5 | Indisponible | Altitudes trop lacunaires pour une note globale fiable. |
 
-Sur six GPX et cinq niveaux de profil, le contrôle initial trouvait **14 différences de score sur 30 combinaisons**, dont **quatre avis différents** :
+Les cinq premières références historiques hors Gavarnie proviennent du contexte de la conversation ; Gavarnie a été confirmé explicitement par l’utilisateur. Pour Saint-Félix, le contexte historique évoque 1–2/5 hors chaleur : ce n’est pas une mesure indépendante qui permettrait de remplacer le 4/5 réellement vécu.
 
-| Parcours / profil | Avis du comparateur avant | Avis de la fiche conservé |
-|---|---|---|
-| Oô — Très débutant | À éviter | Exigeante |
-| Orlu — Débutant | À éviter | Exigeante |
-| Orlu — Aguerri | Exigeante | A priori adaptée |
-| Gavarnie — Très débutant | À éviter | Exigeante |
+Ces six références sont trop peu nombreuses et trop affectées par des facteurs techniques, la chaleur ou des données incomplètes pour justifier un changement général des seuils. Les notes et les règles de départ restent donc conservées. Ce chantier corrige les données utilisées pour l’apprentissage personnel, pas les scores de base pour les faire correspondre artificiellement aux six exemples.
 
-Ces écarts viennent d’une duplication des règles, pas d’un nouveau traitement GPX ni du ressenti de l’utilisateur.
+## Améliorations livrées
 
-## Correction
+### Chaleur distincte de la difficulté du parcours
 
-Les règles actuelles de la fiche validée sont regroupées dans **verdict-rules.js**, utilisé par la fiche et par le comparateur. Leurs seuils, décalages de profil et limites de catégorie sont conservés. Le comparateur abandonne ses anciens seuils pour employer ceux de la fiche. **Les 30 résultats de la fiche, scores compris, restent identiques au contrôle initial** ; le comparateur les rejoint.
+Le formulaire du carnet dispose d’une case facultative **« Forte chaleur ayant augmenté l’effort »**. La même case apparaît sur chaque sortie déjà enregistrée pour pouvoir compléter un ancien retour. Ce changement ne modifie ni la note, ni les commentaires, ni les mesures du retour : il ajoute seulement le contexte explicitement choisi. Aucun marquage automatique n’est effectué à partir du nom ou du texte d’une sortie.
 
-Les ajustements de calibration personnelle restent plafonnés à −1/+1 comme auparavant. Les modules de profils, carnet, calibration et synchronisation sont conservés à l’identique. Un retour terrain technique « à éviter » pour le même GPX reste prioritaire lorsque l’analyse physique est calculable. Un ancien retour « à éviter » sans technicité reste affiché dans le carnet et dans les avertissements ; il ne force plus, dans le seul comparateur, un verdict physique différent de celui de la fiche. En l’absence d’altitudes suffisantes, le comparateur n’invente plus un verdict physique à partir d’une référence technique : la référence reste signalée séparément.
+Une sortie ainsi marquée reste intégralement dans le carnet, les historiques et les sauvegardes, mais ne vote pas pour augmenter ou diminuer la difficulté physique des autres parcours. Son rôle est expliqué dans l’audit de calibration et dans le bilan de sortie. Le contexte est aussi visible quand ce retour est rappelé dans la fiche ou le comparateur.
 
-La note physique sur 5 et le verdict personnel répondent toujours à deux questions différentes. La note décrit la charge physique du tracé ; le verdict la met en relation avec le profil et ses retours. Cette correction ne cherche pas à faire correspondre artificiellement la note au ressenti de chaque sortie.
+### Prévisions partielles séparées du calibrage global
 
-## Mesures et fonctions conservées
+Les nouvelles évaluations enregistrent si leur prévision utilisait un GPX partiel ou des altitudes incomplètes. Ces retours restent affichés, avec leur note et leur verdict disponibles, mais ne calibrent pas automatiquement les autres parcours. Ce contrôle concerne uniquement l’apprentissage : il ne remet pas en place le blocage des résultats d’Oô, Orlu et Fontargente.
 
-Le moteur GPX, la simplification à 3 m, les distances, le D+/D− révisé et les contrôles de qualité sont **identiques à la version ALTITUDES-TEST acceptée**. Les résultats d’Oô, Fontargente et Orlu restent disponibles et marqués partiels. Gaube reste le cas d’altitudes trop lacunaires déjà connu. Aucun profil, carnet ou réglage personnel de l’utilisateur n’a été modifié.
+Les anciens retours sans cette information ne sont ni réécrits, ni devinés rétroactivement. La présence d’une interruption n’est enregistrée automatiquement que dans les nouveaux retours, en vérifiant que les mesures appartiennent au GPX actif.
 
-Les comparaisons portent sur les mêmes GPX et les mêmes mesures, sans correction manuelle de distance. Une distance saisie manuellement dans la fiche reste propre à la préparation en cours et ne modifie pas les fichiers GPX enregistrés ; cette fonction existante n’a pas été transformée. Le calcul adaptatif des anciens retours entre différents niveaux de profil n’a pas été recalibré ni migré dans ce chantier.
+### Changement de niveau du profil
 
-## Référence terrain Gavarnie
+Le calcul adaptatif historique utilisait encore d’anciens décalages de niveau, différents de ceux de la fiche et du comparateur maintenant unifiés. Les nouvelles prévisions mémorisent donc les règles effectivement utilisées. Lorsqu’un profil change de niveau, une prévision ainsi identifiée peut être réévaluée avec les bons décalages. Si un ancien retour ne permet pas d’identifier ces règles ou de retrouver son score avant plafonnement à zéro, il reste conservé mais n’est pas réinterprété de façon arbitraire.
 
-L’utilisateur précise **2/5 d’effort ressenti par sa femme**, avec un **passage technique avant le demi-tour au pied du cirque et de la cascade**. Ce retour est consigné comme donnée de validation, séparément du GPX, sans ajout automatique au carnet de l’application. La note physique actuelle de Gavarnie reste 2/5. Son verdict pour un profil Débutant reste « Exigeante », identique à la fiche avant cette correction. Cet écart entre effort ressenti et verdict reste un sujet de calibration ultérieure ; il n’est pas masqué par cette correction de cohérence. Le GPX ne suffit pas à identifier le passage technique décrit.
+Les anciens retours restent utilisables pour la calibration au niveau où ils ont été enregistrés, dès lors que les critères existants sont remplis. Aucun carnet ni profil n’est effacé ou migré automatiquement. L’activation volontaire de la calibration, le minimum de trois GPX distincts, la tendance cohérente à 75 % et la correction maximale de −1/+1 restent inchangés.
 
-## Vérifications
+Les retours techniques restent des références terrain distinctes, comme auparavant. La difficulté ressentie et le plaisir de refaire une sortie restent deux informations différentes.
 
-**158 contrôles automatisés** : les 62 précédents, plus 96 comparaisons de verdicts. Ces 96 cas couvrent six GPX, cinq profils et trois ajustements personnels (−1/0/+1), puis des cas de référence technique, de retour historique non technique, de simulation temporaire, d’altitudes insuffisantes et de plafonnement des ajustements.
+## Conservation des résultats validés
 
-Les tests comparent les vrais modules de fiche et de comparaison avec une interface simulée. Ils vérifient l’égalité des avis, des scores de base et des notes physiques, et la conservation des résultats de la fiche validée. Le moteur GPX et les modules de données utilisateur sont comparés octet par octet à l’archive ALTITUDES-TEST. La syntaxe JavaScript, la présence des dépendances et l’intégrité des archives sont contrôlées.
+Le moteur GPX et le module de règles de verdict sont comparés à l’archive COHERENCE-TEST : ils sont identiques à l’octet près. Les distances à 3 m, les dénivelés, les notes physiques et les verdicts de base ne sont pas recalibrés dans cette livraison. Les modules de profils, stockage et synchronisation sont également conservés. Le carnet accepte toujours les anciennes sauvegardes ; les nouvelles informations sont facultatives.
 
-Il n’y a pas eu de nouvelle vérification complète sur iPhone ou dans le navigateur pour cette livraison, ni de test réel de synchronisation cloud. Les tests utilisent des retours de calibration contrôlés et ne copient pas le carnet réel de l’utilisateur.
+Les paramètres et les données réels de l’utilisateur n’ont pas été lus ni modifiés. Aucun retour terrain de la conversation n’a été ajouté automatiquement dans son carnet. Les essais de conservation et d’import sont réalisés sur des jeux synthétiques isolés.
 
-## Essai
+## Tests
 
-Le ZIP **RandoVista-V11.1-COHERENCE-TEST.zip** contient le site à sa racine et reste prêt pour un emplacement de test GitHub Pages. Son en-tête indique **« verdicts cohérents »** et son cache possède un identifiant distinct. Aucune publication n’a été effectuée. La version ALTITUDES-TEST validée reste disponible pour revenir à la base précédente.
+**179 contrôles automatisés** : les 158 précédents et 21 contrôles supplémentaires du vrai carnet, de l’adaptation et du bilan, exécutés avec une interface et un stockage simulés.
 
-Charger un GPX original, choisir un profil puis sélectionner le même GPX dans le comparateur : à mesures et profil égaux, l’avis doit être cohérent. Vérifier en particulier Orlu pour le profil Débutant. Les distances et dénivelés doivent rester ceux de la version validée. Ne pas effacer les données du site en cas d’ancienne version en cache ; fermer complètement puis rouvrir après chargement.
+Les nouveaux contrôles vérifient notamment : absence d’écriture ou de perte au chargement d’un ancien carnet ; acceptation des anciens retours ; conservation des nouvelles informations dans une sauvegarde JSON et lors d’un vrai appel au gestionnaire d’import ; rejet d’une sauvegarde invalide sans remplacement des données ; conservation intégrale des anciens champs lors de l’ajout du contexte chaleur ; restauration de l’état si l’écriture échoue ; exclusion de la chaleur, des terrains techniques et des prévisions partielles du vote physique ; conservation du minimum de trois traces ; utilisation des bons décalages pour une prévision identifiée ; absence de réinterprétation arbitraire d’un historique sans règles connues ; séparation de l’effort et du plaisir ; explication correcte dans le bilan.
 
-Pour un essai local après extraction : `python -m http.server 8000`, puis ouvrir http://localhost:8000. L’archive COHERENCE-VALIDATION contient les six originaux, l’audit avant/après, la référence Gavarnie et les tests. Reproduction depuis sa racine : `python validation/run.py`. Ce rapport est le document actif de cette livraison ; les rapports antérieurs sont conservés comme historique.
+La syntaxe JavaScript, les dépendances du cache et l’intégrité des archives sont vérifiées. Les tests de cohérence couvrent encore les six GPX et les cinq niveaux avec les ajustements personnels contrôlés. L’audit de base reste cohérent entre fiche et comparateur sur 30 combinaisons.
+
+Cette livraison n’a pas fait l’objet d’un nouveau test complet dans le navigateur/iPhone ni d’une synchronisation cloud réelle. La nouvelle case et son interaction avec le carnet sont testées par les vrais gestionnaires d’événements sur une interface simulée. Le test sur l’appareil habituel reste nécessaire avant d’adopter cette version.
+
+## Essai proposé
+
+Le ZIP CALIBRATION-TEST contient le site à sa racine et porte l’en-tête **« calibration prudente »**. Aucune publication effectuée. La version précédente reste disponible pour retour arrière.
+
+Si Saint-Félix est déjà enregistré dans le carnet : retrouver ce retour, cocher **« Forte chaleur ayant augmenté l’effort »** et vérifier que son ressenti 4/5 est conservé. Dans le bilan ou l’audit de calibration, cette sortie doit être expliquée comme conservée sans vote pour durcir les autres randonnées. Ce choix est facultatif et réversible ; il n’est pas appliqué automatiquement.
+
+Vérifier ensuite qu’Oô, Fontargente et Orlu gardent leurs dénivelés, leurs notes et leurs verdicts partiels, puis que Gavarnie garde ses mesures. Lors d’une nouvelle évaluation, le passage technique de Gavarnie doit être déclaré dans « Terrain rencontré » si l’utilisateur souhaite le conserver dans son carnet ; le GPX ne le déduit pas.
+
+Pour un essai local : extraire le ZIP, lancer `python -m http.server 8000` puis ouvrir http://localhost:8000. Pour rejouer les tests depuis l’archive CALIBRATION-VALIDATION : `python validation/run.py`. Ce rapport est le document actif de la livraison ; les rapports antérieurs sont conservés comme historique.

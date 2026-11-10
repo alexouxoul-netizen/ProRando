@@ -4,6 +4,7 @@ const $=id=>document.getElementById(id);
 // Ne pas renommer cette clé : les anciens carnets doivent rester disponibles après mise à jour.
 const KEY='pro-rando-journal-v82', MAX=600;
 const terrainValues=['rocks','technical','exposed','mud'];
+const conditionValues=['heat'];
 const tiers=['low','moderate','high','unknown'];
 const feelings={repeat:'À refaire',possible:'Exigeante mais faisable',avoid:'À éviter'};
 let entries=[];
@@ -13,8 +14,12 @@ const str=(v)=>typeof v==='string'?v:'';
 const dateIsValid=s=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const [y,m,d]=s.split('-').map(Number);const dt=new Date(Date.UTC(y,m-1,d));return dt.getUTCFullYear()===y&&dt.getUTCMonth()===m-1&&dt.getUTCDate()===d;};
 function valid(e){
  if(!e||typeof e!=='object'||Array.isArray(e)||typeof e.id!=='string'||!e.id||e.id.length>100||typeof e.profileId!=='string'||!e.profileId||e.profileId.length>200||typeof e.profileName!=='string'||e.profileName.length>200||typeof e.route!=='string'||!e.route||e.route.length>300||!dateIsValid(e.date)||![1,2,3,4,5].includes(e.effort)||![1,2,3,4,5].includes(e.fatigue)||!['easy','ok','hard'].includes(e.up)||!['easy','ok','hard'].includes(e.down)||!['repeat','possible','avoid'].includes(e.feeling)||!Array.isArray(e.terrain)||e.terrain.length>terrainValues.length||!e.terrain.every(v=>terrainValues.includes(v))||typeof e.notes!=='string'||e.notes.length>1200)return false;
+ if(e.conditions!==undefined&&(!Array.isArray(e.conditions)||e.conditions.length>1||!e.conditions.every(v=>conditionValues.includes(v))))return false;
  if(e.routeKey!==undefined&&(typeof e.routeKey!=='string'||e.routeKey.length>80))return false;
  if(e.prediction!==undefined){const p=e.prediction;if(!p||typeof p!=='object'||Array.isArray(p)||!tiers.includes(p.tier)||typeof p.verdict!=='string'||p.verdict.length>200||typeof p.physicalGrade!=='string'||p.physicalGrade.length>15||!Number.isInteger(p.profileLevel)||p.profileLevel<0||p.profileLevel>4||!Number.isFinite(p.distanceKm)||p.distanceKm<0||p.distanceKm>10000||!Number.isFinite(p.ascentM)||p.ascentM<0||p.ascentM>100000)return false;
+  if(p.verdictRuleVersion!==undefined&&(typeof p.verdictRuleVersion!=='string'||!p.verdictRuleVersion||p.verdictRuleVersion.length>64))return false;
+  if(p.incomplete!==undefined&&typeof p.incomplete!=='boolean')return false;
+  if(p.altitudeKnownShare!==undefined&&(!Number.isFinite(p.altitudeKnownShare)||p.altitudeKnownShare<0||p.altitudeKnownShare>1))return false;
   if(p.baseTier!==undefined&&!tiers.includes(p.baseTier))return false;
   if(p.baseScore!==undefined&&(!Number.isInteger(p.baseScore)||p.baseScore<0||p.baseScore>100))return false;
  }
@@ -59,6 +64,9 @@ function snapshot(p){
  const baseScore=Number(status?.dataset.baseScore);
  const result={tier,baseTier,verdict:str(status?.textContent).trim().slice(0,200),physicalGrade:str($('difficulty-level')?.textContent).trim().slice(0,15),profileLevel:p.level,distanceKm:Number.isFinite(distance)&&distance>=0?distance:0,ascentM:Number.isFinite(ascent)&&ascent>=0?ascent:0};
  if(Number.isInteger(baseScore)&&baseScore>=0&&baseScore<=100&&status?.dataset.baseScore!=='')result.baseScore=baseScore;
+ const measures=window.RandoVistaMeasurements;
+ if(window.RVVerdictRules?.version)result.verdictRuleVersion=window.RVVerdictRules.version;
+ if(measures&&measures.xml===route()?.xml){result.incomplete=measures.incomplete;result.altitudeKnownShare=measures.altitudeKnownShare;}
  return result;
 }
 window.RandoVistaJournal={validate:valid,getEntries:()=>entries.slice(),getActiveRouteKey:()=>routeKey(route()),fingerprint:xml=>routeKey({xml})};
@@ -127,6 +135,17 @@ function refresh(){
    }catch(err){chooser.replaceChildren(node('p','','Impossible de consulter la bibliothèque : '+err.message));}
   });
   item.append(linkBox);
+  const heatControl=node('label','journal-condition-control');
+  const heatInput=document.createElement('input');heatInput.type='checkbox';heatInput.checked=e.conditions?.includes('heat')||false;
+  heatControl.append(heatInput,document.createTextNode(' Forte chaleur ayant augmenté l’effort'));
+  heatInput.addEventListener('change',()=>{
+   try{
+    const updated=entries.map(x=>x.id===e.id?{...x,conditions:heatInput.checked?['heat']:[]}:x);
+    if(!updated.every(valid))throw Error('Donnée de carnet invalide');
+    persist(updated);$('journal-message').textContent='✓ Conditions de la sortie mises à jour. Le ressenti reste conservé.';refresh();
+   }catch(err){heatInput.checked=e.conditions?.includes('heat')||false;$('journal-message').textContent='Modification impossible : '+err.message;}
+  });
+  item.append(heatControl);
   const recapBtn=node('button','journal-recap-button','Voir le bilan de cette sortie');recapBtn.type='button';
   recapBtn.addEventListener('click',()=>window.RandoVistaRecap?.show?.(e.id,{scroll:true}));
   item.append(recapBtn);
@@ -157,6 +176,7 @@ $('journal-form').addEventListener('submit',event=>{
   effort:Number($('journal-effort').value),fatigue:Number($('journal-fatigue').value),
   up:$('journal-up').value,down:$('journal-down').value,
   terrain:[...document.querySelectorAll('#journal-form input[name="terrain"]:checked')].map(x=>x.value),
+  conditions:[...document.querySelectorAll('#journal-form input[name="conditions"]:checked')].map(x=>x.value),
   feeling:$('journal-feeling').value,notes:$('journal-notes').value.trim().slice(0,1200),
   created:Date.now(),prediction:snapshot(p)
  };

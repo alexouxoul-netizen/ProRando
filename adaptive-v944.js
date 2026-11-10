@@ -9,8 +9,10 @@
  const TIERS={low:0,moderate:1,high:2};
  // Même échelle que le calcul de verdict : permet la comparaison à niveau actuel
  // lorsque le carnet a mémorisé le score brut (V9.4.4 et suivantes).
- const LEVEL_OFFSETS=[3,0,-2,-4,-6];
+ // Historical predictions without a rule version remain usable at the recorded profile level only.
  const REASON_LABELS={
+  heat:'Sortie influencée par une forte chaleur : contexte conservé, sans calibrage des autres parcours',
+  incompletePrediction:'Prévision issue de données GPX partielles : retour conservé, sans calibrage global',
   beforeReset:'Avant remise à zéro',
   missingPrediction:'Ancien retour : prévision non enregistrée',
   missingRoute:'Ancien retour : identité du GPX absente',
@@ -44,7 +46,7 @@
   // deux notions distinctes. Une sortie notée 3/5 et « à refaire avec plaisir »
   // reste une observation modérée, jamais une combinaison contradictoire.
   // Les terrains techniques restent exclus du calibrage des seules pentes GPX.
-  if(e?.terrain?.length)return null;
+  if(e?.terrain?.length||e?.conditions?.includes('heat'))return null;
   if(!Number.isInteger(e?.effort)||e.effort<1||e.effort>5)return null;
   if(e.effort<=2)return 0;
   if(e.effort===3)return 1;
@@ -56,15 +58,15 @@
    const base=p.baseTier||p.tier;
    return own(TIERS,base)?base:null;
   }
-  // Ne JAMAIS inventer une prévision historique. On recalcule uniquement si
-  // la prévision a conservé son score brut et si le clamp à 0 n'a pas perdu
-  // d'information (c'est-à-dire score>0 ou ancien offset >= 0).
+  const rules=window.RVVerdictRules;
+  if(!rules||p.verdictRuleVersion!==rules.version)return null;
+  const offsets=rules.profileOffsets;
+  // A clamped zero cannot safely reveal its original intrinsic score.
   if(!Number.isInteger(p.baseScore)||p.baseScore<0||p.baseScore>100||
-      (p.baseScore===0&&LEVEL_OFFSETS[p.profileLevel]<0))return null;
-  const intrinsic=p.baseScore-LEVEL_OFFSETS[p.profileLevel];
+      (p.baseScore===0&&offsets[p.profileLevel]<0))return null;
+  const intrinsic=p.baseScore-offsets[p.profileLevel];
   if(intrinsic<0)return null;
-  const score=Math.max(0,intrinsic+LEVEL_OFFSETS[currentLevel]);
-  return score>=7?'high':score>=3?'moderate':'low';
+  return rules.forProfile(intrinsic,currentLevel).level;
  }
  function analyze(hiker,list,config=settings){
   const none={offset:0,eligible:0,disagreements:0,agree:0,positive:0,negative:0,
@@ -101,6 +103,8 @@
     // Classée comme référence terrain, PAS comme sortie rejetée.
     continue;
    }
+   if(e.conditions?.includes('heat')){skip(e,'heat');continue;}
+   if(e.prediction?.incomplete===true){skip(e,'incompletePrediction');continue;}
    if(cutoff>0&&(e.created||0)<=cutoff){skip(e,'beforeReset');continue;}
    if(!e.routeKey){skip(e,'missingRoute');continue;}
    if(!e.prediction){skip(e,'missingPrediction');continue;}
@@ -190,7 +194,7 @@
   if(h?.temporary){compact.textContent='Pause';detail.textContent='Simulation temporaire : calibration suspendue. Aucun réglage n’est modifié.';}
   else if(data.eligible<MIN){
    compact.textContent=data.eligible+'/'+MIN+' sorties';
-   detail.textContent=data.eligible+' trace'+(data.eligible>1?'s':'')+' GPX exploitable'+(data.eligible>1?'s':'')+' sur '+MIN+' nécessaires pour ajuster les pentes. Les sorties techniques restent utilisées comme références terrain, visibles ci-dessous.';
+   detail.textContent=data.eligible+' trace'+(data.eligible>1?'s':'')+' GPX exploitable'+(data.eligible>1?'s':'')+' sur '+MIN+' nécessaires pour ajuster les pentes. Les sorties techniques restent des références terrain. Les sorties marquées forte chaleur ou les prévisions partielles restent au carnet sans modifier les autres estimations.';
   } else if(data.offset){
    compact.textContent=data.enabled?'Actif '+(data.offset>0?'+1':'−1'):'Prêt (désactivé)';
    detail.textContent=data.eligible+' traces distinctes retenues · '+data.positive+' sortie(s) plus exigeante(s) que prévu · '+data.negative+' moins exigeante(s) · '+data.agree+' cohérente(s). Proposition : '+(data.offset>0?'+1':'−1')+' point maximum au score du verdict.';
