@@ -278,7 +278,7 @@
  });
  for(const name of ['rv:profile-changed','rv:calibration-changed','rv:journal-changed'])window.addEventListener(name,render);
  // Expose seulement les calculs en lecture pour tests de non-régression.
- window.RandoVistaGPXComparator={parseMetrics,evaluate,analyze,render};
+ window.RandoVistaGPXComparator={parseMetrics,evaluate,analyze,render,makeCard};
  if(window.RandoVistaRoutes?.active){const r=window.RandoVistaRoutes.active;try{caches.a={...analyze(r.xml,r.name),origin:'active'};$('rv104-name-a').textContent=caches.a.name;}catch(err){console.warn('Comparateur : GPX actif invalide',err);}}
  updateSelects();render();
 })();
