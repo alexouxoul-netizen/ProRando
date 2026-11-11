@@ -113,20 +113,7 @@ function calculateDifficulty(distanceMeters, ascentMeters, descentMeters, uphill
     const steep = uphill.hard + uphill.extreme;
     const steepPlus = uphill.extreme;
     const longest = climbs.longest;
-    // V6.1 : calibration expérimentale sur trois parcours réels.
-    // On réduit le poids de la distance et renforce les pentes >15 % et >25 %.
-    // Le GPX ne permet pas de déduire la présence de pierriers ou l'exposition.
-    const base = distanceKm * 0.07 + ascentMeters * 0.0014;
-    const steepLoad = Math.min(2.1, steep / 700) + Math.min(1.1, steepPlus / 250);
-    const sustainedLoad = Math.min(0.7, longest / 4000);
-    // Fatigue cumulative : n’intervient que sur les longues randonnées avec D+ et montées raides significatifs.
-    // Ne modifie pas les références courtes ou modérées.
-    const fatigueLoad = distanceKm >= 14 && ascentMeters >= 450 && steep >= 900
-        ? 1.65 + Math.min(0.5, (distanceKm - 14) * 0.1) : 0;
-    const score = base + steepLoad + sustainedLoad + fatigueLoad;
-    let level = score < 1.1 ? 1 : score < 2.7 ? 2 : score < 3.5 ? 3 : score < 4.35 ? 4 : 5;
-    // Une montée concentrée reste pénalisante, même sur une courte trace.
-    if (steep >= 500 && steep / Math.max(1, distanceMeters) > 0.13) level = Math.max(level, 3);
+    const {score,grade:level,fatigueLoad}=RVVerdictRules.physical({distanceKm,ascent:ascentMeters,steep,extreme:steepPlus,longest,distanceMeters});
     const names = ['Très accessible', 'Modérée', 'Soutenue', 'Difficile', 'Très difficile'];
     const reasons = [];
     if (steep >= 250) reasons.push('montées raides : ' + Math.round(steep) + ' m');

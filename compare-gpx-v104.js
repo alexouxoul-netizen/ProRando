@@ -96,13 +96,7 @@
   let physicalGrade=null;
   if(altitudeOk){
    const distanceKm=distance/1000,steep=uphill.hard+uphill.extreme,plus=uphill.extreme;
-   const base=distanceKm*.07+ascent*.0014;
-   const steepLoad=Math.min(2.1,steep/700)+Math.min(1.1,plus/250);
-   const sustainedLoad=Math.min(.7,longest/4000);
-   const fatigueLoad=distanceKm>=14&&ascent>=450&&steep>=900?1.65+Math.min(.5,(distanceKm-14)*.1):0;
-   const score=base+steepLoad+sustainedLoad+fatigueLoad;
-   physicalGrade=score<1.1?1:score<2.7?2:score<3.5?3:score<4.35?4:5;
-   if(steep>=500&&steep/Math.max(1,distance)>.13)physicalGrade=Math.max(physicalGrade,3);
+   physicalGrade=RVVerdictRules.physical({distanceKm,ascent,steep,extreme:plus,longest,distanceMeters:distance}).grade;
   }
   const intrinsic=RVVerdictRules.intrinsic({distanceKm:distance/1000,rise:rise50,steepUp:steep50,verySteepUp:verySteep50,steepDown:down50,hardest});
   const spacings=[];for(let i=1;i<ds.length;i++){const d=ds[i]-ds[i-1];if(d>.2)spacings.push(d);}spacings.sort((a,b)=>a-b);

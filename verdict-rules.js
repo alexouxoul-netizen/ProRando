@@ -12,6 +12,17 @@
   if(f.steepDown>=700)score+=2;else if(f.steepDown>=250)score+=1;
   return score;
  }
+ // Experimental physical grade, separate from personalized verdict scores.
+ function physical(f){
+  const base=f.distanceKm*.07+f.ascent*.0014;
+  const steepLoad=Math.min(2.1,f.steep/700)+Math.min(1.1,f.extreme/250);
+  const sustainedLoad=Math.min(.7,f.longest/4000);
+  const fatigueLoad=f.distanceKm>=14&&f.ascent>=450&&f.steep>=900?1.65+Math.min(.5,(f.distanceKm-14)*.1):0;
+  const score=base+steepLoad+sustainedLoad+fatigueLoad;
+  let grade=score<1.1?1:score<2.8?2:score<3.5?3:score<4.35?4:5;
+  if(f.steep>=500&&f.steep/Math.max(1,f.distanceMeters)>.13)grade=Math.max(grade,3);
+  return {score,grade,fatigueLoad,base,steepLoad,sustainedLoad};
+ }
  function forProfile(score,level){const index=Number.isInteger(level)?Math.max(0,Math.min(4,level)):1,baseScore=Math.max(0,score+profileOffsets[index]);return {baseScore,level:classify(baseScore)};}
- const api=Object.freeze({version:'v111-pilot',profileOffsets,intrinsic,forProfile,classify});root.RVVerdictRules=api;if(typeof module!=='undefined')module.exports=api;
+ const api=Object.freeze({version:'v111-pilot',physicalVersion:'v111-physical-test-28',physical,profileOffsets,intrinsic,forProfile,classify});root.RVVerdictRules=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

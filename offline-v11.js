@@ -1,5 +1,5 @@
 (function(){'use strict';
- const CACHE='randovista-v111-offline-test-9';
+ const CACHE='randovista-v111-physical-test-10';
  const $=id=>document.getElementById(id);let busy=false,ready=false;
  function network(){const el=$('rv-network-status');if(el){el.textContent=navigator.onLine?'Réseau détecté · les données restent enregistrées sur cet appareil.':'Hors connexion · parcours enregistrés, analyses et carnet disponibles sur cet appareil.';el.dataset.offline=String(!navigator.onLine);}}
  function status(text){const el=$('rv-offline-status');if(el)el.textContent=text;}
