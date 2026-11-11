@@ -13,3 +13,4 @@ Ne pas effacer les données du navigateur ni désinstaller l’application pour 
 
 Cette archive ne contient ni les GPX de validation ni les outils de test. Rien n’a été publié automatiquement.
 Les estimations conservent leurs limites : le GPX ne décrit pas le terrain technique ni la météo ; une altitude absente reste inconnue. L’indication de prudence sur les verdicts est conservée.
+version validée : 11.1
