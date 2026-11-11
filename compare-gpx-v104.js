@@ -103,7 +103,7 @@
   const coarse=(spacings.length?spacings[Math.floor(spacings.length/2)]:Infinity)>15||points.length<50;
   return {distance,ascent,descent,knownShare,incomplete:measurement.quality.breaks>0||measurement.quality.invalid>0,altitudeOk:altitudeOk&&known50/distance>=.85,physicalGrade,
    uphill,steepUp,steepDown,verySteepUp,longest,hardest,coarse,intrinsic,
-   verdictRise:rise50,verdictSteep:steep50,verdictDescent:down50,points:points.length};
+   easyCoverage:known50/distance,verdictVerySteep:verySteep50,verdictRise:rise50,verdictSteep:steep50,verdictDescent:down50,points:points.length};
  }
  function evaluate(metrics,profile,xml){
   if(!metrics||!profile)return {level:'unknown',score:null,baseScore:null,calibration:null,reference:null,history:null};
@@ -128,7 +128,9 @@
   const offset=Number.isInteger(correction?.offset)?Math.max(-1,Math.min(1,correction.offset)):0;
   const score=Math.max(0,baseScore+offset);
   const knownAvoid=reference?.feeling==='avoid';
-  return {level:knownAvoid?'high':classify(score),score,baseScore,calibration:correction,reference,history,offset};
+  const verdictLevel=knownAvoid?'high':classify(score);
+  const easy=RVVerdictRules.isEasy({physicalGrade:metrics.physicalGrade,level:verdictLevel,altitudeOk:metrics.altitudeOk,coverage:metrics.easyCoverage,incomplete:metrics.incomplete,coarse:metrics.coarse,terrain:reference?.terrain||history?.terrain,avoid:knownAvoid||history?.feeling==='avoid',steepUp:metrics.verdictSteep,steepDown:metrics.verdictDescent,verySteepUp:metrics.verdictVerySteep});
+  return {level:verdictLevel,easy,score,baseScore,calibration:correction,reference,history,offset};
  }
 
  function analyze(xml,name){return {xml,name:routeName(name),metrics:parseMetrics(xml)};}
@@ -177,11 +179,12 @@
   const {metrics:m,name}=entry;
   const card=el('article','rv104-card');
   const header=el('div','rv104-card-head');header.append(el('span','rv104-letter',id.toUpperCase()),el('strong','',name));card.append(header);
-  const verdict=el('p','rv104-verdict rv104-'+report.level,labels[report.level]);card.append(verdict);
+  const verdict=el('p','rv104-verdict rv104-'+report.level,report.easy?'Très facile · 1/5 — adaptée à ce profil':labels[report.level]);card.append(verdict);
+  if(report.easy)card.append(el('p','rv113-easy-description','Aucune difficulté physique particulière détectée sur ce GPX.'));
   const lines=el('div','rv104-lines');
   lines.append(makeLine('Distance'+(m.incomplete?' (partielle)':''),km(m.distance)),makeLine('Dénivelé +',m.altitudeOk?('+'+meter(m.ascent)):'Non disponible'));
   lines.append(makeLine('Dénivelé −',m.altitudeOk?('−'+meter(m.descent)):'Non disponible'));
-  lines.append(makeLine('Note physique GPX',m.physicalGrade!==null&&m.altitudeOk?m.physicalGrade+'/5':'Non disponible'));
+  lines.append(makeLine('Note physique GPX',m.physicalGrade!==null&&m.altitudeOk?m.physicalGrade+'/5 — '+RVVerdictRules.gradeName(m.physicalGrade):'Non disponible'));
   lines.append(makeLine('Montées ≥ 15 % (50 m)',m.altitudeOk?meter(m.verdictSteep):'Inconnues'));
   lines.append(makeLine('Descentes ≤ −15 % (50 m)',m.altitudeOk?meter(m.verdictDescent):'Inconnues'));
   if(m.hardest&&m.altitudeOk)lines.append(makeLine('Montée exigeante','km '+(m.hardest.start/1000).toFixed(1).replace('.',',')+'–'+(m.hardest.end/1000).toFixed(1).replace('.',',')+' (+'+meter(m.hardest.rise)+')'));
@@ -206,7 +209,6 @@
     root.open=false;window.proRandoUI?.showTab?.('prepare');$('personal-verdict')?.scrollIntoView?.({behavior:'smooth',block:'start'});
    }
   });card.append(action);
-  window.RVDeclaredNotes?.attach(card,entry.xml);
   return card;
  }
  function recommendation(a,b,ma,mb){

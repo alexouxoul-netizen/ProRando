@@ -131,6 +131,7 @@
       tip.textContent='Pour choisir : privilégie un itinéraire dont le dénivelé et les pentes sont connus, puis vérifie la fiche du parcours.';
     }else{
       if(refAvoid)headline.textContent='Attention : ce même parcours a déjà été évalué « à éviter » pour ce profil. Cette expérience doit peser dans ton choix.';
+      else if(status?.dataset.ease==='easy')headline.textContent='Très facile · 1/5 : aucune difficulté physique particulière détectée pour '+label+'.';
       else if(level==='high')headline.textContent='Ce parcours paraît trop exigeant pour '+label+' selon le relief et la distance. Recherche une option plus douce.';
       else if(level==='moderate')headline.textContent='Randonnée envisageable, mais certains efforts méritent d’être anticipés pour '+label+'.';
       else if(facts.total>=12000 && chosen<=1)headline.textContent='Les pentes semblent modérées, mais '+numberKm(facts.total)+' km représentent une distance importante pour un profil débutant. Ne te fie pas seulement au verdict favorable.';

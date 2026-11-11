@@ -86,7 +86,7 @@ function refresh(){
  for(const e of visible.slice(0,30)){
   const item=node('article','journal-entry');
   const title=node('strong','',e.route);item.append(title);
-  const line=e.date.split('-').reverse().join('/')+' · Difficulté '+e.effort+'/5 · Fatigue '+e.fatigue+'/5 · '+feelings[e.feeling];
+  const line=e.date.split('-').reverse().join('/')+' · Difficulté '+e.effort+'/5'+(e.effort===1?' — Très facile':'')+' · Fatigue '+e.fatigue+'/5 · '+feelings[e.feeling];
   item.append(node('small','',line));
   if(all)item.append(node('small','journal-entry-profile','👤 '+e.profileName));
   if(key&&e.routeKey===key)item.append(node('span','journal-route-match','✓ Même tracé GPX'));
@@ -160,7 +160,7 @@ function refresh(){
  if(visible.length>30)host.append(node('p','journal-empty','Seuls les 30 retours les plus récents sont affichés. L’export contient les '+visible.length+' retours de cette sélection.'));
 }
 $('journal-date').value=todayLocal();$('journal-date').max=todayLocal();
-for(const field of ['effort','fatigue'])$('journal-'+field).addEventListener('input',e=>$('journal-'+field+'-label').textContent=e.target.value+'/5');
+for(const field of ['effort','fatigue'])$('journal-'+field).addEventListener('input',e=>$('journal-'+field+'-label').textContent=e.target.value+'/5'+(field==='effort'&&Number(e.target.value)===1?' — Très facile':''));
 $('journal-history-filter').addEventListener('change',refresh);
 $('journal-open-library').addEventListener('click',()=>window.RandoVistaLibrary?.show());
 $('journal-choose-gpx').addEventListener('click',()=>$('gpx-file').click());

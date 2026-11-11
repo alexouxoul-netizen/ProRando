@@ -114,13 +114,13 @@ function calculateDifficulty(distanceMeters, ascentMeters, descentMeters, uphill
     const steepPlus = uphill.extreme;
     const longest = climbs.longest;
     const {score,grade:level,fatigueLoad}=RVVerdictRules.physical({distanceKm,ascent:ascentMeters,steep,extreme:steepPlus,longest,distanceMeters});
-    const names = ['Très accessible', 'Modérée', 'Soutenue', 'Difficile', 'Très difficile'];
+    const names = RVVerdictRules.gradeNames;
     const reasons = [];
     if (steep >= 250) reasons.push('montées raides : ' + Math.round(steep) + ' m');
     if (longest >= 700) reasons.push('montée continue : ' + Math.round(longest) + ' m');
     if (distanceKm >= 14) reasons.push('long parcours');
     if (fatigueLoad > 0) reasons.push('fatigue cumulative : distance + dénivelé + fortes pentes');
-    if (!reasons.length) reasons.push('pentes plutôt progressives');
+    if (!reasons.length) reasons.push(level===1?'aucune difficulté physique particulière détectée':'pentes plutôt progressives');
     const estimatedHours = distanceKm / 4 + ascentMeters / 600 + descentMeters / 1200;
     const totalMinutes = Math.max(1, Math.round(estimatedHours * 60));
     const hours = Math.floor(totalMinutes / 60);

@@ -44,6 +44,7 @@
   }
   function renderVerdict(track) {
     const {points:pts,distances:ds,coarseTrack}=track;
+    delete $('verdict-status').dataset.ease;
     const total=ds.at(-1), status=$('verdict-status'), details=$('verdict-explanation'), locate=$('verdict-locate');
     $('verdict-factors').replaceChildren();locate.hidden=true;locate.onclick=null;if($('rv-experience'))$('rv-experience').hidden=true;
     if(!Number.isFinite(total)||total<100||pts.length<2){status.dataset.level='unknown';status.dataset.baseLevel='unknown';delete status.dataset.baseScore;status.textContent='Analyse indisponible';details.textContent='Trace trop courte.';return;}
@@ -117,6 +118,9 @@
       }
       // L'expérience vécue apparaît dans son encart dédié ci-dessous, sans doublon.
     }
+    const latest=!active?.temporary?(window.RandoVistaJournal?.getEntries?.()||[]).filter(e=>e.profileId===active?.id&&e.routeKey===activeKey).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||(Number(b.created)||0)-(Number(a.created)||0))[0]:null;
+    const easy=RVVerdictRules.isEasy({physicalGrade:Number.parseInt($('difficulty-level').textContent,10),level:status.dataset.level,altitudeOk:true,coverage:knownSpan/total,incomplete:!!track.measurementIncomplete,coarse:!!coarseTrack,terrain:terrainRef?.terrain||latest?.terrain,avoid:terrainRef?.feeling==='avoid'||latest?.feeling==='avoid',steepUp,steepDown,verySteepUp});
+    if(easy){status.dataset.ease='easy';status.textContent='🟢 Très facile · 1/5 — adaptée à ce profil';details.textContent='Aucune difficulté physique particulière détectée sur ce GPX : une randonnée très facile sur le plan physique pour ce profil. Le terrain et les conditions restent à vérifier.';}
     if(track.measurementIncomplete){
       status.textContent+=' — analyse partielle';
       details.textContent+=' Des portions du parcours ne sont pas enregistrées : cet avis concerne uniquement les portions disponibles.';

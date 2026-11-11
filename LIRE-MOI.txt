@@ -1,11 +1,14 @@
-RandoVista V11.2.1 TEST — note déclarée de Gaube
+RandoVista V11.3 TEST — niveau 1/5 Très facile
 
-1. Exporter une sauvegarde complète depuis la version actuelle. Conserver le ZIP V11.2 validé pour le retour arrière.
-2. Extraire ce ZIP et placer son contenu à la racine du dépôt GitHub Pages habituel, puis valider manuellement dans GitHub. Garder la même adresse et les données du navigateur.
-3. Fermer les autres onglets RandoVista, rouvrir et vérifier V11.2.1 TEST. Vérifier que le mode hors connexion est prêt.
-4. Dans Mes randos, rechercher Gaube puis ouvrir dans Préparer : « Note déclarée : 1/5 » apparaît dans les deux vues (également dans le comparateur).
+1. Exporter une sauvegarde complète des données et conserver le ZIP V11.2 validé.
+2. Extraire cette archive et placer son CONTENU à la racine du dépôt GitHub Pages habituel. Valider manuellement les fichiers. Conserver la même adresse et les données du navigateur.
+3. Fermer les autres onglets RandoVista, rouvrir et vérifier V11.3 TEST. Vérifier que le mode hors connexion est prêt.
+4. Dans Mes randos, choisir « Note physique : 1/5 — Très facile ». Dans « Avis pour ce profil », le filtre « Très facile · 1/5 » permet de ne garder que les parcours faciles et favorables pour le profil choisi, avec des données suffisantes.
+5. Ouvrir un parcours doux dans Préparer : la note physique porte le nom Très facile ; le verdict peut afficher « Très facile · 1/5 — adaptée à ce profil ». Dans Évaluer, le curseur descend à « 1/5 — Très facile ».
 
-Cette note reprend votre déclaration. Elle est associée au contenu du GPX Gaube de référence, sans se baser sur son nom. Un autre GPX de Gaube ne reçoit pas cette note automatiquement. Les différences de fins de lignes ou de marqueur BOM ne changent pas l’association.
-La note déclarée ne remplace ni les calculs physiques, ni les verdicts selon le profil. Les avertissements d’altitudes insuffisantes restent présents. Le filtre « Note physique » continue de porter sur les notes calculées : cette trace reste dans « Indisponible » pour ce filtre.
-Aucun carnet ou profil prérempli, aucune écriture automatique dans vos données, aucune publication automatique. La note est intégrée à cette version et s’affiche sur les appareils qui la chargent ; elle ne constitue pas une nouvelle entrée synchronisée du carnet.
-Retour arrière : republier le contenu du ZIP V11.2 conservé à la même adresse, fermer puis rouvrir l’application. Ne pas effacer les données du navigateur.
+Le 1/5 est attribué depuis le relief mesuré, sans exception liée au nom d’une randonnée. Les seuils physiques et les scores personnalisés validés sont conservés ; l’option 1/5 du filtre est réparée et le verdict distingue désormais cette catégorie.
+Un parcours 2/5 adapté à un expert reste 2/5. Un parcours aux altitudes insuffisantes n’est pas classé facile par défaut. Le verdict très facile nécessite aussi une trace complète et suffisamment détaillée, aucune pente raide notable détectée et aucun retour de vigilance pour ce profil.
+L’ancienne note déclarée visant spécifiquement Gaube est retirée de cette livraison. Si le dépôt contient encore declared-route-notes.js d’une V11.2.1, ce fichier n’est plus chargé ; il peut être retiré manuellement. Remplacer notamment boot-v11.js, index.html et sw.js avec ceux de cette archive.
+Données, formats d’export et modules de synchronisation V11 conservés. Aucun carnet prérempli. Les cartes nécessitent toujours le réseau. Essai sur vos deux appareils conseillé avant adoption.
+Retour : republier le contenu du ZIP V11.2 conservé à la même adresse, fermer puis rouvrir l’application. Ne pas effacer les données du navigateur.
+Aucune publication automatique.
