@@ -1,0 +1,15 @@
+RandoVista V11.1 — version validée
+
+Cette version reprend les calculs et fonctionnalités de la version DIFFICULTE-TEST validée par votre usage. Les mentions de livraison de test sont retirées et le cache reçoit un nouvel identifiant. Aucun changement aux scores, au moteur GPX, aux profils, au carnet, aux sauvegardes ou à la synchronisation V11.
+
+PUBLICATION MANUELLE SUR GITHUB PAGES
+1. Depuis l’application actuelle, exporter toutes les données et conserver le fichier JSON ainsi que votre ancienne version.
+2. Extraire ce ZIP sur votre ordinateur.
+3. Dans le même dépôt GitHub et au même emplacement que l’application actuelle, déposer tous les fichiers extraits, y compris .nojekyll. Ne pas déposer le ZIP lui-même et ne pas créer de sous-dossier supplémentaire.
+4. Attendre la fin de la publication GitHub Pages, fermer les autres onglets RandoVista, puis rouvrir l’application avec une connexion. Vérifier l’en-tête V11.1 et la préparation du hors connexion.
+5. Vérifier vos profils, le carnet et les parcours enregistrés avant de partir hors connexion. Les fonds de carte nécessitent toujours le réseau.
+
+Ne pas effacer les données du navigateur ni désinstaller l’application pour cette mise à jour. Conserver la même adresse du site permet de retrouver le stockage local associé.
+
+Cette archive ne contient ni les GPX de validation ni les outils de test. Rien n’a été publié automatiquement.
+Les estimations conservent leurs limites : le GPX ne décrit pas le terrain technique ni la météo ; une altitude absente reste inconnue. L’indication de prudence sur les verdicts est conservée.

@@ -9,7 +9,7 @@
 <title>RandoVista</title>
 <meta content="RandoVista" name="apple-mobile-web-app-title"/>
 <link href="leaflet.css" rel="stylesheet"/>
-<link href="style.css?v=1100test" rel="stylesheet"/>
+<link href="style.css?v=1110release" rel="stylesheet"/>
 <link href="manifest.json" rel="manifest"/>
 <link href="icon.png" rel="apple-touch-icon"/>
 
@@ -17,7 +17,7 @@
 <body>
 <div class="app-shell">
 <header class="app-header">
-<div class="brand"><span class="brand-icon">▲</span><div><strong>RandoVista</strong><small>L’aventure à votre rythme</small></div></div><span aria-label="Version de test GPX 11.1" class="rv-build-marker">V11.1 TEST · difficulté expérimentale</span>
+<div class="brand"><span class="brand-icon">▲</span><div><strong>RandoVista</strong><small>L’aventure à votre rythme</small></div></div><span aria-label="Version 11.1" class="rv-build-marker">V11.1</span>
 <details class="route-menu" hidden="" id="route-menu"><summary>☰ Parcours</summary><div class="route-popover">
 <label class="menu-action" for="gpx-file">📂 Importer un GPX</label>
 <button class="menu-action" id="change-route" type="button">↻ Changer de parcours</button><button class="menu-action" disabled="" id="library-open" type="button">★ Ma bibliothèque</button>
@@ -26,7 +26,7 @@
 <input accept=".gpx,application/gpx+xml" id="gpx-file" type="file"/>
 </header>
 <p id="rv-network-status" class="rv-network-status" role="status" aria-live="polite">Vérification du réseau…</p>
-<details class="rv-account" id="rv-account"><summary>☁ Mon compte et mes sauvegardes <span>V11 TEST</span></summary>
+<details class="rv-account" id="rv-account"><summary>☁ Mon compte et mes sauvegardes <span>V11</span></summary>
 <p id="rv-backup-status" role="status" aria-live="polite">Lecture de la dernière sauvegarde…</p><p id="rv-restore-status" role="status" aria-live="polite"></p><p id="rv-sync-status" role="status" aria-live="polite">Chargement des données locales…</p>
 <p id="rv-cloud-off">Le raccordement du compte partagé est en préparation. Toutes les fonctions locales restent disponibles.</p>
 <form id="rv-login-form" hidden><label for="rv-email">E-mail du compte partagé</label><input id="rv-email" type="email" autocomplete="username" required placeholder="Votre adresse e-mail"/><label for="rv-password">Mot de passe RandoVista</label><input id="rv-password" type="password" autocomplete="current-password" required/><button id="rv-login-send" type="submit">Se connecter</button><small>Utilise le même compte RandoVista sur PC et iPhone.</small></form><div class="rv-account-actions"><button id="rv-bind" hidden type="button">Associer cet appareil au compte</button><button id="rv-sync-now" disabled type="button">↻ Synchroniser</button><button id="rv-logout" hidden type="button">Se déconnecter</button></div>
