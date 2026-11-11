@@ -331,3 +331,5 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 
 /* Context flag in saved outing cards. */
 .journal-condition-control{display:flex;align-items:flex-start;gap:7px;font-size:12px;line-height:1.5;margin:9px 0;color:var(--ink)}.journal-condition-control input{flex:none;margin-top:3px;accent-color:#246c48}
+
+.rv-network-status{margin:4px 14px 8px;font-size:12px;line-height:1.5;color:var(--muted)}.rv-network-status[data-offline="true"]{color:var(--accent);font-weight:700}
