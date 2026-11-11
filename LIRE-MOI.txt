@@ -1,11 +1,11 @@
-RandoVista V11.2 TEST — bibliothèque intelligente
+RandoVista V11.2.1 TEST — note déclarée de Gaube
 
-1. Depuis la version actuelle, exporter une sauvegarde complète des données et conserver le ZIP V11.1 stable.
-2. Extraire ce ZIP. Déposer son CONTENU à la racine du dépôt GitHub Pages habituel (index.html à la racine), puis valider les fichiers manuellement dans GitHub. Conserver cloud-config.js fourni et la même adresse de site. Ne pas effacer les données du navigateur.
-3. Fermer les autres onglets RandoVista, rouvrir et vérifier « V11.2 TEST ». Dans « Mon compte et mes sauvegardes », vérifier que le mode hors connexion est prêt.
-4. Dans Mes randos, choisir le profil, régler les limites de distance/D+, la note physique ou le verdict. Les filtres se combinent. Le tri par défaut privilégie les avis les plus favorables, puis le score. Les avis inconnus viennent en dernier. « Ouvrir dans Préparer » reprend le profil choisi.
-5. Vérifier vos parcours, favoris, carnet et profils ; tester le mode avion après préparation du cache. Sur les deux appareils, vérifier la synchronisation V11 avec une modification de test réversible avant d’adopter cette version.
+1. Exporter une sauvegarde complète depuis la version actuelle. Conserver le ZIP V11.2 validé pour le retour arrière.
+2. Extraire ce ZIP et placer son contenu à la racine du dépôt GitHub Pages habituel, puis valider manuellement dans GitHub. Garder la même adresse et les données du navigateur.
+3. Fermer les autres onglets RandoVista, rouvrir et vérifier V11.2.1 TEST. Vérifier que le mode hors connexion est prêt.
+4. Dans Mes randos, rechercher Gaube puis ouvrir dans Préparer : « Note déclarée : 1/5 » apparaît dans les deux vues (également dans le comparateur).
 
-Retour : republier le contenu du ZIP V11.1 conservé à la même adresse, fermer puis rouvrir l’application. Aucun nouveau schéma de données n’est introduit. Les fonds de carte nécessitent toujours le réseau.
-
-Aucune publication automatique. Cette archive ne contient ni vos GPX de référence, ni des données de compte, ni une bibliothèque préremplie.
+Cette note reprend votre déclaration. Elle est associée au contenu du GPX Gaube de référence, sans se baser sur son nom. Un autre GPX de Gaube ne reçoit pas cette note automatiquement. Les différences de fins de lignes ou de marqueur BOM ne changent pas l’association.
+La note déclarée ne remplace ni les calculs physiques, ni les verdicts selon le profil. Les avertissements d’altitudes insuffisantes restent présents. Le filtre « Note physique » continue de porter sur les notes calculées : cette trace reste dans « Indisponible » pour ce filtre.
+Aucun carnet ou profil prérempli, aucune écriture automatique dans vos données, aucune publication automatique. La note est intégrée à cette version et s’affiche sur les appareils qui la chargent ; elle ne constitue pas une nouvelle entrée synchronisée du carnet.
+Retour arrière : republier le contenu du ZIP V11.2 conservé à la même adresse, fermer puis rouvrir l’application. Ne pas effacer les données du navigateur.

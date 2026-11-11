@@ -206,6 +206,7 @@
     root.open=false;window.proRandoUI?.showTab?.('prepare');$('personal-verdict')?.scrollIntoView?.({behavior:'smooth',block:'start'});
    }
   });card.append(action);
+  window.RVDeclaredNotes?.attach(card,entry.xml);
   return card;
  }
  function recommendation(a,b,ma,mb){
