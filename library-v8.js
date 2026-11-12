@@ -9,7 +9,7 @@ function render(){if(window.RVSmartLibrary){window.RVSmartLibrary.update(records
 function show(){ $('library-panel').hidden=false;$('route-menu').open=false;window.proRandoUI?.showTab?.('randos');reload().catch(report);}
 function hide(){window.proRandoUI?.showTab?.('prepare');}
 function report(err){console.error('Bibliothèque Pro Rando',err);alert('Bibliothèque indisponible : '+(err?.message||'erreur inconnue'));}
-async function save(name,xml){if(!db||!xml)return;const normalized=name.replace(/\.gpx$/i,'').trim()||'Randonnée';const existing=records.find(r=>r.name===normalized && r.xml===xml);const record={id:existing?.id||('r'+Date.now()+'-'+Math.random().toString(36).slice(2,8)),name:normalized,xml,updated:Date.now(),favorite:!!existing?.favorite};await tx('readwrite',s=>s.put(record));await reload();}
+async function save(name,xml){if(!db)throw new Error('Bibliothèque locale indisponible. Réessaie après le démarrage.');if(!xml)throw new Error('GPX manquant');const normalized=name.replace(/\.gpx$/i,'').trim()||'Randonnée';const existing=records.find(r=>r.name===normalized && r.xml===xml);const record={id:existing?.id||('r'+Date.now()+'-'+Math.random().toString(36).slice(2,8)),name:normalized,xml,updated:Date.now(),favorite:!!existing?.favorite};await tx('readwrite',s=>s.put(record));await reload();}
 async function load(r){if(!r)return;try{window.RVSmartLibrary?.prepareProfile?.();if(!window.RandoVistaRoutes.load(r.xml,r.name,'library'))return;hide();}catch(e){report(e);}}
 async function rename(id,value){
  const name=typeof value==='string'?value.trim():'';
@@ -48,7 +48,7 @@ async function getSavedRoutes(){
  return result.filter(r=>typeof r?.id==='string'&&typeof r.name==='string'&&typeof r.xml==='string')
   .map(r=>({id:r.id,name:r.name,xml:r.xml}));
 }
-window.RandoVistaLibrary={show,reload,getSavedRoutes,rename,getRecords:()=>records.slice()};
+window.RandoVistaLibrary={show,reload,save,getSavedRoutes,rename,getRecords:()=>records.slice()};
 window.addEventListener('rv:sync-applied',()=>reload().catch(report));
 init();
 })();

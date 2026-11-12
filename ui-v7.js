@@ -2,7 +2,7 @@
 (() => {
  const $ = id => document.getElementById(id);
  const chartEl = $('chart-container');
- const tabs = ['prepare','evaluate','randos'];
+ const tabs = ['discover','prepare','evaluate','randos'];
  let activeTab = 'prepare';
  function resizeVisuals(){requestAnimationFrame(()=>{if(typeof map!=='undefined')map.invalidateSize();if(typeof chart!=='undefined'&&chart)chart.resize();if(typeof gainChart!=='undefined'&&gainChart)gainChart.resize();});}
  function moveChart(host){if(host && chartEl.parentNode!==host){host.appendChild(chartEl);resizeVisuals();}}

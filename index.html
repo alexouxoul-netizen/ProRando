@@ -9,7 +9,7 @@
 <title>RandoVista</title>
 <meta content="RandoVista" name="apple-mobile-web-app-title"/>
 <link href="leaflet.css" rel="stylesheet"/>
-<link href="style.css?v=112-1110release" rel="stylesheet"/>
+<link href="style.css?v=114-discover" rel="stylesheet"/>
 <link href="manifest.json" rel="manifest"/>
 <link href="icon.png" rel="apple-touch-icon"/>
 
@@ -17,7 +17,7 @@
 <body>
 <div class="app-shell">
 <header class="app-header">
-<div class="brand"><span class="brand-icon">▲</span><div><strong>RandoVista</strong><small>L’aventure à votre rythme</small></div></div><span aria-label="Version 11.3.1 de test" class="rv-build-marker">V11.3.1 TEST</span>
+<div class="brand"><span class="brand-icon">▲</span><div><strong>RandoVista</strong><small>L’aventure à votre rythme</small></div></div><span aria-label="Version 11.4 de test" class="rv-build-marker">V11.4 TEST</span>
 <details class="route-menu" hidden="" id="route-menu"><summary>☰ Parcours</summary><div class="route-popover">
 <label class="menu-action" for="gpx-file">📂 Importer un GPX</label>
 <button class="menu-action" id="change-route" type="button">↻ Changer de parcours</button><button class="menu-action" disabled="" id="library-open" type="button">★ Ma bibliothèque</button>
@@ -34,7 +34,7 @@
 <p id="rv-offline-status">Préparation du mode hors connexion…</p><button id="rv-offline-refresh" type="button">Préparer ou vérifier le hors connexion</button><small>Enregistre tes parcours dans « Mes randos » avant le départ. Les fonds de carte ne sont pas téléchargés pour le hors connexion.</small>
 <details><summary>Sauvegardes complètes</summary><p>Profils, GPX, favoris, carnet et réglages de calibration. Les anciens exports restent disponibles dans chaque rubrique. La date affichée indique qu’un export a été préparé : vérifie la présence du fichier dans tes téléchargements.</p><div class="rv-account-actions"><button id="rv-backup-all" type="button">Exporter toutes mes données</button><button id="rv-backup-initial" type="button">Exporter la sauvegarde avant V11</button><button id="rv-backup-last" type="button">Exporter la copie de secours précédente</button><button id="rv-backup-conflict" type="button">Exporter le dernier conflit</button></div><label for="rv-restore-all">Restaurer une sauvegarde complète</label><input id="rv-restore-all" type="file" accept=".json,application/json"/></details>
 </details>
-<div class="workspace">
+<div class="workspace"><section id="view-discover" class="view content-view" hidden></section>
 <section aria-label="Préparer" class="view content-view v9-prepare active" id="view-prepare"><div class="section-title rv93-intro"><h2>Préparez votre prochaine randonnée</h2></div><div class="v91-cta"><div><strong>Choisissez votre itinéraire</strong><p>Importez un GPX ou retrouvez une randonnée enregistrée.</p></div><div class="rv93-actions"><label class="v91-import" for="gpx-file">＋ Importer un GPX</label><button class="rv93-library" id="rv93-library" type="button">Mes randos</button></div></div><button aria-expanded="false" class="summary-card" id="summary-toggle" type="button">
 <span class="summary-text"><small>VOTRE PROCHAINE RANDONNÉE</small><strong id="summary-title">Aucun parcours sélectionné</strong><span id="summary-subtitle">Choisissez une randonnée pour afficher son analyse personnalisée.</span></span>
 <span class="summary-grade" hidden="" id="summary-grade">—/5</span><span class="summary-chevron">⌄</span>
@@ -114,7 +114,7 @@
 </section><div class="journal-history-head"><h4>Historique des sorties</h4><span id="journal-count">0 sortie</span></div><label class="journal-filter-label" for="journal-history-filter">Afficher <select id="journal-history-filter"><option value="active">Profil actif</option><option value="all">Tous les profils, y compris archivés</option></select></label><p class="journal-link-help">Pour une ancienne évaluation, utilise « Associer un GPX enregistré » afin que RandoVista reconnaisse ce tracé à l’avenir. Vérifie la correspondance avant de confirmer.</p><div class="journal-history" id="journal-history"></div><div class="journal-backup"><button id="journal-export" type="button">↓ Exporter le carnet</button><label for="journal-import">↑ Restaurer le carnet</label><input accept=".json,application/json" hidden="" id="journal-import" type="file"/></div><p class="journal-disclaimer">Les retours restent sur cet appareil. Le calibrage est facultatif et doit être activé pour chaque profil dans Préparer.</p></section></section>
 <button aria-label="Revenir en haut de cet onglet" class="rv-back-top" hidden="" id="rv-back-top" title="Revenir en haut" type="button">↑ <span>En haut</span></button>
 </div>
-<nav aria-label="Navigation principale" class="bottom-nav"><button class="active" data-tab="prepare" type="button"><span>⌖</span>Préparer</button><button data-tab="evaluate" type="button"><span>✎</span>Évaluer</button><button data-tab="randos" type="button"><span>▤</span>Mes randos</button></nav>
+<nav aria-label="Navigation principale" class="bottom-nav"><button data-tab="discover" type="button"><span>⌕</span>Découvrir</button><button class="active" data-tab="prepare" type="button"><span>⌖</span>Préparer</button><button data-tab="evaluate" type="button"><span>✎</span>Évaluer</button><button data-tab="randos" type="button"><span>▤</span>Mes randos</button></nav>
 </div>
 <div id="chart-container"><canvas aria-label="Profil altimétrique" id="elevationChart"></canvas></div>
 <script src="boot-v11.js"></script>

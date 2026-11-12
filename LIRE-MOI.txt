@@ -1,12 +1,23 @@
-RandoVista V11.3.1 TEST — renommage et notes détaillées
+RandoVista V11.4 TEST — Découvrir
 
-1. Exporter une sauvegarde complète et conserver le ZIP V11.3 validé.
-2. Extraire ce ZIP et déposer son CONTENU à la racine du dépôt GitHub Pages habituel, puis valider manuellement les fichiers. Conserver la même adresse et les données du navigateur.
-3. Fermer les autres onglets RandoVista, rouvrir et vérifier « V11.3.1 TEST ». Vérifier que le mode hors connexion est prêt.
-4. Mes randos > Renommer : saisir le nouveau nom puis « Enregistrer le nom ». « Annuler » conserve le nom précédent. Limite : 200 caractères. Le nom reste enregistré hors connexion ; le GPX, les favoris et les liens avec le carnet sont conservés. Le titre du parcours actuellement préparé est aussi actualisé s’il correspond.
-5. Le filtre Note physique affiche : 1/5 — Très facile ; 2/5 — Modérée ; 3/5 — Soutenue ; 4/5 — Difficile ; 5/5 — Très difficile.
+Rien n'a été publié automatiquement.
 
-Les anciennes évaluations conservent leur intitulé historique, leur ressenti et leur association au GPX. Le nom du fichier GPX d’origine et son contenu ne sont pas réécrits. Les sauvegardes suivantes de la bibliothèque contiennent le nouveau nom.
-Le renommage utilise le mécanisme de modification de bibliothèque V11 existant : les modules de synchronisation sont conservés. La transmission effective vers un autre appareil se vérifie avec votre compte partagé.
-Retour arrière : republier le contenu du ZIP V11.3 conservé à la même adresse, fermer puis rouvrir l’application ; les noms enregistrés restent des données compatibles. Ne pas effacer les données du navigateur.
-Aucune publication automatique.
+1. Dans la version actuelle, exporte une sauvegarde complète. Conserve ton ZIP V11.3.1 pour revenir en arrière.
+2. Extrais RandoVista-V11.4-DECOUVRIR-TEST.zip. Sur GitHub, dépose le CONTENU extrait à la racine de ton dépôt habituel, puis valide toi-même les fichiers. index.html doit rester à la racine. Garde la même adresse GitHub Pages et la même configuration cloud.
+3. Ferme tous les onglets RandoVista et rouvre l'application avec Internet. Vérifie « V11.4 TEST ». Dans le panneau compte/sauvegardes, vérifie que l'application est prête hors connexion. N'efface pas les données du navigateur.
+4. Découvrir > Vallée d'Ossau > choisis ton profil, les distances et éventuellement Lacs > Rechercher. Les résultats du 64 proposent un lien GPX : télécharge le fichier chez la source, puis utilise « Importer ce GPX pour analyse » sur la bonne fiche. Sur iPhone, retrouve-le dans Fichiers > Téléchargements. Vérifie le nom du fichier : l'application ne peut pas certifier qu'il correspond à la fiche.
+5. Pour essayer la récupération automatique : choisis « Écrins · Vallouise », puis Rechercher > Récupérer et analyser le GPX. Après analyse : Ouvrir dans Préparer ou Sauvegarder dans Mes randos. Sans sauvegarde, l'analyse de Découvrir disparaît à la fermeture.
+6. Vérifie tes anciens parcours, leur renommage, les profils et le carnet. Sur ton second appareil, connecte le même compte et vérifie qu'un nouveau GPX sauvegardé arrive bien. Ce contrôle cloud réel n'a pas été réalisé avec ton compte pendant le développement.
+
+Limites : couverture des Écrins et du catalogue des Pyrénées-Atlantiques seulement. Les Hautes-Pyrénées et l'Ariège ne sont pas activées. La source du 64 bloque la récupération GPX directe par une autre application : import manuel nécessaire. Aucun score GPX ni verdict personnalisé avant analyse du fichier réel ; altitudes manquantes signalées. Les paysages sont des thèmes ou des mots du titre/résumé, donc incomplets. Aux Écrins le thème « lac et glacier » peut désigner un glacier seul.
+
+Le catalogue déjà consulté reste disponible localement ; « Actualiser la source » nécessite Internet. Les GPX sauvegardés dans Mes randos restent analysables hors connexion. Les fonds de carte et les téléchargements externes nécessitent Internet. La date de consultation est affichée : consulter la fiche source pour les fermetures et les conditions actuelles.
+
+Retour arrière : remets le contenu de ton ZIP V11.3.1 à la même adresse, ferme puis rouvre l'application. Les parcours sauvegardés restent dans la bibliothèque compatible. Ne supprime ni les données du navigateur ni le compte cloud.
+
+L'étude détaillée des licences, API et limites est dans SOURCES-DECOUVRIR.md, également accessible depuis Découvrir > Couverture, GPX et limites.
+
+Tests portables inclus dans validation/ (facultatif, avec Node installé) :
+node validation/test-discover.cjs
+node validation/test-release.cjs
+Le test test-discover-live.cjs contacte les sources réelles ; il dépend de leur disponibilité. Les GPX personnels de référence ne sont pas inclus dans le ZIP publiable.
