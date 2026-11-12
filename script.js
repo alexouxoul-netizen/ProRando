@@ -643,5 +643,12 @@ window.RandoVistaRoutes = (() => {
       return false;
     }
   }
-  return {load, get active(){return active;}};
+  function rename(xml,previousName,name){
+    if(!active||active.xml!==xml||active.name!==previousName)return false;
+    active={...active,name};
+    document.getElementById('route-name').textContent=active.name+'.gpx';
+    publish('updated',{name:active.name,source:active.source});
+    return true;
+  }
+  return {load,rename, get active(){return active;}};
 })();
