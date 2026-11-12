@@ -1,6 +1,6 @@
 # Catalogue Pyrénées — données collaboratives Camptocamp
 
-Édition du 12 novembre 2026. Les fiches du fichier discover-data/catalogue.json et les traces GPX regroupées dans discover-data/traces-*.json proviennent des itinéraires collaboratifs de Camptocamp.
+Édition du 12 novembre 2026. Les fiches du fichier discover-catalogue.json et les traces GPX regroupées dans discover-traces-*.json proviennent des itinéraires collaboratifs de Camptocamp.
 
 Auteurs : contributeurs Camptocamp, identifiés dans l’historique de chaque fiche. Le champ history du catalogue et les métadonnées de chaque GPX renvoient à cet historique ; le champ page et les liens GPX renvoient au document original.
 

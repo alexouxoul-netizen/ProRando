@@ -30,7 +30,7 @@ async function search(refresh=false){try{C.filter([],filters());if(!$('dc-lat').
  if(saved&&!refresh){rows=saved.rows;stamp=saved.stamp;status((navigator.onLine?'Catalogue conservé sur cet appareil':'Hors connexion · catalogue conservé')+' du '+new Date(stamp).toLocaleString('fr-FR')+'. Actualise en ligne pour vérifier les changements.');}
  else{if(!navigator.onLine&&source!=='camptocamp')throw Error('Connexion nécessaire pour charger ou actualiser ce catalogue.');const next=await C.catalogue(source,{signal,...opts});if(token!==searchToken)return;rows=next;stamp=Date.now();try{await cache(key,{rows,stamp});status(source==='camptocamp'?'Catalogue Pyrénées du 12 novembre 2026 chargé. Mise à jour du contenu avec une nouvelle version de RandoVista.':'Catalogue à jour. Les GPX sont récupérés uniquement sur demande.');}catch{status('Catalogue chargé ; sa conservation hors connexion a échoué.');}}
  page=1;render();
- }catch(e){if(token!==searchToken)return;if(e.name!=='AbortError')status('Recherche indisponible : '+e.message+' Les parcours déjà sauvegardés restent accessibles dans Mes randos.');}
+ }catch(e){if(token!==searchToken)return;if(e.name!=='AbortError')status('Recherche indisponible : '+(source==='camptocamp'&&e.message.includes('404')?'Le fichier discover-catalogue.json manque dans la publication. Dépose tous les fichiers du ZIP à côté de index.html.':e.message)+' Les parcours déjà sauvegardés restent accessibles dans Mes randos.');}
  finally{if(token===searchToken){busy=false;$('dc-search').disabled=false;$('dc-refresh').disabled=false;}}
 }
 const root=el('section');root.id='view-discover';root.className='view content-view dc-view';root.hidden=true;root.setAttribute('aria-label','Découvrir des randonnées');

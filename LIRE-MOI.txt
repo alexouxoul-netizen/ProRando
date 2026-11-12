@@ -1,36 +1,17 @@
-RandoVista V11.5 TEST — Découvrir dans les Pyrénées
+RandoVista V11.5.1 TEST — installation simplifiée du catalogue
 
-Aucune publication automatique.
+Cette version place le catalogue et les quatre fichiers de traces au même niveau que index.html, pour éviter un dossier de données manquant lors du dépôt manuel sur GitHub.
 
-INSTALLER
-1. Exporte une sauvegarde complète depuis RandoVista. Conserve ton ZIP V11.4.1 pour revenir en arrière.
-2. Extrais ce ZIP. Remplace les fichiers du dépôt GitHub habituel par son CONTENU : index.html à la racine, dossier discover-data conservé. Publie/valide ces fichiers toi-même. Garde la même adresse et la configuration cloud. Ne dépose pas le ZIP seul dans le dépôt.
-3. Ferme tous les onglets RandoVista puis rouvre avec Internet. Vérifie V11.5 TEST et « Application prête hors connexion » dans Mon compte et mes sauvegardes. Attends la préparation avant de couper le réseau. N’efface pas les données du navigateur.
+1. Exporte une sauvegarde de tes données RandoVista.
+2. Extrais ce ZIP et dépose TOUS les fichiers de son contenu à la racine du dépôt GitHub habituel, en remplaçant les fichiers existants. Garde la même adresse et la configuration cloud. Ne dépose pas le ZIP seul.
+3. Vérifie la présence, à côté de index.html, de discover-catalogue.json et discover-traces-0.json, discover-traces-1.json, discover-traces-2.json, discover-traces-3.json.
+4. Attends la fin de la publication GitHub Pages. Ferme tous les onglets et fenêtres RandoVista, puis rouvre avec Internet. Vérifie V11.5.1 TEST. N’efface pas les données du navigateur.
+5. Découvrir > source Pyrénées · Camptocamp · 09 / 31 / 65 > zone Auzat > Rechercher. Le catalogue contient 657 fiches et 190 traces, dont 197 fiches et 28 traces en Ariège. Les résultats dépendent des filtres.
 
-ESSAYER
-4. Découvrir > Rechercher des randonnées. Choisis Foix, Auzat, Couserans, Ax-les-Thermes, Donezan, Luchon ou Cauterets. Tu peux aussi chercher une commune puis la sélectionner. Règle le rayon, la distance, le paysage et le profil ; touche Rechercher.
-5. Pour limiter strictement la distance, décoche « Inclure les distances non renseignées ». Les filtres travaillent sur la distance annoncée par la source ; la distance réelle apparaît après analyse du GPX.
-6. Récupérer et analyser le GPX, puis Ouvrir dans Préparer ou Sauvegarder dans Mes randos. Sans trace exploitable, la fiche indique la limite et ne donne aucun verdict GPX. « Uniquement les fiches avec un tracé » réduit la liste aux GPX disponibles dans cette édition.
-7. Autres catalogues et import GPX donne accès à dix sources locales. Télécharge leur GPX selon les conditions du site, enregistre-le dans Fichiers sur iPhone, puis importe-le ici.
-8. Vérifie tes randos, profils et données existants, puis l’arrivée d’un GPX sauvegardé sur ton second appareil avec le compte partagé. Ce dernier contrôle doit être fait avec ton compte ; il n’a pas été réalisé pendant le développement.
+Recherche, analyse GPX, changement de profil, ouverture dans Préparer, sauvegarde et rechargement hors connexion contrôlés dans Chrome au format mobile. Les 21 fichiers critiques du moteur, des profils, de la bibliothèque et du cloud sont identiques à la base stable.
 
-CE QUE CONTIENT CETTE VERSION
-657 fiches Camptocamp : Ariège 197, Haute-Garonne 49, Hautes-Pyrénées 411.
-190 traces passent les contrôles d’import : Ariège 28, Haute-Garonne 9, Hautes-Pyrénées 153.
-Écrins et Nature64 restent disponibles dans Source et couverture.
+Le catalogue est daté du 12 novembre 2026. Aucune mise à jour automatique de son contenu ; les sites sources permettent de vérifier les informations récentes. Les sources Écrins et Nature64 restent soumises à leur disponibilité externe. Sans trace exploitable, aucun verdict GPX.
 
-Le catalogue Pyrénées est une édition du 12 novembre 2026, fournie dans le ZIP. Il fonctionne hors connexion après préparation, avec ses GPX. « Recharger le catalogue » relit cette édition ; une mise à jour du contenu exige une nouvelle livraison. La recherche de commune, les fonds de carte et les sites sources nécessitent Internet.
+La capture fournie montre un HTTP 404, mais l’adresse du site et la source sélectionnée n’ont pas été fournies : la cause exacte sur le site déployé n’a pas pu être confirmée. Cette livraison corrige le cas du dossier discover-data absent et précise le message d’erreur si le catalogue manque. Safari sur iPhone physique et la synchronisation réelle entre appareils restent à contrôler avec ton compte.
 
-Les itinéraires sont communautaires et peuvent être anciens, dessinés, partiels ou transfrontaliers. Les nombres comptent des fiches et variantes. Le département correspond au point de référence, qui peut être un sommet. Le verdict porte uniquement sur le GPX ; consulte la fiche pour les passages techniques et conditions actuelles. Les paysages sont indicatifs. La présence d’une trace ne certifie pas le terrain.
-
-RETOUR ARRIÈRE
-Remets le contenu du ZIP V11.4.1 à la même adresse puis ferme et rouvre l’application. Ne supprime ni les données du navigateur ni le compte. Les GPX sauvegardés restent au format habituel, avec leurs métadonnées source.
-
-Les tests et limites sont résumés dans BILAN-V11.5.md ; les sources et attributions dans SOURCES-DECOUVRIR.md et LICENCE-CATALOGUE.md. Le ZIP ne contient aucun GPX personnel utilisé pour la validation.
-
-Tests facultatifs avec Node, depuis le dossier extrait :
-node validation/test-release.cjs
-node validation/test-discover.cjs
-node validation/test-camptocamp.cjs
-node validation/test-catalogue-data.cjs
-node validation/test-local-catalogues.cjs
+Aucune publication effectuée. Les sources et licences sont détaillées dans SOURCES-DECOUVRIR.md et LICENCE-CATALOGUE.md. Aucun GPX personnel de test dans le ZIP.
