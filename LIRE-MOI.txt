@@ -1,27 +1,36 @@
-RandoVista V11.4.1 TEST — Catalogues locaux 09 / 31 / 65
+RandoVista V11.5 TEST — Découvrir dans les Pyrénées
 
-Rien n'est publié automatiquement.
+Aucune publication automatique.
 
-1. Exporte une sauvegarde complète et conserve ton ZIP V11.4 pour revenir en arrière.
-2. Extrais le ZIP V11.4.1. Dépose son CONTENU à la racine de ton dépôt GitHub habituel et valide les fichiers toi-même. index.html doit rester à la racine. Garde la même adresse et la configuration cloud.
-3. Ferme tous les onglets RandoVista, puis rouvre avec Internet. Vérifie « V11.4.1 TEST » et l'état prêt hors connexion dans le panneau compte/sauvegardes. N'efface pas les données du navigateur.
-4. Découvrir > Catalogues locaux > choisis le département. Ouvre un catalogue, recherche ta randonnée sur son site et télécharge le GPX. Un compte peut être demandé. Sur iPhone, enregistre le fichier dans Fichiers.
-5. Reviens dans RandoVista et touche « J'ai téléchargé un GPX » sur le bon catalogue. Sélectionne le fichier, le profil et le nom à conserver. Vérifie l'analyse puis utilise Ouvrir dans Préparer ou Sauvegarder dans Mes randos.
-6. Vérifie sur ton second appareil que le GPX sauvegardé arrive avec ton compte partagé. Ce contrôle réel n'a pas été réalisé avec ton compte pendant le développement.
+INSTALLER
+1. Exporte une sauvegarde complète depuis RandoVista. Conserve ton ZIP V11.4.1 pour revenir en arrière.
+2. Extrais ce ZIP. Remplace les fichiers du dépôt GitHub habituel par son CONTENU : index.html à la racine, dossier discover-data conservé. Publie/valide ces fichiers toi-même. Garde la même adresse et la configuration cloud. Ne dépose pas le ZIP seul dans le dépôt.
+3. Ferme tous les onglets RandoVista puis rouvre avec Internet. Vérifie V11.5 TEST et « Application prête hors connexion » dans Mon compte et mes sauvegardes. Attends la préparation avant de couper le réseau. N’efface pas les données du navigateur.
 
-Six adresses : Ariège Pyrénées Tourisme, Pyrénées 31, Rando Vallées de Gavarnie, Vallée du Louron, Peyragudes, Mairie de Lherm.
+ESSAYER
+4. Découvrir > Rechercher des randonnées. Choisis Foix, Auzat, Couserans, Ax-les-Thermes, Donezan, Luchon ou Cauterets. Tu peux aussi chercher une commune puis la sélectionner. Règle le rayon, la distance, le paysage et le profil ; touche Rechercher.
+5. Pour limiter strictement la distance, décoche « Inclure les distances non renseignées ». Les filtres travaillent sur la distance annoncée par la source ; la distance réelle apparaît après analyse du GPX.
+6. Récupérer et analyser le GPX, puis Ouvrir dans Préparer ou Sauvegarder dans Mes randos. Sans trace exploitable, la fiche indique la limite et ne donne aucun verdict GPX. « Uniquement les fiches avec un tracé » réduit la liste aux GPX disponibles dans cette édition.
+7. Autres catalogues et import GPX donne accès à dix sources locales. Télécharge leur GPX selon les conditions du site, enregistre-le dans Fichiers sur iPhone, puis importe-le ici.
+8. Vérifie tes randos, profils et données existants, puis l’arrivée d’un GPX sauvegardé sur ton second appareil avec le compte partagé. Ce dernier contrôle doit être fait avec ton compte ; il n’a pas été réalisé pendant le développement.
 
-Il s'agit d'accès aux catalogues EXTERNES, pas de leurs randonnées recopiées dans RandoVista. La recherche de parcours se fait chez les producteurs. Les filtres de rayon/distance/paysage du mode Recherche intégrée ne s'appliquent pas à cet annuaire. La recherche intégrée du 64 et des Écrins est conservée dans son propre mode.
+CE QUE CONTIENT CETTE VERSION
+657 fiches Camptocamp : Ariège 197, Haute-Garonne 49, Hautes-Pyrénées 411.
+190 traces passent les contrôles d’import : Ariège 28, Haute-Garonne 9, Hautes-Pyrénées 153.
+Écrins et Nature64 restent disponibles dans Source et couverture.
 
-Sans GPX valide, aucun score. La correspondance du fichier avec une fiche n'est pas certifiée. Le verdict porte sur le fichier réel : deux GPX pour un même lieu peuvent donner des résultats différents. La source déclarée dans le formulaire n'est pas ajoutée au format synchronisé ; conserve son lien si tu souhaites le retrouver ensuite.
+Le catalogue Pyrénées est une édition du 12 novembre 2026, fournie dans le ZIP. Il fonctionne hors connexion après préparation, avec ses GPX. « Recharger le catalogue » relit cette édition ; une mise à jour du contenu exige une nouvelle livraison. La recherche de commune, les fonds de carte et les sites sources nécessitent Internet.
 
-Les GPX sauvegardés restent disponibles dans Mes randos hors connexion. Les fichiers seulement analysés dans le formulaire disparaissent à la fermeture. Les sites externes nécessitent Internet. Moteur, calibration, profils, carnet, données et modules cloud sont conservés.
+Les itinéraires sont communautaires et peuvent être anciens, dessinés, partiels ou transfrontaliers. Les nombres comptent des fiches et variantes. Le département correspond au point de référence, qui peut être un sommet. Le verdict porte uniquement sur le GPX ; consulte la fiche pour les passages techniques et conditions actuelles. Les paysages sont indicatifs. La présence d’une trace ne certifie pas le terrain.
 
-Retour arrière : remets le contenu du ZIP V11.4 à la même adresse, ferme et rouvre. Les GPX sauvegardés restent compatibles. Ne supprime pas les données du navigateur ni le compte.
+RETOUR ARRIÈRE
+Remets le contenu du ZIP V11.4.1 à la même adresse puis ferme et rouvre l’application. Ne supprime ni les données du navigateur ni le compte. Les GPX sauvegardés restent au format habituel, avec leurs métadonnées source.
 
-Tests facultatifs avec Node :
-node validation/test-local-catalogues.cjs
-node validation/test-discover.cjs
+Les tests et limites sont résumés dans BILAN-V11.5.md ; les sources et attributions dans SOURCES-DECOUVRIR.md et LICENCE-CATALOGUE.md. Le ZIP ne contient aucun GPX personnel utilisé pour la validation.
+
+Tests facultatifs avec Node, depuis le dossier extrait :
 node validation/test-release.cjs
-
-Les GPX personnels et les fichiers téléchargés pour les tests sont exclus du ZIP publiable. Les droits et limites sont détaillés dans SOURCES-LOCALES.md.
+node validation/test-discover.cjs
+node validation/test-camptocamp.cjs
+node validation/test-catalogue-data.cjs
+node validation/test-local-catalogues.cjs
