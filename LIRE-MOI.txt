@@ -1,23 +1,27 @@
-RandoVista V11.4 TEST — Découvrir
+RandoVista V11.4.1 TEST — Catalogues locaux 09 / 31 / 65
 
-Rien n'a été publié automatiquement.
+Rien n'est publié automatiquement.
 
-1. Dans la version actuelle, exporte une sauvegarde complète. Conserve ton ZIP V11.3.1 pour revenir en arrière.
-2. Extrais RandoVista-V11.4-DECOUVRIR-TEST.zip. Sur GitHub, dépose le CONTENU extrait à la racine de ton dépôt habituel, puis valide toi-même les fichiers. index.html doit rester à la racine. Garde la même adresse GitHub Pages et la même configuration cloud.
-3. Ferme tous les onglets RandoVista et rouvre l'application avec Internet. Vérifie « V11.4 TEST ». Dans le panneau compte/sauvegardes, vérifie que l'application est prête hors connexion. N'efface pas les données du navigateur.
-4. Découvrir > Vallée d'Ossau > choisis ton profil, les distances et éventuellement Lacs > Rechercher. Les résultats du 64 proposent un lien GPX : télécharge le fichier chez la source, puis utilise « Importer ce GPX pour analyse » sur la bonne fiche. Sur iPhone, retrouve-le dans Fichiers > Téléchargements. Vérifie le nom du fichier : l'application ne peut pas certifier qu'il correspond à la fiche.
-5. Pour essayer la récupération automatique : choisis « Écrins · Vallouise », puis Rechercher > Récupérer et analyser le GPX. Après analyse : Ouvrir dans Préparer ou Sauvegarder dans Mes randos. Sans sauvegarde, l'analyse de Découvrir disparaît à la fermeture.
-6. Vérifie tes anciens parcours, leur renommage, les profils et le carnet. Sur ton second appareil, connecte le même compte et vérifie qu'un nouveau GPX sauvegardé arrive bien. Ce contrôle cloud réel n'a pas été réalisé avec ton compte pendant le développement.
+1. Exporte une sauvegarde complète et conserve ton ZIP V11.4 pour revenir en arrière.
+2. Extrais le ZIP V11.4.1. Dépose son CONTENU à la racine de ton dépôt GitHub habituel et valide les fichiers toi-même. index.html doit rester à la racine. Garde la même adresse et la configuration cloud.
+3. Ferme tous les onglets RandoVista, puis rouvre avec Internet. Vérifie « V11.4.1 TEST » et l'état prêt hors connexion dans le panneau compte/sauvegardes. N'efface pas les données du navigateur.
+4. Découvrir > Catalogues locaux > choisis le département. Ouvre un catalogue, recherche ta randonnée sur son site et télécharge le GPX. Un compte peut être demandé. Sur iPhone, enregistre le fichier dans Fichiers.
+5. Reviens dans RandoVista et touche « J'ai téléchargé un GPX » sur le bon catalogue. Sélectionne le fichier, le profil et le nom à conserver. Vérifie l'analyse puis utilise Ouvrir dans Préparer ou Sauvegarder dans Mes randos.
+6. Vérifie sur ton second appareil que le GPX sauvegardé arrive avec ton compte partagé. Ce contrôle réel n'a pas été réalisé avec ton compte pendant le développement.
 
-Limites : couverture des Écrins et du catalogue des Pyrénées-Atlantiques seulement. Les Hautes-Pyrénées et l'Ariège ne sont pas activées. La source du 64 bloque la récupération GPX directe par une autre application : import manuel nécessaire. Aucun score GPX ni verdict personnalisé avant analyse du fichier réel ; altitudes manquantes signalées. Les paysages sont des thèmes ou des mots du titre/résumé, donc incomplets. Aux Écrins le thème « lac et glacier » peut désigner un glacier seul.
+Six adresses : Ariège Pyrénées Tourisme, Pyrénées 31, Rando Vallées de Gavarnie, Vallée du Louron, Peyragudes, Mairie de Lherm.
 
-Le catalogue déjà consulté reste disponible localement ; « Actualiser la source » nécessite Internet. Les GPX sauvegardés dans Mes randos restent analysables hors connexion. Les fonds de carte et les téléchargements externes nécessitent Internet. La date de consultation est affichée : consulter la fiche source pour les fermetures et les conditions actuelles.
+Il s'agit d'accès aux catalogues EXTERNES, pas de leurs randonnées recopiées dans RandoVista. La recherche de parcours se fait chez les producteurs. Les filtres de rayon/distance/paysage du mode Recherche intégrée ne s'appliquent pas à cet annuaire. La recherche intégrée du 64 et des Écrins est conservée dans son propre mode.
 
-Retour arrière : remets le contenu de ton ZIP V11.3.1 à la même adresse, ferme puis rouvre l'application. Les parcours sauvegardés restent dans la bibliothèque compatible. Ne supprime ni les données du navigateur ni le compte cloud.
+Sans GPX valide, aucun score. La correspondance du fichier avec une fiche n'est pas certifiée. Le verdict porte sur le fichier réel : deux GPX pour un même lieu peuvent donner des résultats différents. La source déclarée dans le formulaire n'est pas ajoutée au format synchronisé ; conserve son lien si tu souhaites le retrouver ensuite.
 
-L'étude détaillée des licences, API et limites est dans SOURCES-DECOUVRIR.md, également accessible depuis Découvrir > Couverture, GPX et limites.
+Les GPX sauvegardés restent disponibles dans Mes randos hors connexion. Les fichiers seulement analysés dans le formulaire disparaissent à la fermeture. Les sites externes nécessitent Internet. Moteur, calibration, profils, carnet, données et modules cloud sont conservés.
 
-Tests portables inclus dans validation/ (facultatif, avec Node installé) :
+Retour arrière : remets le contenu du ZIP V11.4 à la même adresse, ferme et rouvre. Les GPX sauvegardés restent compatibles. Ne supprime pas les données du navigateur ni le compte.
+
+Tests facultatifs avec Node :
+node validation/test-local-catalogues.cjs
 node validation/test-discover.cjs
 node validation/test-release.cjs
-Le test test-discover-live.cjs contacte les sources réelles ; il dépend de leur disponibilité. Les GPX personnels de référence ne sont pas inclus dans le ZIP publiable.
+
+Les GPX personnels et les fichiers téléchargés pour les tests sont exclus du ZIP publiable. Les droits et limites sont détaillés dans SOURCES-LOCALES.md.

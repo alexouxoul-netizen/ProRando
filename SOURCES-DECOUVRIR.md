@@ -1,3 +1,5 @@
+> V11.4.1 : recherche intégrée conservée. Un annuaire 09/31/65 et un import local sont ajoutés ; voir SOURCES-LOCALES.md.
+
 # Sources de Découvrir — vérification du 12 novembre 2026
 
 ## Sources activées
