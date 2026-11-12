@@ -1,5 +1,5 @@
 (function(){'use strict';
- const CACHE='randovista-v1151-flat-test-20261112';
+ const CACHE='randovista-v1152-zones-test-20261112';
  const $=id=>document.getElementById(id);let busy=false,ready=false;
  function network(){const el=$('rv-network-status');if(el){el.textContent=navigator.onLine?'Réseau détecté · les données restent enregistrées sur cet appareil.':'Hors connexion · parcours enregistrés, analyses et carnet disponibles sur cet appareil.';el.dataset.offline=String(!navigator.onLine);}}
  function status(text){const el=$('rv-offline-status');if(el)el.textContent=text;}
