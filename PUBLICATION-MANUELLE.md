@@ -1,4 +1,6 @@
-# Publier RandoVista V11.5.5 RC3
+Lire d’abord CLASSEMENT-BIBLIOTHEQUE.md pour les changements de cette version.
+
+# Publier RandoVista V11.6 RC4
 
 Cette archive est une **candidate pour essai prolongé**, pas une garantie de fiabilité terrain. Aucune publication n’a été effectuée pendant l’audit.
 
@@ -7,7 +9,7 @@ Cette archive est une **candidate pour essai prolongé**, pas une garantie de fi
 3. Pour une première vérification, utilise un dépôt GitHub Pages de test distinct. Les données locales de l’adresse habituelle ne suivent pas automatiquement vers une nouvelle adresse. Utilise des données d’essai ; la configuration cloud vise le compte habituel : ne connecte pas ce compte pour un essai jetable.
 4. Lorsque tu souhaites remplacer le site habituel : copie **tout le contenu du ZIP candidat** à la racine du dépôt ProRando, sur la branche utilisée par Pages, puis enregistre le changement. Conserve l’adresse habituelle et `cloud-config.js`. Ne copie pas les archives de sauvegarde ou de validation dans le dépôt public. Pas de nouvelle clé secrète à ajouter.
 5. Dans GitHub, **Settings → Pages**, conserve la source de publication existante. Pour une publication depuis une branche, la racine `/` doit contenir `index.html` et `.nojekyll`. Attends la réussite de la publication. Les anciens fichiers non utilisés peuvent rester ; la candidate ne les charge pas.
-6. Ouvre le site avec une connexion et laisse le cache se préparer. **Ferme toutes les fenêtres RandoVista, y compris l’application ajoutée à l’écran d’accueil, puis rouvre.** La nouvelle version attend la fermeture de l’ancienne application pour éviter un mélange de fichiers. Vérifie **V11.5.5 RC3** et **Application prête hors connexion** dans les sauvegardes. Si nécessaire, refais ce cycle ; n’efface pas les données du site.
+6. Ouvre le site avec une connexion et laisse le cache se préparer. **Ferme toutes les fenêtres RandoVista, y compris l’application ajoutée à l’écran d’accueil, puis rouvre.** La nouvelle version attend la fermeture de l’ancienne application pour éviter un mélange de fichiers. Vérifie **V11.6 RC4** et **Application prête hors connexion** dans les sauvegardes. Si nécessaire, refais ce cycle ; n’efface pas les données du site.
 7. Vérifie tes profils, un GPX, un favori et le carnet. Contrôle ensuite la synchronisation PC/iPhone avec une petite modification identifiable, puis le mode avion après sauvegarde du parcours. Les fonds de carte et les catalogues Geotrek en direct nécessitent une connexion.
 
 ## Retour à V11.5.2

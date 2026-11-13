@@ -1,7 +1,9 @@
-RandoVista V11.5.5 RC3 — candidate pour essai prolongé
+Lire d’abord CLASSEMENT-BIBLIOTHEQUE.md pour les changements de cette version.
+
+RandoVista V11.6 RC4 — candidate pour essai prolongé
 
 Lire PUBLICATION-MANUELLE.md et AUDIT-CANDIDAT.md avant installation.
 Aucun déploiement effectué. Exporter les données depuis l’application avant publication manuelle.
-Après publication : attendre avec une connexion, fermer TOUTES les fenêtres RandoVista puis rouvrir. Vérifier V11.5.5 RC3 et le cache prêt hors connexion. Ne pas effacer les données du site.
+Après publication : attendre avec une connexion, fermer TOUTES les fenêtres RandoVista puis rouvrir. Vérifier V11.6 RC4 et le cache prêt hors connexion. Ne pas effacer les données du site.
 Les fonds de carte et Geotrek direct nécessitent le réseau. Les verdicts sont indicatifs.
 Les archives de sauvegarde et de validation sont privées : ne pas les publier.

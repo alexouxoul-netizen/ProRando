@@ -46,7 +46,7 @@ function validate(data){
   if(!id||['__proto__','constructor','prototype'].includes(id)||!v||typeof v!=='object')throw Error('Identifiant distant invalide');
   if(kind==='profile'){if(v.id!==id)throw Error('Profil invalide');profiles.push(v);}
   else if(kind==='journal'){if(v.id!==id)throw Error('Sortie invalide');journal.push(v);}
-  else if(kind==='route'){if(v.id!==id||typeof v.name!=='string'||typeof v.xml!=='string'||v.xml.length>15000000||typeof v.favorite!=='boolean'||!Number.isFinite(v.updated))throw Error('GPX distant invalide');routes.push(v);}
+  else if(kind==='route'){if(v.id!==id||typeof v.name!=='string'||typeof v.xml!=='string'||v.xml.length>15000000||typeof v.favorite!=='boolean'||!Number.isFinite(v.updated))throw Error('GPX distant invalide');if(Object.hasOwn(v,'visitStatus')&&!['planned','done'].includes(v.visitStatus))throw Error('Classement de randonnée invalide');routes.push(v);}
   else if(kind==='calibration'){if(Object.hasOwn(v,'enabled'))calibration.enabled[id]=v.enabled;if(Object.hasOwn(v,'resetAt'))calibration.resetAt[id]=v.resetAt;}
   else throw Error('Version de données non prise en charge');
  }
