@@ -1,13 +1,7 @@
-RandoVista V11.5.2 TEST — zones adaptées à la source
+RandoVista V11.5.3 RC1 — candidate pour essai prolongé
 
-Dans Découvrir, Zone de départ affiche uniquement les lieux de la source sélectionnée :
-- Pyrénées / Camptocamp : Foix, Auzat, Couserans, Ax-les-Thermes, Donezan, Luchon et Cauterets.
-- Pyrénées-Atlantiques : vallée d’Ossau, vallée d’Aspe et Pays basque.
-- Écrins : Vallouise.
-Coordonnées personnalisées et géolocalisation restent accessibles. Choisir une zone ne change plus automatiquement la source. La recherche d’une commune conserve aussi la source choisie.
-
-Installation : exporte une sauvegarde, extrais le ZIP et remplace les fichiers du dépôt GitHub habituel par TOUT son contenu, en conservant la même adresse et la configuration cloud. Publie toi-même. Tous les fichiers discover-*.json doivent rester à côté de index.html. Après publication, ferme RandoVista puis rouvre. Vérifie V11.5.2 TEST ; dans Chrome, Ctrl + Maj + R si l’ancienne version reste affichée. N’efface pas les données du navigateur.
-
-Vérifications : trois listes de zones contrôlées dans le navigateur, recherche, analyse GPX, profils, sauvegarde, Préparer et hors connexion réussis. Les 21 fichiers critiques du moteur, des profils, de la bibliothèque et du cloud sont inchangés. Aucun changement des données ni du catalogue (657 fiches, 190 GPX ; édition du 12 novembre 2026). Synchronisation réelle entre appareils et Safari sur iPhone physique non vérifiés ici.
-
-Aucune publication effectuée. Voir SOURCES-DECOUVRIR.md et LICENCE-CATALOGUE.md pour les sources, attributions et limites des traces. Aucun GPX personnel de test dans le ZIP.
+Lire PUBLICATION-MANUELLE.md et AUDIT-CANDIDAT.md avant installation.
+Aucun déploiement effectué. Exporter les données depuis l’application avant publication manuelle.
+Après publication : attendre avec une connexion, fermer TOUTES les fenêtres RandoVista puis rouvrir. Vérifier V11.5.3 RC1 et le cache prêt hors connexion. Ne pas effacer les données du site.
+Les fonds de carte et Geotrek direct nécessitent le réseau. Les verdicts sont indicatifs.
+Les archives de sauvegarde et de validation sont privées : ne pas les publier.

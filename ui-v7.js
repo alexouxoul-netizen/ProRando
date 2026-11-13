@@ -12,7 +12,7 @@
    if(!tabs.includes(tab))return;
    if(tab!=='prepare')toggleLegend(false);
    activeTab=tab;
-   tabs.forEach(t=>{ $('view-'+t).hidden=t!==tab;document.querySelector(`[data-tab="${t}"]`).classList.toggle('active',t===tab); });
+   tabs.forEach(t=>{ $('view-'+t).hidden=t!==tab;const button=document.querySelector(`[data-tab="${t}"]`);button.classList.toggle('active',t===tab);button.setAttribute('aria-current',t===tab?'page':'false');button.setAttribute('aria-controls','view-'+t); });
    if(tab==='prepare'){
      const host=$('profile-sheet').hidden?$('chart-slot-compare'):$('chart-slot-sheet');
      moveChart(host);

@@ -42,6 +42,7 @@
  function slopeAt(points,ds,i){return RVGPX.slope(points,ds,i);}
  function parseMetrics(xml){
   if(typeof xml!=='string'||!xml.trim()||xml.length>maxXml)throw Error('GPX vide ou trop volumineux.');
+  if (/<!DOCTYPE|<!ENTITY/i.test(xml) || !/<(?:\w+:)?gpx[\s/>]/i.test(xml)) throw Error('Un fichier GPX sans déclaration externe est nécessaire.');
   const measurement=RVGPX.analyze(RVGPX.read(new DOMParser().parseFromString(xml,'application/xml')));
   const points=measurement.points,ds=measurement.distances;
   const distance=ds[ds.length-1];if(!Number.isFinite(distance)||distance<100)throw Error('GPX trop court : moins de 100 mètres exploitables.');

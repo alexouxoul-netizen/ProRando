@@ -169,6 +169,7 @@ fileInput.addEventListener('change', function (event) {
         fileInput.value = '';
         return;
     }
+    if (file.size > 15000000) { afficherErreur('GPX trop volumineux : 15 Mo maximum.'); fileInput.value = ''; return; }
     const reader = new FileReader();
     reader.onload = function (loadEvent) {
         try {
@@ -186,6 +187,8 @@ fileInput.addEventListener('change', function (event) {
 });
 
 function analyserGPX(xmlString) {
+    if (typeof xmlString !== 'string' || !xmlString.trim() || xmlString.length > 15000000) throw Error('GPX vide ou trop volumineux : 15 Mo maximum.');
+    if (/<!DOCTYPE|<!ENTITY/i.test(xmlString) || !/<(?:\w+:)?gpx[\s/>]/i.test(xmlString)) throw Error('Un fichier GPX sans déclaration externe est nécessaire.');
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
     if (xmlDoc.getElementsByTagName('parsererror').length) {

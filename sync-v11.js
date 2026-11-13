@@ -139,7 +139,7 @@ if(cfg?.url&&cfg?.publishableKey&&!window.RVCloudBlocked){
   $('rv-cloud-off').hidden=true;$('rv-login-form').hidden=false;$('rv-logout').hidden=false;$('rv-sync-now').disabled=false;
   client.auth.onAuthStateChange(()=>schedule());schedule();
  }catch(e){status('Configuration du compte invalide : '+e.message);}
-}else status('V11 TEST · mode local prêt. Le compte partagé sera disponible après configuration.');
+}else status('Mode local prêt. Le compte partagé sera disponible après configuration.');
 for(const ev of ['rv:profile-changed','rv:journal-changed','rv:calibration-changed','rv:library-changed','online'])window.addEventListener(ev,schedule);
 window.addEventListener('offline',()=>status('Hors connexion · tes modifications restent sur cet appareil.'));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule();});
