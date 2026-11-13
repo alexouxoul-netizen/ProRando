@@ -1,6 +1,8 @@
 /* Shared V11.1 pilot verdict rules. Same thresholds as the validated route sheet. */
 (function(root){'use strict';
- const profileOffsets=Object.freeze([3,1,0,-2,-4]);
+ const profileOffsets=Object.freeze([3,1,0,-2,-5]);
+ const legacyOffsets=Object.freeze([3,1,0,-2,-4]);
+ const offsetsForVersion=version=>version==='v1154-expert-pilot'?profileOffsets:version==='v111-pilot'?legacyOffsets:null;
  const classify=score=>score>=7?'high':score>=3?'moderate':'low';
  function intrinsic(f){let score=0;
   if(f.distanceKm>=20)score+=2;else if(f.distanceKm>=14)score+=1;
@@ -29,5 +31,5 @@
  const gradeNames=Object.freeze(['Très facile','Modérée','Soutenue','Difficile','Très difficile']);
  function gradeName(grade){return Number.isInteger(grade)&&grade>=1&&grade<=5?gradeNames[grade-1]:'Indisponible';}
  function isEasy(f){return f?.physicalGrade===1&&f.level==='low'&&f.altitudeOk===true&&Number.isFinite(f.coverage)&&f.coverage>=.999999&&!f.incomplete&&!f.coarse&&!f.avoid&&!(f.terrain?.length)&&Number.isFinite(f.steepUp)&&f.steepUp<100&&Number.isFinite(f.steepDown)&&f.steepDown<100&&Number.isFinite(f.verySteepUp)&&f.verySteepUp<50;}
- const api=Object.freeze({version:'v111-pilot',physicalVersion:'v111-physical-test-28',physical,gradeNames,gradeName,isEasy,profileOffsets,intrinsic,forProfile,classify});root.RVVerdictRules=api;if(typeof module!=='undefined')module.exports=api;
+ const api=Object.freeze({version:'v1154-expert-pilot',physicalVersion:'v111-physical-test-28',physical,gradeNames,gradeName,isEasy,profileOffsets,offsetsForVersion,intrinsic,forProfile,classify});root.RVVerdictRules=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -1,3 +1,5 @@
+> Historique de l’audit RC1. Pour la candidate actuelle, lire d’abord CORRECTIF-EXPERT.md. Les résultats navigateur historiques ne sont pas présentés comme tous répétés en RC2.
+
 # RandoVista V11.5.3 RC1 — audit des 12–13 novembre 2026
 
 **Conclusion : candidate consolidée pour essai prolongé. Pas de certification « tout fonctionne ».** Aucun déploiement, aucune modification du dépôt ou du compte réel. Base : GitHub `alexouxoul-netizen/ProRando`, révision `9600a7e6b43f142d61c029a0e15f15140e1507ee` (V11.5.2), comparée à la dernière copie Work. Tous les fichiers actifs correspondaient, hors fins de ligne. Deux sauvegardes sont livrées : projet Work et révision GitHub. Elles ne remplacent pas l’export des données personnelles depuis l’application.

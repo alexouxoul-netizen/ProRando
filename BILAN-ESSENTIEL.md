@@ -1,3 +1,5 @@
+> Historique de l’audit RC1. Pour la candidate actuelle, lire d’abord CORRECTIF-EXPERT.md. Les résultats navigateur historiques ne sont pas présentés comme tous répétés en RC2.
+
 # RandoVista V11.5.3 RC1 — bilan essentiel
 
 Candidate préparée les 12–13 novembre 2026 depuis la dernière V11.5.2 fonctionnelle de Work et GitHub (révision 9600a7e6). **Le site en ligne et le compte réel n’ont pas été modifiés.** Les sauvegardes du projet sont fournies séparément ; exporte aussi les données depuis l’application avant toute installation.

@@ -54,13 +54,14 @@
  }
  function tierAtCurrentLevel(p,currentLevel){
   if(!p||!Number.isInteger(p.profileLevel)||p.profileLevel<0||p.profileLevel>4)return null;
-  if(p.profileLevel===currentLevel){
+  const rules=window.RVVerdictRules;
+  const changedExpert=p.profileLevel===4&&currentLevel===4&&p.verdictRuleVersion==='v111-pilot'&&Number.isInteger(p.baseScore)&&p.baseScore>0;
+  if(p.profileLevel===currentLevel&&!changedExpert){
    const base=p.baseTier||p.tier;
    return own(TIERS,base)?base:null;
   }
-  const rules=window.RVVerdictRules;
-  if(!rules||p.verdictRuleVersion!==rules.version)return null;
-  const offsets=rules.profileOffsets;
+  const offsets=rules?.offsetsForVersion?.(p.verdictRuleVersion);
+  if(!offsets)return null;
   // A clamped zero cannot safely reveal its original intrinsic score.
   if(!Number.isInteger(p.baseScore)||p.baseScore<0||p.baseScore>100||
       (p.baseScore===0&&offsets[p.profileLevel]<0))return null;
