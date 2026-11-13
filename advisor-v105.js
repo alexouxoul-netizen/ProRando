@@ -132,7 +132,7 @@
     }else{
       if(refAvoid)headline.textContent='Attention : ce même parcours a déjà été évalué « à éviter » pour ce profil. Cette expérience doit peser dans ton choix.';
       else if(status?.dataset.ease==='easy')headline.textContent='Très facile · 1/5 : aucune difficulté physique particulière détectée pour '+label+'.';
-      else if(level==='high')headline.textContent='Ce parcours paraît trop exigeant pour '+label+' selon le relief et la distance. Recherche une option plus douce.';
+      else if(level==='high')headline.textContent=chosen===4?'Parcours très exigeant : anticipe la durée, les montées et les descentes pour préparer ta sortie.':'Ce parcours paraît trop exigeant pour '+label+' selon le relief et la distance. Recherche une option plus douce.';
       else if(level==='moderate')headline.textContent='Randonnée envisageable, mais certains efforts méritent d’être anticipés pour '+label+'.';
       else if(facts.total>=12000 && chosen<=1)headline.textContent='Les pentes semblent modérées, mais '+numberKm(facts.total)+' km représentent une distance importante pour un profil débutant. Ne te fie pas seulement au verdict favorable.';
       else headline.textContent='Le relief paraît plutôt compatible avec '+label+' ; examine tout de même les passages ci-dessous avant de décider.';
@@ -161,7 +161,9 @@
       if(!highlights.children.length){
         addPoint('Aucune longue montée ni descente raide dominante repérée dans les altitudes de ce GPX. Cela ne renseigne pas l’état réel du sentier.',null,false);
       }
-      const choiceHint=level==='high'||refAvoid
+      const choiceHint=chosen===4&&(level==='high'||refAvoid)
+        ? 'Pour préparer : compare les passages clés à tes expériences, vérifie le terrain et prévois le temps et les pauses nécessaires.'
+        : level==='high'||refAvoid
         ? 'Pour choisir : compare avec une randonnée plus courte, avec moins de dénivelé et surtout moins de portions raides.'
         : level==='moderate'
         ? 'Pour choisir : compare la longueur de la montée principale et les pentes raides avec une autre randonnée ; prévois des pauses.'

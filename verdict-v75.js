@@ -36,7 +36,7 @@
     const notes=String(last.notes||'').trim().slice(0,240);
     $('rv-experience-notes').hidden=!notes;
     $('rv-experience-notes').textContent=notes?'« '+notes+(String(last.notes||'').trim().length>240?'…':'')+' »':'';
-    $('rv-experience-difference').textContent='Prévision physique GPX : '+(predictedNames[baseLevel]||'Indisponible')+' · Expérience réelle : '+last.effort+'/5. Les passages techniques ne sont pas déduits du GPX.';
+    $('rv-experience-difference').textContent='Prévision physique GPX : '+(baseLevel==='high'&&active.level===4?'Très exigeante':predictedNames[baseLevel]||'Indisponible')+' · Expérience réelle : '+last.effort+'/5. Les passages techniques ne sont pas déduits du GPX.';
     let date='';
     if(/^\d{4}-\d{2}-\d{2}$/.test(last.date||'')) date=last.date.slice(8,10)+'/'+last.date.slice(5,7)+'/'+last.date.slice(0,4);
     $('rv-experience-footer').textContent=(date?'Dernière évaluation le '+date+'. ':'')+'Même fichier GPX, même profil. Ce retour est distinct du calcul physique et n’est jamais extrapolé automatiquement à d’autres sentiers.';
@@ -102,7 +102,7 @@
     status.dataset.baseLevel=baseLevel;
     status.dataset.baseScore=String(baselineScore);
     status.dataset.level=level;
-    status.textContent=level==='high'?'🔴 À éviter pour ce niveau':level==='moderate'?'🟠 Exigeante, mais potentiellement faisable':'🟢 A priori adaptée à ce niveau';
+    status.textContent=level==='high'?(chosenLevel===4?'🔴 Très exigeante':'🔴 À éviter pour ce niveau'):level==='moderate'?'🟠 Exigeante, mais potentiellement faisable':'🟢 A priori adaptée à ce niveau';
     details.textContent=level==='high'?'Plusieurs indicateurs d’effort dépassent les repères prudents définis pour les randonnées habituellement appréciées.':level==='moderate'?'Des passages demanderont un effort notable : vérifier les montées et prévoir des pauses.':'Le GPX ne montre pas de combinaison majeure de difficultés physiques selon les repères choisis.';
     // Référence issue du carnet pour CE GPX exact et CE profil, distincte du
     // calcul des pentes. Ne jamais extrapoler les pierriers à un autre tracé.
@@ -113,7 +113,7 @@
       const desc=terrainRef.terrain.map(t=>terrainNames[t]||t).join(', ');
       if(terrainRef.feeling==='avoid'){
         status.dataset.level='high';
-        status.textContent='🔴 À éviter : référence terrain enregistrée';
+        status.textContent=chosenLevel===4?'🔴 Très exigeante : retour terrain défavorable':'🔴 À éviter : référence terrain enregistrée';
         details.textContent='Tu as déjà évalué ce tracé comme « à éviter » pour ce profil. Ce retour réel prime sur le seul calcul physique du GPX ; les difficultés techniques ne sont pas détectables dans les altitudes.';
       }
       // L'expérience vécue apparaît dans son encart dédié ci-dessous, sans doublon.

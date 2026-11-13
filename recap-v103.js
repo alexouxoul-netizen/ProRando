@@ -20,7 +20,7 @@
   const comparison=gap>0?'La difficulté ressentie se situe dans une catégorie plus élevée que la prévision.':
    gap<0?'La difficulté ressentie se situe dans une catégorie moins élevée que la prévision.':
    'La difficulté ressentie se situe dans la même catégorie que la prévision.';
-  return {forecast:TIER_LABELS[predicted],comparison,kind:gap>0?'harder':gap<0?'easier':'aligned'};
+  return {forecast:predicted==='high'&&e.prediction.profileLevel===4&&String(e.prediction.verdict||'').includes('Très exigeante')?'Très exigeante':TIER_LABELS[predicted],comparison,kind:gap>0?'harder':gap<0?'easier':'aligned'};
  }
  function detailsFor(e){
   const list=[];

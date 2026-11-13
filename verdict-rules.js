@@ -31,5 +31,6 @@
  const gradeNames=Object.freeze(['Très facile','Modérée','Soutenue','Difficile','Très difficile']);
  function gradeName(grade){return Number.isInteger(grade)&&grade>=1&&grade<=5?gradeNames[grade-1]:'Indisponible';}
  function isEasy(f){return f?.physicalGrade===1&&f.level==='low'&&f.altitudeOk===true&&Number.isFinite(f.coverage)&&f.coverage>=.999999&&!f.incomplete&&!f.coarse&&!f.avoid&&!(f.terrain?.length)&&Number.isFinite(f.steepUp)&&f.steepUp<100&&Number.isFinite(f.steepDown)&&f.steepDown<100&&Number.isFinite(f.verySteepUp)&&f.verySteepUp<50;}
- const api=Object.freeze({version:'v1154-expert-pilot',physicalVersion:'v111-physical-test-28',physical,gradeNames,gradeName,isEasy,profileOffsets,offsetsForVersion,intrinsic,forProfile,classify});root.RVVerdictRules=api;if(typeof module!=='undefined')module.exports=api;
+ const verdictLabel=(tier,level)=>tier==='high'&&level===4?'Très exigeante':({low:'A priori adaptée',moderate:'Exigeante, mais potentiellement faisable',high:'À éviter pour ce niveau',unknown:'Difficulté indisponible'}[tier]||'Difficulté indisponible');
+ const api=Object.freeze({version:'v1154-expert-pilot',physicalVersion:'v111-physical-test-28',verdictLabel,physical,gradeNames,gradeName,isEasy,profileOffsets,offsetsForVersion,intrinsic,forProfile,classify});root.RVVerdictRules=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

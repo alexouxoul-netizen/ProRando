@@ -180,7 +180,7 @@
   const {metrics:m,name}=entry;
   const card=el('article','rv104-card');
   const header=el('div','rv104-card-head');header.append(el('span','rv104-letter',id.toUpperCase()),el('strong','',name));card.append(header);
-  const verdict=el('p','rv104-verdict rv104-'+report.level,report.easy?'Très facile · 1/5 — adaptée à ce profil':labels[report.level]);card.append(verdict);
+  const verdict=el('p','rv104-verdict rv104-'+report.level,report.easy?'Très facile · 1/5 — adaptée à ce profil':RVVerdictRules.verdictLabel(report.level,profile?.level));card.append(verdict);
   if(report.easy)card.append(el('p','rv113-easy-description','Aucune difficulté physique particulière détectée sur ce GPX.'));
   const lines=el('div','rv104-lines');
   lines.append(makeLine('Distance'+(m.incomplete?' (partielle)':''),km(m.distance)),makeLine('Dénivelé +',m.altitudeOk?('+'+meter(m.ascent)):'Non disponible'));
@@ -198,7 +198,7 @@
    card.append(el('p','rv104-history','🥾 Déjà parcourue pour ce profil : '+report.history.effort+'/5 · '+label+'.'));
   }
   if(report.history?.conditions?.includes('heat'))card.append(el('p','rv104-history','☀ Forte chaleur signalée pour cette sortie : le ressenti est conservé sans calibrage des autres parcours.'));
-  if(report.reference?.feeling==='avoid')card.append(el('p','rv104-history-warning','⚠ Référence terrain « à éviter » pour ce profil : ce retour réel prime sur la prévision physique.'));
+  if(report.reference?.feeling==='avoid')card.append(el('p','rv104-history-warning',profile?.level===4?'⚠ Retour terrain défavorable enregistré pour ce profil : examine les difficultés signalées avant de décider.':'⚠ Référence terrain « à éviter » pour ce profil : ce retour réel prime sur la prévision physique.'));
   else if(report.history?.feeling==='avoid')card.append(el('p','rv104-history-warning','⚠ Retour précédent « à éviter » conservé dans le carnet, distinct de cette prévision physique.'));
   else if(report.reference&&!report.history)card.append(el('p','rv104-history','Expérience de terrain enregistrée pour ce même GPX et ce profil.'));
   if(report.offset)card.append(el('p','rv104-calibration','🎯 Calibrage personnel : '+(report.offset>0?'+1':'−1')+' point sur le score.'));
@@ -212,11 +212,11 @@
   });card.append(action);
   return card;
  }
- function recommendation(a,b,ma,mb){
+ function recommendation(a,b,ma,mb,profile){
   const title=el('strong','', 'Conseil pour le profil choisi');
   const text=el('p','');
   if(ma.level==='unknown'||mb.level==='unknown')text.textContent='Comparaison insuffisante : au moins un GPX manque d’altitudes fiables. Vérifie les données avant de choisir.';
-  else if(ma.level==='high'&&mb.level==='high')text.textContent='Aucun des deux parcours ne semble adapté à ce profil. Mieux vaut chercher une randonnée moins exigeante.';
+  else if(ma.level==='high'&&mb.level==='high')text.textContent=profile?.level===4?'Les deux parcours sont très exigeants. Compare les passages clés, la durée et le terrain pour préparer ton choix.':'Aucun des deux parcours ne semble adapté à ce profil. Mieux vaut chercher une randonnée moins exigeante.';
   else {
    const tiers={low:0,moderate:1,high:2};
    const diff=tiers[ma.level]-tiers[mb.level];
@@ -249,7 +249,7 @@
   if(!profile){output.hidden=true;$('rv104-message').textContent='Sélectionne un profil randonneur avant de comparer.';return;}
   const pa=evaluate(a.metrics,profile,a.xml),pb=evaluate(b.metrics,profile,b.xml);
   results.append(makeCard('a',a,pa,profile),makeCard('b',b,pb,profile));
-  decision.append(...recommendation(a,b,pa,pb));
+  decision.append(...recommendation(a,b,pa,pb,profile));
   $('rv104-message').textContent='Comparaison pour « '+profile.name+' » ('+profiles[profile.level]+(profile.temporary?' · simulation temporaire':'')+').';
   output.hidden=false;
  }
